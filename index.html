@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBM Machineries</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- NAVBAR Header (Initially Transparent) -->
+    <header class="navbar-header" id="main-navbar">
+        <nav class="nav-container">
+            <!-- Brand Logo Placeholder (Fades in on scroll) -->
+            <a href="index.html" class="brand-logo" id="nav-brand">
+                <span class="logo-bold">CBM</span> <span class="logo-sub">MACHINERIES</span>
+            </a>
+
+            <!-- Navigation Links -->
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About Us</a></li>
+                
+                <!-- Mega Dropdown Placeholder -->
+                <li class="mega-dropdown">
+                    <a href="#products" class="nav-link">Products & Equipment <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="mega-menu-content">
+                        <ul id="dynamic-categories">
+                            <!-- Dynamic Admin Categories Will Render Here Later -->
+                            <li><a href="#">Category Placeholder 1</a></li>
+                            <li><a href="#">Category Placeholder 2</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li><a href="#services" class="nav-link">Spare Parts</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+
+            <div class="nav-cta">
+                <a href="#quote" class="btn-quote">Get Quote</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION (Full Viewport Video Background) -->
+    <section class="hero-section" id="hero">
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="media/hero-bg.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <!-- Dark Overlay for Video Contrast -->
+        <div class="hero-overlay"></div>
+
+        <!-- Center Content -->
+        <div class="hero-content">
+            <h1 class="hero-title">CBM MACHINERIES</h1>
+            <p class="hero-subtitle">High-Performance Equipment & Industrial Solutions</p>
+        </div>
+    </section>
+
+    <!-- SECTION PLACEHOLDER TO ALLOW SCROLLING -->
+    <section style="height: 120vh; background-color: #0d0d0d; color: #fff; padding: 4rem 2rem;">
+        <h2>Content Below Hero</h2>
+    </section>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
