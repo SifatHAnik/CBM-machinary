@@ -9,59 +9,57 @@
 </head>
 <body>
 
-    <!-- NAVBAR Header (Initially Transparent) -->
+    <!-- NAVBAR HEADER -->
     <header class="navbar-header" id="main-navbar">
         <nav class="nav-container">
-            <!-- Brand Logo Placeholder (Fades in on scroll) -->
+            <!-- Brand Logo (Hidden on Hero, Fades in on Scroll) -->
             <a href="index.html" class="brand-logo" id="nav-brand">
-                <span class="logo-bold">CBM</span> <span class="logo-sub">MACHINERIES</span>
+                <span class="logo-bold">CBM</span> MACHINERIES
             </a>
 
+            <!-- Mobile Hamburger Icon -->
+            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
             <!-- Navigation Links -->
-            <ul class="nav-menu">
+            <ul class="nav-menu" id="nav-menu">
                 <li><a href="index.html" class="nav-link active">Home</a></li>
                 <li><a href="#about" class="nav-link">About Us</a></li>
                 
-                <!-- Mega Dropdown Placeholder -->
-                <li class="mega-dropdown">
-                    <a href="#products" class="nav-link">Products & Equipment <i class="fa-solid fa-chevron-down"></i></a>
-                    <div class="mega-menu-content">
+                <!-- Dropdown Menu Item -->
+                <li class="dropdown-item">
+                    <button class="dropdown-btn" id="dropdown-btn">
+                        Product Categories <i class="fa-solid fa-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="dropdown-content" id="dropdown-content">
                         <ul id="dynamic-categories">
-                            <!-- Dynamic Admin Categories Will Render Here Later -->
                             <li><a href="#">Category Placeholder 1</a></li>
                             <li><a href="#">Category Placeholder 2</a></li>
                         </ul>
                     </div>
                 </li>
 
-                <li><a href="#services" class="nav-link">Spare Parts</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
-
-            <div class="nav-cta">
-                <a href="#quote" class="btn-quote">Get Quote</a>
-            </div>
         </nav>
     </header>
 
-    <!-- HERO SECTION (Full Viewport Video Background) -->
+    <!-- HERO SECTION (Full Screen Video) -->
     <section class="hero-section" id="hero">
         <video autoplay muted loop playsinline class="hero-video">
             <source src="media/hero-bg.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         
-        <!-- Dark Overlay for Video Contrast -->
         <div class="hero-overlay"></div>
 
-        <!-- Center Content -->
         <div class="hero-content">
             <h1 class="hero-title">CBM MACHINERIES</h1>
-            <p class="hero-subtitle">High-Performance Equipment & Industrial Solutions</p>
+            <p class="hero-subtitle">High-Performance Industrial Solutions</p>
         </div>
     </section>
 
-    <!-- SECTION PLACEHOLDER TO ALLOW SCROLLING -->
+    <!-- SPACER SECTION FOR TESTING SCROLL -->
     <section style="height: 120vh; background-color: #0d0d0d; color: #fff; padding: 4rem 2rem;">
         <h2>Content Below Hero</h2>
     </section>
