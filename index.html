@@ -9,39 +9,49 @@
 </head>
 <body>
 
+    <!-- OVERLAY BACKDROP FOR MOBILE MENU -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+
     <!-- NAVBAR HEADER -->
     <header class="navbar-header" id="main-navbar">
         <nav class="nav-container">
-            <!-- Brand Logo (Hidden on Hero, Fades in on Scroll) -->
+            <!-- Brand Logo (Fades in on Scroll) -->
             <a href="index.html" class="brand-logo" id="nav-brand">
                 <span class="logo-bold">CBM</span> MACHINERIES
             </a>
 
-            <!-- Mobile Hamburger Icon -->
+            <!-- Mobile Hamburger Toggle -->
             <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
-            <!-- Navigation Links -->
-            <ul class="nav-menu" id="nav-menu">
-                <li><a href="index.html" class="nav-link active">Home</a></li>
-                <li><a href="#about" class="nav-link">About Us</a></li>
-                
-                <!-- Dropdown Menu Item -->
-                <li class="dropdown-item">
-                    <button class="dropdown-btn" id="dropdown-btn">
-                        Product Categories <i class="fa-solid fa-chevron-down dropdown-icon"></i>
-                    </button>
-                    <div class="dropdown-content" id="dropdown-content">
-                        <ul id="dynamic-categories">
-                            <li><a href="#">Category Placeholder 1</a></li>
-                            <li><a href="#">Category Placeholder 2</a></li>
-                        </ul>
-                    </div>
-                </li>
+            <!-- Navigation Links (Positioned Bottom Alignment) -->
+            <div class="nav-menu-wrapper" id="nav-menu">
+                <!-- Mobile Close Button -->
+                <button class="mobile-close" id="mobile-close" aria-label="Close menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
 
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link active">Home</a></li>
+                    <li><a href="#about" class="nav-link">About Us</a></li>
+                    
+                    <!-- Dynamic Dropdown -->
+                    <li class="dropdown-item">
+                        <button class="dropdown-btn" id="dropdown-btn">
+                            Product Categories <i class="fa-solid fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="dropdown-content" id="dropdown-content">
+                            <ul id="dynamic-categories">
+                                <li><a href="#">Category Placeholder 1</a></li>
+                                <li><a href="#">Category Placeholder 2</a></li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+            </div>
         </nav>
     </header>
 
@@ -59,8 +69,8 @@
         </div>
     </section>
 
-    <!-- SPACER SECTION FOR TESTING SCROLL -->
-    <section style="height: 120vh; background-color: #0d0d0d; color: #fff; padding: 4rem 2rem;">
+    <!-- SPACER SECTION FOR SCROLL TESTING -->
+    <section style="height: 120vh; background-color: #0e1111; color: #ffffff; padding: 4rem 2rem;">
         <h2>Content Below Hero</h2>
     </section>
 
