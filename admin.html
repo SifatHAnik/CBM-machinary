@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBM Machineries | Command Center</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #0e1111;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .admin-card {
+            background: #121616;
+            border: 1px solid rgba(212, 163, 115, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 700px;
+            margin: 2rem auto;
+        }
+
+        .admin-header {
+            color: #d4a373;
+            border-bottom: 2px solid #0b4f37;
+            padding-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #d4a373;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: #1a2020;
+            border: 1px solid #0b4f37;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #d4a373;
+        }
+
+        .btn-industrial {
+            background: #0b4f37;
+            color: #fff;
+            border: 1px solid #d4a373;
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-industrial:hover {
+            background: #d4a373;
+            color: #0e1111;
+        }
+
+        .btn-danger {
+            background: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .btn-danger:hover {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .hidden { display: none; }
+        .status-msg { margin-top: 0.8rem; color: #d4a373; font-size: 0.85rem; text-align: center; }
+        .inline-group { display: flex; gap: 0.5rem; }
+        hr.divider { border: 0; height: 1px; background: rgba(212, 163, 115, 0.2); margin: 2rem 0; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTHENTICATION FORM -->
+    <div id="auth-panel" class="admin-card">
+        <div class="admin-header">Command Center Access</div>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Admin Email</label>
+                <input type="email" id="login-email" required placeholder="admin@cbmmachineries.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" class="btn-industrial">Log In</button>
+            <p id="auth-status" class="status-msg"></p>
+        </form>
+    </div>
+
+    <!-- MAIN DASHBOARD PANEL -->
+    <div id="dashboard-panel" class="admin-card hidden">
+        <div class="admin-header">
+            <span>Admin Interface</span>
+            <button id="logout-btn" style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem;" class="btn-industrial">Log Out</button>
+        </div>
+
+        <!-- NAVIGATION MODULE SELECTOR -->
+        <div class="form-group">
+            <label>Select Control Section</label>
+            <select id="section-selector">
+                <option value="product-mgmt" selected>Product Management</option>
+                <option value="account-mgmt">Account Management</option>
+            </select>
+        </div>
+
+        <hr class="divider">
+
+        <!-- SECTION 1: PRODUCT MANAGEMENT -->
+        <div id="section-product-mgmt">
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Add New Product</div>
+
+            <div class="form-group">
+                <label>Product Title</label>
+                <input type="text" id="prod-title" placeholder="e.g. Heavy Duty Hydraulic Shearing Machine">
+            </div>
+
+            <div class="form-group">
+                <label>Product Image (Select File from Device)</label>
+                <input type="file" id="prod-file" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label>Price (BDT)</label>
+                <input type="number" id="prod-price" placeholder="e.g. 250000">
+            </div>
+
+            <div class="form-group">
+                <label>Short Description (Single Line Preview)</label>
+                <input type="text" id="prod-short-desc" placeholder="e.g. High-speed precision cutting, imported from Taiwan">
+            </div>
+
+            <div class="form-group">
+                <label>Long Description (Full Specifications)</label>
+                <textarea id="prod-long-desc" placeholder="Enter detailed specs, lines, paragraphs, and formatted notes..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Select Category</label>
+                <select id="prod-category-select">
+                    <option value="new-arrivals">New Arrivals</option>
+                    <option value="other-products">Other Products</option>
+                </select>
+            </div>
+
+            <button id="add-product-btn" class="btn-industrial">Add Product</button>
+
+            <hr class="divider">
+
+            <!-- CATEGORY MANAGEMENT MODULE -->
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Manage Categories</div>
+            
+            <div class="form-group">
+                <label>Add New Custom Category</label>
+                <div class="inline-group">
+                    <input type="text" id="new-cat-name" placeholder="e.g. CNC Milling">
+                    <button id="add-cat-btn" class="btn-industrial" style="width: 40%;">Add Category</button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label>Delete Custom Category</label>
+                <div class="inline-group">
+                    <select id="delete-cat-select">
+                        <!-- Custom categories load here dynamically -->
+                    </select>
+                    <button id="delete-cat-btn" class="btn-industrial btn-danger" style="width: 40%;">Delete</button>
+                </div>
+            </div>
+
+            <p id="prod-status" class="status-msg"></p>
+        </div>
+
+        <!-- SECTION 2: ACCOUNT MANAGEMENT -->
+        <div id="section-account-mgmt" class="hidden">
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Account Credentials & Access</div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="new-account-pass" placeholder="Enter new password">
+            </div>
+            <button id="change-pass-btn" class="btn-industrial">Update Password</button>
+            <p id="account-status" class="status-msg"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
+        import { db } from "./firebase-config.js";
+        import { collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Cloudinary Configuration
+        const CLOUD_NAME = "w4tlz3yl";
+        const UPLOAD_PRESET = "cbm-preset";
+
+        // UI Element References
+        const authPanel = document.getElementById('auth-panel');
+        const dashboardPanel = document.getElementById('dashboard-panel');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const sectionSelector = document.getElementById('section-selector');
+        
+        const secProduct = document.getElementById('section-product-mgmt');
+        const secAccount = document.getElementById('section-account-mgmt');
+        
+        const prodCategorySelect = document.getElementById('prod-category-select');
+        const deleteCatSelect = document.getElementById('delete-cat-select');
+        const addCatBtn = document.getElementById('add-cat-btn');
+        const deleteCatBtn = document.getElementById('delete-cat-btn');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const prodStatus = document.getElementById('prod-status');
+
+        // Toggle Sections via Dropdown
+        sectionSelector.addEventListener('change', (e) => {
+            if (e.target.value === 'product-mgmt') {
+                secProduct.classList.remove('hidden');
+                secAccount.classList.add('hidden');
+            } else {
+                secProduct.classList.add('hidden');
+                secAccount.classList.remove('hidden');
+            }
+        });
+
+        // Auth State Handler
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authPanel.classList.add('hidden');
+                dashboardPanel.classList.remove('hidden');
+                listenToCategories();
+            } else {
+                authPanel.classList.remove('hidden');
+                dashboardPanel.classList.add('hidden');
+            }
+        });
+
+        // Login Handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+            } catch (err) {
+                document.getElementById('auth-status').innerText = "Login failed: " + err.message;
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // Realtime Category Sync (Default + Custom)
+        function listenToCategories() {
+            onSnapshot(collection(db, "categories"), (snapshot) => {
+                prodCategorySelect.innerHTML = `
+                    <option value="new-arrivals">New Arrivals</option>
+                    <option value="other-products">Other Products</option>
+                `;
+                deleteCatSelect.innerHTML = '';
+
+                snapshot.forEach((docSnap) => {
+                    const cat = docSnap.data();
+                    const catId = docSnap.id;
+
+                    if (catId !== 'new-arrivals' && catId !== 'other-products') {
+                        const opt = document.createElement('option');
+                        opt.value = catId;
+                        opt.textContent = cat.name;
+                        prodCategorySelect.appendChild(opt);
+
+                        const delOpt = document.createElement('option');
+                        delOpt.value = catId;
+                        delOpt.textContent = cat.name;
+                        deleteCatSelect.appendChild(delOpt);
+                    }
+                });
+            });
+        }
+
+        // Upload Direct File to Cloudinary
+        async function uploadImageToCloudinary(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("Image upload failed. Ensure upload preset is set to Unsigned.");
+            }
+
+            const data = await response.json();
+            return data.secure_url;
+        }
+
+        // Add Product Entry
+        addProductBtn.addEventListener('click', async () => {
+            const title = document.getElementById('prod-title').value.trim();
+            const price = document.getElementById('prod-price').value.trim();
+            const shortDesc = document.getElementById('prod-short-desc').value.trim();
+            const longDesc = document.getElementById('prod-long-desc').value;
+            const category = document.getElementById('prod-category-select').value;
+            const fileInput = document.getElementById('prod-file');
+
+            if (!title || !price || !fileInput.files[0]) {
+                prodStatus.innerText = "Error: Please fill in Title, Price, and select an Image file.";
+                return;
+            }
+
+            prodStatus.innerText = "Uploading photo to Cloudinary...";
+
+            try {
+                const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+
+                prodStatus.innerText = "Image uploaded! Saving product to database...";
+
+                await addDoc(collection(db, "products"), {
+                    title: title,
+                    price: Number(price),
+                    shortDescription: shortDesc,
+                    longDescription: longDesc,
+                    category: category,
+                    imageUrl: imageUrl,
+                    createdAt: serverTimestamp()
+                });
+
+                prodStatus.innerText = "Success: Product successfully created and live!";
+
+                document.getElementById('prod-title').value = '';
+                document.getElementById('prod-price').value = '';
+                document.getElementById('prod-short-desc').value = '';
+                document.getElementById('prod-long-desc').value = '';
+                fileInput.value = '';
+
+            } catch (err) {
+                prodStatus.innerText = "Deployment Error: " + err.message;
+            }
+        });
+
+        // Add Custom Category Handler
+        addCatBtn.addEventListener('click', async () => {
+            const catName = document.getElementById('new-cat-name').value.trim();
+            if (!catName) return;
+
+            const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            try {
+                await setDoc(doc(db, "categories", catSlug), {
+                    name: catName,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('new-cat-name').value = '';
+                prodStatus.innerText = "Category added successfully!";
+            } catch (err) {
+                prodStatus.innerText = "Error adding category: " + err.message;
+            }
+        });
+
+        // Delete Category Handler
+        deleteCatBtn.addEventListener('click', async () => {
+            const selectedCat = deleteCatSelect.value;
+            if (!selectedCat) return;
+
+            try {
+                await deleteDoc(doc(db, "categories", selectedCat));
+                prodStatus.innerText = "Category deleted successfully!";
+            } catch (err) {
+                prodStatus.innerText = "Error deleting category: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
