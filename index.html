@@ -37,17 +37,17 @@
                     <li><a href="#about" class="nav-link">About Us</a></li>
                     
                     <!-- Dynamic Dropdown -->
-                    <li class="dropdown-item">
-                        <button class="dropdown-btn" id="dropdown-btn">
-                            Product Categories <i class="fa-solid fa-chevron-down dropdown-icon"></i>
-                        </button>
-                        <div class="dropdown-content" id="dropdown-content">
-                            <ul id="dynamic-categories">
-                                <li><a href="#">Category Placeholder 1</a></li>
-                                <li><a href="#">Category Placeholder 2</a></li>
-                            </ul>
-                        </div>
-                    </li>
+                    <!-- Example of your existing Dropdown Button structure -->
+    <div class="category-dropdown-wrapper">
+        <button id="category-dropdown-btn" class="nav-btn">
+            Product Categories ▼
+        </button>
+        
+        <!-- This list remains hidden until the button is clicked (controlled by your CSS/JS) -->
+        <ul id="nav-category-dropdown" class="dropdown-menu hidden">
+            <!-- Dynamic links inject here automatically -->
+        </ul>
+    </div>
 
                     <li><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>

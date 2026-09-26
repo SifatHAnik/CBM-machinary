@@ -169,3 +169,64 @@ function loadProductsForCategory(categorySlug) {
 
 // Initialize dynamic load
 loadDynamicCategorySections();
+
+import { db } from "./firebase-config.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const dropdownBtn = document.getElementById('category-dropdown-btn');
+const navCategoryDropdown = document.getElementById('nav-category-dropdown');
+
+// 1. Handle Button Click Toggle
+if (dropdownBtn && navCategoryDropdown) {
+    dropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevents click from instantly closing
+        navCategoryDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking anywhere outside
+    document.addEventListener('click', () => {
+        navCategoryDropdown.classList.add('hidden');
+    });
+}
+
+// 2. Sync Dynamic Categories into the Dropdown Menu
+function syncNavbarCategories() {
+    if (!navCategoryDropdown) return;
+
+    onSnapshot(collection(db, "categories"), (catSnapshot) => {
+        navCategoryDropdown.innerHTML = '';
+
+        if (catSnapshot.empty) {
+            navCategoryDropdown.innerHTML = `<li style="padding: 0.5rem 1rem; color: #888;">No categories</li>`;
+            return;
+        }
+
+        catSnapshot.forEach((catDoc) => {
+            const categoryData = catDoc.data();
+            const categorySlug = catDoc.id;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            
+            // Link smooth-scrolls to the specific section on index.html
+            a.href = `#slider-${categorySlug}`;
+            a.textContent = categoryData.name;
+            a.style.cssText = `
+                display: block;
+                padding: 0.6rem 1rem;
+                color: #fff;
+                text-decoration: none;
+                transition: background 0.2s ease;
+            `;
+
+            a.addEventListener('mouseenter', () => a.style.background = '#0b4f37');
+            a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+            
+            li.appendChild(a);
+            navCategoryDropdown.appendChild(li);
+        });
+    });
+}
+
+// Run real-time listener
+syncNavbarCategories();
