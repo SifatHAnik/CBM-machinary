@@ -423,3 +423,12 @@ body {
     color: #d4a373;
     padding-left: 1.5rem; /* Subtle glide effect on hover */
 }
+/* Enable smooth scrolling page-wide */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Fix navbar covering category titles when jumping from the dropdown */
+#categories-container section {
+    scroll-margin-top: 80px; /* Adjust this value if your navbar is taller/shorter */
+}

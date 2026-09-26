@@ -1,7 +1,26 @@
+// ========================================================
+// 1. IMPORTS (ALL MUST BE AT THE TOP OF THE MODULE)
+// ========================================================
 import { db } from "./firebase-config.js";
-import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    collection, 
+    query, 
+    where, 
+    onSnapshot, 
+    doc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+// ========================================================
+// 2. STATE VARIABLES
+// ========================================================
+let targetStats = { machines: 0, clients: 0, years: 0 };
+let hasAnimated = false;
+
+// ========================================================
+// 3. MAIN INITIALIZATION
+// ========================================================
+document.addEventListener("DOMContentLoaded", async () => {
     // DOM Elements
     const navbar = document.getElementById("main-navbar");
     const hero = document.getElementById("hero");
@@ -13,7 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuOverlay = document.getElementById("menu-overlay");
     const categoriesContainer = document.getElementById('categories-container');
 
-    // 1. Mobile Drawer Functions
+    // ----------------------------------------------------
+    // Mobile Drawer Functions
+    // ----------------------------------------------------
     const openMenu = () => {
         if (navMenuWrapper) navMenuWrapper.classList.add("open");
         if (menuOverlay) menuOverlay.classList.add("active");
@@ -30,7 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mobileClose) mobileClose.addEventListener("click", closeMenu);
     if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
 
-    // 2. Navbar Dropdown Toggle
+    // ----------------------------------------------------
+    // Navbar Dropdown Toggle
+    // ----------------------------------------------------
     if (dropdownBtn && navCategoryDropdown) {
         dropdownBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -46,7 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 3. Navbar Scroll Observer
+    // ----------------------------------------------------
+    // Navbar Scroll Observer
+    // ----------------------------------------------------
     if (navbar && hero) {
         const heroObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
@@ -61,7 +86,9 @@ document.addEventListener("DOMContentLoaded", () => {
         heroObserver.observe(hero);
     }
 
-    // 4. Real-time Category Loader & Dropdown Sync
+    // ----------------------------------------------------
+    // Real-time Category Loader & Dropdown Sync
+    // ----------------------------------------------------
     function loadDynamicCategories() {
         onSnapshot(collection(db, "categories"), (catSnapshot) => {
             if (categoriesContainer) categoriesContainer.innerHTML = '';
@@ -77,52 +104,93 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            let fetchedCategories = [];
             catSnapshot.forEach((catDoc) => {
-                const categoryData = catDoc.data();
-                const categorySlug = catDoc.id;
-                const categoryName = categoryData.name;
-
-                // Populate Dropdown
-                if (navCategoryDropdown) {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = `#slider-${categorySlug}`;
-                    a.textContent = categoryName;
-                    a.style.cssText = `
-                        display: block;
-                        padding: 0.6rem 1rem;
-                        color: #fff;
-                        text-decoration: none;
-                        transition: background 0.2s ease;
-                    `;
-                    a.addEventListener('mouseenter', () => a.style.background = '#0b4f37');
-                    a.addEventListener('mouseleave', () => a.style.background = 'transparent');
-                    
-                    li.appendChild(a);
-                    navCategoryDropdown.appendChild(li);
-                }
-
-                // Populate Storefront Category Sliders
-                if (categoriesContainer) {
-                    const section = document.createElement('section');
-                    section.style.cssText = `padding: 2rem; margin-bottom: 1rem;`;
-                    section.innerHTML = `
-                        <h2 style="color: #d4a373; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 1.2rem; border-left: 4px solid #0b4f37; padding-left: 0.8rem;">
-                            ${categoryName}
-                        </h2>
-                        <div id="slider-${categorySlug}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
-                            <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
-                        </div>
-                    `;
-
-                    categoriesContainer.appendChild(section);
-                    loadProductsForCategory(categorySlug);
-                }
+                fetchedCategories.push({
+                    id: catDoc.id,
+                    name: catDoc.data().name || catDoc.id
+                });
             });
+
+            const hasNewArrivals = fetchedCategories.find(c => c.id === 'new-arrivals');
+            const hasOtherProducts = fetchedCategories.find(c => c.id === 'other-products');
+            const middleCategories = fetchedCategories.filter(c => c.id !== 'new-arrivals' && c.id !== 'other-products');
+
+            // Render ordered categories
+            if (hasNewArrivals) renderCategorySection(hasNewArrivals);
+            renderCustomContentBlock();
+            middleCategories.forEach(cat => renderCategorySection(cat));
+            if (hasOtherProducts) renderCategorySection(hasOtherProducts);
         });
     }
 
-    // 5. Query Products per Category Slider
+    // Helper: Category Sections & Dropdown Links
+    function renderCategorySection(cat) {
+        if (navCategoryDropdown) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#category-${cat.id}`;
+            a.textContent = cat.name;
+            a.style.cssText = `
+                display: block;
+                padding: 0.6rem 1rem;
+                color: #fff;
+                text-decoration: none;
+                transition: background 0.2s ease;
+            `;
+            a.addEventListener('mouseenter', () => a.style.background = '#0b4f37');
+            a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+            
+            a.addEventListener('click', () => {
+                navCategoryDropdown.classList.add('hidden');
+                if (dropdownBtn) dropdownBtn.classList.remove('active');
+            });
+
+            li.appendChild(a);
+            navCategoryDropdown.appendChild(li);
+        }
+
+        if (categoriesContainer) {
+            const section = document.createElement('section');
+            section.id = `category-${cat.id}`;
+            section.style.cssText = `padding: 2rem; margin-bottom: 1rem; scroll-margin-top: 90px;`;
+            
+            section.innerHTML = `
+                <h2 style="color: #d4a373; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 1.2rem; border-left: 4px solid #0b4f37; padding-left: 0.8rem;">
+                    ${escapeHtml(cat.name)}
+                </h2>
+                <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
+                    <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
+                </div>
+            `;
+
+            categoriesContainer.appendChild(section);
+            loadProductsForCategory(cat.id);
+        }
+    }
+
+    // Helper: Promo Block
+    function renderCustomContentBlock() {
+        if (!categoriesContainer) return;
+
+        const promoBlock = document.createElement('div');
+        promoBlock.style.cssText = `
+            margin: 1.5rem 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #121616 0%, #0b4f37 100%);
+            border: 1px solid rgba(212, 163, 115, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            color: #fff;
+        `;
+        promoBlock.innerHTML = `
+            <h3 style="color: #d4a373; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: 1px;">HEAVY INDUSTRIAL MACHINERY & SPARES</h3>
+            <p style="color: #ccc; margin: 0; font-size: 0.95rem;">Engineered for high-capacity performance and industrial durability.</p>
+        `;
+        categoriesContainer.appendChild(promoBlock);
+    }
+
+    // Query Products per Category Slider
     function loadProductsForCategory(categorySlug) {
         const sliderEl = document.getElementById(`slider-${categorySlug}`);
         if (!sliderEl) return;
@@ -156,15 +224,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 card.innerHTML = `
                     <div style="width: 100%; height: 200px; overflow: hidden; background: #000;">
-                        <img src="${product.imageUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="${escapeHtml(product.imageUrl || '')}" alt="${escapeHtml(product.title || '')}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="padding: 1.2rem; background: #161b1b;">
-                        <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${product.title}</h3>
+                        <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || '')}</h3>
                         <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${product.shortDescription || ''}
+                            ${escapeHtml(product.shortDescription || '')}
                         </p>
                         <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
-                            ৳ ${Number(product.price).toLocaleString()}
+                            ৳ ${Number(product.price || 0).toLocaleString()}
                         </div>
                     </div>
                 `;
@@ -181,6 +249,77 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Start loading categories on initialization
+    // ----------------------------------------------------
+    // Initialize Stats Observer
+    // ----------------------------------------------------
+    await initStats();
+    const statsSection = document.getElementById('impact-stats-section');
+    if (statsSection) observer.observe(statsSection);
+
+    // Initialize category loading
     loadDynamicCategories();
 });
+
+// ========================================================
+// 4. HELPER FUNCTIONS & ANIMATION COUNTER
+// ========================================================
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function animateCounter(elementId, targetValue, suffix = "+") {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const duration = 2000;
+    const frameDuration = 1000 / 60; 
+    const totalFrames = Math.round(duration / frameDuration);
+    let frame = 0;
+
+    const counterInterval = setInterval(() => {
+        frame++;
+        const progress = frame / totalFrames;
+        const currentCount = Math.floor(targetValue * (1 - Math.pow(1 - progress, 3)));
+
+        el.textContent = currentCount.toLocaleString() + suffix;
+
+        if (frame >= totalFrames) {
+            el.textContent = targetValue.toLocaleString() + suffix;
+            clearInterval(counterInterval);
+        }
+    }, frameDuration);
+}
+
+async function initStats() {
+    try {
+        const docRef = doc(db, "site_stats", "global");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            targetStats = {
+                machines: data.machinesSold || 0,
+                clients: data.clientsServed || 0,
+                years: data.yearsExperience || 0
+            };
+        }
+    } catch (err) {
+        console.error("Failed to load site stats:", err);
+    }
+}
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !hasAnimated) {
+            hasAnimated = true;
+            animateCounter('stat-machines-display', targetStats.machines, "+");
+            animateCounter('stat-clients-display', targetStats.clients, "+");
+            animateCounter('stat-years-display', targetStats.years, " Years");
+        }
+    });
+}, { threshold: 0.3 });

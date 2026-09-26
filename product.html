@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - CBM Machineries</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #0d1111; color: #fff; min-height: 100vh;">
+
+    <!-- Navbar Container -->
+    <nav id="main-navbar" class="scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="logo">CBM Machineries</a>
+            <a href="index.html" class="nav-link" style="color: #d4a373;">← Back to Shop</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main style="max-width: 1100px; margin: 120px auto 3rem; padding: 0 1.5rem;">
+        
+        <!-- Loading State -->
+        <div id="loading-spinner" style="text-align: center; padding: 4rem; color: #d4a373; font-size: 1.2rem;">
+            Loading product specifications...
+        </div>
+
+        <!-- Product Card Layout -->
+        <div id="product-detail-card" style="display: none; background: #121616; border: 1px solid rgba(212, 163, 115, 0.25); border-radius: 12px; overflow: hidden;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; padding: 2.5rem;">
+                
+                <!-- Product Image -->
+                <div style="background: #000; border-radius: 8px; overflow: hidden; height: 380px; border: 1px solid rgba(255,255,255,0.05);">
+                    <img id="product-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+
+                <!-- Product Details Column -->
+                <div style="display: flex; flex-direction: column; justify-content: center;">
+                    <span id="product-category" style="color: #0b4f37; background: rgba(11, 79, 55, 0.2); border: 1px solid #0b4f37; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px; padding: 0.3rem 0.8rem; border-radius: 4px; width: fit-content; margin-bottom: 1rem;"></span>
+                    
+                    <h1 id="product-title" style="font-size: 2rem; color: #fff; margin: 0 0 0.8rem 0; font-weight: 600;"></h1>
+                    
+                    <div id="product-price" style="font-size: 1.8rem; color: #d4a373; font-weight: bold; margin-bottom: 1.5rem;"></div>
+                    
+                    <p id="product-short-desc" style="color: #ccc; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem;"></p>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: #d4a373; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Detailed Description</h3>
+                        <p id="product-full-desc" style="color: #999; font-size: 0.9rem; line-height: 1.7; white-space: pre-line;"></p>
+                    </div>
+
+                    <!-- Inquiry Button -->
+                    <a id="inquire-btn" href="#" target="_blank" style="display: inline-block; text-align: center; background: #0b4f37; color: #fff; text-decoration: none; padding: 0.9rem 1.8rem; border-radius: 6px; font-weight: 600; letter-spacing: 1px; transition: background 0.3s ease;">
+                        INQUIRE ABOUT THIS MACHINE
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="product.js"></script>
+</body>
+</html>

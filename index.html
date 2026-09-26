@@ -15,7 +15,7 @@
     <!-- NAVBAR HEADER -->
     <header class="navbar-header" id="main-navbar">
         <nav class="nav-container">
-            <!-- Brand Logo (Fades in on Scroll) -->
+            <!-- Brand Logo -->
             <a href="index.html" class="brand-logo" id="nav-brand">
                 <span class="logo-bold">CBM</span>
             </a>
@@ -25,9 +25,8 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
 
-            <!-- Navigation Links (Positioned Bottom Alignment) -->
+            <!-- Navigation Links -->
             <div class="nav-menu-wrapper" id="nav-menu">
-                <!-- Mobile Close Button -->
                 <button class="mobile-close" id="mobile-close" aria-label="Close menu">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -37,17 +36,14 @@
                     <li><a href="#about" class="nav-link">About Us</a></li>
                     
                     <!-- Dynamic Dropdown -->
-                    <!-- Example of your existing Dropdown Button structure -->
-    <div class="category-dropdown-wrapper">
-        <button id="category-dropdown-btn" class="nav-btn">
-            Product Categories ▼
-        </button>
-        
-        <!-- This list remains hidden until the button is clicked (controlled by your CSS/JS) -->
-        <ul id="nav-category-dropdown" class="dropdown-menu hidden">
-            <!-- Dynamic links inject here automatically -->
-        </ul>
-    </div>
+                    <div class="category-dropdown-wrapper">
+                        <button id="category-dropdown-btn" class="nav-btn">
+                            Product Categories ▼
+                        </button>
+                        <ul id="nav-category-dropdown" class="dropdown-menu hidden">
+                            <!-- Dynamic links inject here automatically -->
+                        </ul>
+                    </div>
 
                     <li><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
@@ -69,11 +65,39 @@
         </div>
     </section>
 
-<!-- DYNAMIC CATEGORY SLIDERS CONTAINER -->
-<main id="categories-container" style="padding: 2rem 0; background-color: #0e1111;">
-    <!-- All category sections (New Arrivals, Other Products, and Custom Categories) render here automatically -->
-</main>
+    <!-- 1. NEW ARRIVALS CATEGORY CONTAINER -->
+    <main id="categories-container" style="padding: 2rem 0; background-color: #0e1111;">
+        <!-- New Arrivals renders here automatically via script.js -->
+    </main>
 
+    <!-- 2. MIDDLE SECTION: INDUSTRIAL IMPACT COUNTERS -->
+    <section id="impact-stats-section" style="background: #121616; border-top: 1px solid #0b4f37; border-bottom: 1px solid #0b4f37; padding: 3rem 1rem; margin: 1rem 0;">
+        <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-around; gap: 2rem; text-align: center;">
+            
+            <div style="flex: 1; min-width: 200px;">
+                <div id="stat-machines-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Machines Delivered</div>
+            </div>
+
+            <div style="flex: 1; min-width: 200px;">
+                <div id="stat-clients-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Industrial Clients</div>
+            </div>
+
+            <div style="flex: 1; min-width: 200px;">
+                <div id="stat-years-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Years Experience</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 3. REMAINING DYNAMIC CATEGORIES CONTAINER -->
+    <section id="other-categories-container" style="padding: 2rem 0; background-color: #0e1111;">
+        <!-- Other Products & Custom Categories render here automatically via script.js -->
+    </section>
+
+    <!-- SINGLE SCRIPT SOURCE -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -48,7 +48,7 @@
             text-transform: uppercase;
         }
 
-        input[type="text"], input[type="number"], select, textarea {
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], select, textarea {
             width: 100%;
             padding: 0.8rem;
             background: #1a2020;
@@ -98,7 +98,7 @@
             color: #721c24;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .status-msg { margin-top: 0.8rem; color: #d4a373; font-size: 0.85rem; text-align: center; }
         .inline-group { display: flex; gap: 0.5rem; }
         hr.divider { border: 0; height: 1px; background: rgba(212, 163, 115, 0.2); margin: 2rem 0; }
@@ -135,6 +135,7 @@
             <label>Select Control Section</label>
             <select id="section-selector">
                 <option value="product-mgmt" selected>Product Management</option>
+                <option value="stats-mgmt">Site Metrics & Stats</option>
                 <option value="account-mgmt">Account Management</option>
             </select>
         </div>
@@ -204,19 +205,43 @@
             </div>
 
             <p id="prod-status" class="status-msg"></p>
-        </div>
-        <!-- LIVE PRODUCTS & DELETE MANAGEMENT -->
-        <hr class="divider">
-        <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
-            <span>Live Products Catalog</span>
-            <span id="product-count-badge" style="color: #d4a373; font-size: 0.9rem;">Total: 0</span>
+
+            <!-- LIVE PRODUCTS CATALOG -->
+            <hr class="divider">
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                <span>Live Products Catalog</span>
+                <span id="product-count-badge" style="color: #d4a373; font-size: 0.9rem;">Total: 0</span>
+            </div>
+
+            <div id="live-products-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <!-- Live product cards render here dynamically -->
+            </div>
         </div>
 
-        <div id="live-products-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
-            <!-- Live product cards with delete buttons render here dynamically -->
+        <!-- SECTION 2: SITE METRICS & STATS -->
+        <div id="section-stats-mgmt" class="hidden">
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Homepage Impact Counters</div>
+            
+            <div class="form-group">
+                <label>Machines Deployed / Sold</label>
+                <input type="number" id="stat-machines" placeholder="e.g. 1250">
+            </div>
+
+            <div class="form-group">
+                <label>Industrial Clients Served</label>
+                <input type="number" id="stat-clients" placeholder="e.g. 450">
+            </div>
+
+            <div class="form-group">
+                <label>Years of Industry Expertise</label>
+                <input type="number" id="stat-years" placeholder="e.g. 15">
+            </div>
+
+            <button id="save-stats-btn" class="btn-industrial">Update Homepage Stats</button>
+            <p id="stats-status" class="status-msg"></p>
         </div>
 
-        <!-- SECTION 2: ACCOUNT MANAGEMENT -->
+        <!-- SECTION 3: ACCOUNT MANAGEMENT -->
         <div id="section-account-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Account Credentials & Access</div>
             <div class="form-group">
@@ -231,7 +256,7 @@
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
-    import { collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, doc, setDoc, getDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Cloudinary Configuration
     const CLOUD_NAME = "w4tlz3yl";
@@ -245,6 +270,7 @@
     const sectionSelector = document.getElementById('section-selector');
     
     const secProduct = document.getElementById('section-product-mgmt');
+    const secStats = document.getElementById('section-stats-mgmt');
     const secAccount = document.getElementById('section-account-mgmt');
     
     const prodCategorySelect = document.getElementById('prod-category-select');
@@ -257,14 +283,56 @@
     const liveProductsList = document.getElementById('live-products-list');
     const productCountBadge = document.getElementById('product-count-badge');
 
+    const statMachines = document.getElementById('stat-machines');
+    const statClients = document.getElementById('stat-clients');
+    const statYears = document.getElementById('stat-years');
+    const saveStatsBtn = document.getElementById('save-stats-btn');
+    const statsStatus = document.getElementById('stats-status');
+
     // Toggle Sections via Dropdown
     sectionSelector.addEventListener('change', (e) => {
+        secProduct.classList.add('hidden');
+        secStats.classList.add('hidden');
+        secAccount.classList.add('hidden');
+
         if (e.target.value === 'product-mgmt') {
             secProduct.classList.remove('hidden');
-            secAccount.classList.add('hidden');
-        } else {
-            secProduct.classList.add('hidden');
+        } else if (e.target.value === 'stats-mgmt') {
+            secStats.classList.remove('hidden');
+            loadCurrentStats();
+        } else if (e.target.value === 'account-mgmt') {
             secAccount.classList.remove('hidden');
+        }
+    });
+
+    // Load Stats into Inputs
+    async function loadCurrentStats() {
+        try {
+            const docRef = doc(db, "site_stats", "global");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                statMachines.value = data.machinesSold || 0;
+                statClients.value = data.clientsServed || 0;
+                statYears.value = data.yearsExperience || 0;
+            }
+        } catch (err) {
+            statsStatus.innerText = "Error loading stats: " + err.message;
+        }
+    }
+
+    // Save Stats to Firestore
+    saveStatsBtn.addEventListener('click', async () => {
+        try {
+            await setDoc(doc(db, "site_stats", "global"), {
+                machinesSold: Number(statMachines.value),
+                clientsServed: Number(statClients.value),
+                yearsExperience: Number(statYears.value),
+                updatedAt: serverTimestamp()
+            });
+            statsStatus.innerText = "Site stats updated successfully!";
+        } catch (err) {
+            statsStatus.innerText = "Error saving stats: " + err.message;
         }
     });
 
@@ -312,7 +380,6 @@
                 liveProductsList.appendChild(itemCard);
             });
 
-            // Attach event listeners to all dynamic delete buttons
             document.querySelectorAll('.delete-prod-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const idToDelete = e.target.getAttribute('data-id');
@@ -357,13 +424,13 @@
         });
     }
 
-    // Auth State Handler - Trigger listeners on login
+    // Auth State Handler
     onAuthStateChanged(auth, (user) => {
         if (user) {
             authPanel.classList.add('hidden');
             dashboardPanel.classList.remove('hidden');
             listenToCategories();
-            listenToProducts(); // <--- This activates the Live Products catalog listener
+            listenToProducts();
         } else {
             authPanel.classList.remove('hidden');
             dashboardPanel.classList.add('hidden');
@@ -475,5 +542,6 @@
             prodStatus.innerText = "Error deleting category: " + err.message;
         }
     });
-</script>
+    </script>
+</body>
 </html>
