@@ -89,20 +89,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ----------------------------------------------------
     // Real-time Category Loader & Dropdown Sync
     // ----------------------------------------------------
+// 4. Real-time Category Loader & Dropdown Sync
+// Real-time Category Loader with Stats Bar Injection
     function loadDynamicCategories() {
         onSnapshot(collection(db, "categories"), (catSnapshot) => {
             if (categoriesContainer) categoriesContainer.innerHTML = '';
             if (navCategoryDropdown) navCategoryDropdown.innerHTML = '';
 
-            if (catSnapshot.empty) {
-                if (categoriesContainer) {
-                    categoriesContainer.innerHTML = `<p style="color: #888; text-align: center; padding: 2rem;">No product categories found.</p>`;
-                }
-                if (navCategoryDropdown) {
-                    navCategoryDropdown.innerHTML = `<li style="padding: 0.5rem 1rem; color: #888;">No categories</li>`;
-                }
-                return;
-            }
+            if (catSnapshot.empty) return;
 
             let fetchedCategories = [];
             catSnapshot.forEach((catDoc) => {
@@ -112,16 +106,124 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             });
 
-            const hasNewArrivals = fetchedCategories.find(c => c.id === 'new-arrivals');
-            const hasOtherProducts = fetchedCategories.find(c => c.id === 'other-products');
-            const middleCategories = fetchedCategories.filter(c => c.id !== 'new-arrivals' && c.id !== 'other-products');
+            // Clean string comparison for category IDs
+            const hasNewArrivals = fetchedCategories.find(c => {
+                const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
+                return cleanId === 'new-arrivals' || cleanId === 'newarrivals';
+            });
 
-            // Render ordered categories
-            if (hasNewArrivals) renderCategorySection(hasNewArrivals);
-            renderCustomContentBlock();
+            const hasOtherProducts = fetchedCategories.find(c => {
+                const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
+                return cleanId === 'other-products' || cleanId === 'otherproducts';
+            });
+
+            const middleCategories = fetchedCategories.filter(
+                c => c.id !== hasNewArrivals?.id && c.id !== hasOtherProducts?.id
+            );
+
+            // 1. First, render New Arrivals
+            if (hasNewArrivals) {
+                renderCategorySection(hasNewArrivals);
+            }
+
+            // 2. Second, inject the Stats Section directly after New Arrivals
+            renderStatsSectionBlock();
+
+            // 3. Third, render HELLO & all future dynamic categories below stats
             middleCategories.forEach(cat => renderCategorySection(cat));
-            if (hasOtherProducts) renderCategorySection(hasOtherProducts);
+
+            // 4. Finally, render Other Products at the end
+            if (hasOtherProducts) {
+                renderCategorySection(hasOtherProducts);
+            }
+
+            // Re-bind the scroll observer AFTER elements exist in DOM
+            observeStatsSection();
         });
+    }
+
+    // Helper: Dynamically creates and places the Stats Section in sequence
+    function renderStatsSectionBlock() {
+        if (!categoriesContainer) return;
+
+        const statsSection = document.createElement('section');
+        statsSection.id = 'impact-stats-section';
+        statsSection.style.cssText = `background: #121616; border-top: 1px solid #0b4f37; border-bottom: 1px solid #0b4f37; padding: 3rem 1rem; margin: 1.5rem 0;`;
+
+        statsSection.innerHTML = `
+            <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-around; gap: 2rem; text-align: center;">
+                <div style="flex: 1; min-width: 200px;">
+                    <div id="stat-machines-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                    <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Machines Delivered</div>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <div id="stat-clients-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                    <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Industrial Clients</div>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <div id="stat-years-display" style="font-size: 2.8rem; font-weight: bold; color: #d4a373;">0</div>
+                    <div style="color: #ffffff; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-top: 0.5rem;">Positive Reviews</div>
+                </div>
+            </div>
+        `;
+
+        categoriesContainer.appendChild(statsSection);
+    }
+
+    // Helper: Observes stats element ONLY after it is rendered on screen
+    function observeStatsSection() {
+        const statsEl = document.getElementById('impact-stats-section');
+        if (statsEl) {
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !hasAnimated) {
+                        hasAnimated = true;
+                        animateCounter('stat-machines-display', targetStats.machines, "+");
+                        animateCounter('stat-clients-display', targetStats.clients, "+");
+                        animateCounter('stat-years-display', targetStats.years, "%");
+                    }
+                });
+            }, { threshold: 0.5 }); // Triggers when 50% of section is actually visible
+
+            statsObserver.observe(statsEl);
+        }
+    }
+
+    // Updated Helper to target specific container
+function renderCategorySection(cat) {
+        if (!categoriesContainer) return;
+
+        if (navCategoryDropdown) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#category-${cat.id}`;
+            a.textContent = cat.name;
+            a.style.cssText = `display: block; padding: 0.6rem 1rem; color: #fff; text-decoration: none; transition: background 0.2s ease;`;
+            a.addEventListener('mouseenter', () => a.style.background = '#0b4f37');
+            a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+            a.addEventListener('click', () => {
+                navCategoryDropdown.classList.add('hidden');
+                if (dropdownBtn) dropdownBtn.classList.remove('active');
+            });
+            li.appendChild(a);
+            navCategoryDropdown.appendChild(li);
+        }
+
+        const section = document.createElement('section');
+        section.id = `category-${cat.id}`;
+        section.style.cssText = `padding: 2rem; margin-bottom: 1rem; scroll-margin-top: 90px;`;
+        
+        section.innerHTML = `
+            <h2 style="color: #d4a373; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 1.2rem; border-left: 4px solid #0b4f37; padding-left: 0.8rem;">
+                ${escapeHtml(cat.name)}
+            </h2>
+            <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
+                <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
+            </div>
+        `;
+
+        categoriesContainer.appendChild(section);
+        loadProductsForCategory(cat.id);
     }
 
     // Helper: Category Sections & Dropdown Links
@@ -170,25 +272,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Helper: Promo Block
-    function renderCustomContentBlock() {
-        if (!categoriesContainer) return;
+    // function renderCustomContentBlock() {
+    //     if (!categoriesContainer) return;
 
-        const promoBlock = document.createElement('div');
-        promoBlock.style.cssText = `
-            margin: 1.5rem 2rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, #121616 0%, #0b4f37 100%);
-            border: 1px solid rgba(212, 163, 115, 0.3);
-            border-radius: 12px;
-            text-align: center;
-            color: #fff;
-        `;
-        promoBlock.innerHTML = `
-            <h3 style="color: #d4a373; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: 1px;">HEAVY INDUSTRIAL MACHINERY & SPARES</h3>
-            <p style="color: #ccc; margin: 0; font-size: 0.95rem;">Engineered for high-capacity performance and industrial durability.</p>
-        `;
-        categoriesContainer.appendChild(promoBlock);
-    }
+    //     const promoBlock = document.createElement('div');
+    //     promoBlock.style.cssText = `
+    //         margin: 1.5rem 2rem;
+    //         padding: 2rem;
+    //         background: linear-gradient(135deg, #121616 0%, #0b4f37 100%);
+    //         border: 1px solid rgba(212, 163, 115, 0.3);
+    //         border-radius: 12px;
+    //         text-align: center;
+    //         color: #fff;
+    //     `;
+    //     promoBlock.innerHTML = `
+    //         <h3 style="color: #d4a373; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: 1px;">HEAVY INDUSTRIAL MACHINERY & SPARES</h3>
+    //         <p style="color: #ccc; margin: 0; font-size: 0.95rem;">Engineered for high-capacity performance and industrial durability.</p>
+    //     `;
+    //     categoriesContainer.appendChild(promoBlock);
+    // }
 
     // Query Products per Category Slider
     function loadProductsForCategory(categorySlug) {
