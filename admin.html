@@ -229,187 +229,251 @@
     </div>
 
     <script type="module">
-        import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
-        import { db } from "./firebase-config.js";
-        import { collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Cloudinary Configuration
-        const CLOUD_NAME = "w4tlz3yl";
-        const UPLOAD_PRESET = "cbm-preset";
+    // Cloudinary Configuration
+    const CLOUD_NAME = "w4tlz3yl";
+    const UPLOAD_PRESET = "cbm-preset";
 
-        // UI Element References
-        const authPanel = document.getElementById('auth-panel');
-        const dashboardPanel = document.getElementById('dashboard-panel');
-        const loginForm = document.getElementById('login-form');
-        const logoutBtn = document.getElementById('logout-btn');
-        const sectionSelector = document.getElementById('section-selector');
-        
-        const secProduct = document.getElementById('section-product-mgmt');
-        const secAccount = document.getElementById('section-account-mgmt');
-        
-        const prodCategorySelect = document.getElementById('prod-category-select');
-        const deleteCatSelect = document.getElementById('delete-cat-select');
-        const addCatBtn = document.getElementById('add-cat-btn');
-        const deleteCatBtn = document.getElementById('delete-cat-btn');
-        const addProductBtn = document.getElementById('add-product-btn');
-        const prodStatus = document.getElementById('prod-status');
+    // UI Element References
+    const authPanel = document.getElementById('auth-panel');
+    const dashboardPanel = document.getElementById('dashboard-panel');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const sectionSelector = document.getElementById('section-selector');
+    
+    const secProduct = document.getElementById('section-product-mgmt');
+    const secAccount = document.getElementById('section-account-mgmt');
+    
+    const prodCategorySelect = document.getElementById('prod-category-select');
+    const deleteCatSelect = document.getElementById('delete-cat-select');
+    const addCatBtn = document.getElementById('add-cat-btn');
+    const deleteCatBtn = document.getElementById('delete-cat-btn');
+    const addProductBtn = document.getElementById('add-product-btn');
+    const prodStatus = document.getElementById('prod-status');
 
-        // Toggle Sections via Dropdown
-        sectionSelector.addEventListener('change', (e) => {
-            if (e.target.value === 'product-mgmt') {
-                secProduct.classList.remove('hidden');
-                secAccount.classList.add('hidden');
-            } else {
-                secProduct.classList.add('hidden');
-                secAccount.classList.remove('hidden');
-            }
-        });
+    const liveProductsList = document.getElementById('live-products-list');
+    const productCountBadge = document.getElementById('product-count-badge');
 
-        // Auth State Handler
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                authPanel.classList.add('hidden');
-                dashboardPanel.classList.remove('hidden');
-                listenToCategories();
-            } else {
-                authPanel.classList.remove('hidden');
-                dashboardPanel.classList.add('hidden');
-            }
-        });
-
-        // Login Handler
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
-            } catch (err) {
-                document.getElementById('auth-status').innerText = "Login failed: " + err.message;
-            }
-        });
-
-        logoutBtn.addEventListener('click', () => signOut(auth));
-
-        // Realtime Category Sync (Default + Custom)
-        function listenToCategories() {
-            onSnapshot(collection(db, "categories"), (snapshot) => {
-                prodCategorySelect.innerHTML = `
-                    <option value="new-arrivals">New Arrivals</option>
-                    <option value="other-products">Other Products</option>
-                `;
-                deleteCatSelect.innerHTML = '';
-
-                snapshot.forEach((docSnap) => {
-                    const cat = docSnap.data();
-                    const catId = docSnap.id;
-
-                    if (catId !== 'new-arrivals' && catId !== 'other-products') {
-                        const opt = document.createElement('option');
-                        opt.value = catId;
-                        opt.textContent = cat.name;
-                        prodCategorySelect.appendChild(opt);
-
-                        const delOpt = document.createElement('option');
-                        delOpt.value = catId;
-                        delOpt.textContent = cat.name;
-                        deleteCatSelect.appendChild(delOpt);
-                    }
-                });
-            });
+    // Toggle Sections via Dropdown
+    sectionSelector.addEventListener('change', (e) => {
+        if (e.target.value === 'product-mgmt') {
+            secProduct.classList.remove('hidden');
+            secAccount.classList.add('hidden');
+        } else {
+            secProduct.classList.add('hidden');
+            secAccount.classList.remove('hidden');
         }
+    });
 
-        // Upload Direct File to Cloudinary
-        async function uploadImageToCloudinary(file) {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", UPLOAD_PRESET);
-
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: "POST",
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error("Image upload failed. Ensure upload preset is set to Unsigned.");
+    // Realtime Listener for Live Products & Deletion
+    function listenToProducts() {
+        onSnapshot(collection(db, "products"), (snapshot) => {
+            liveProductsList.innerHTML = '';
+            
+            if (productCountBadge) {
+                productCountBadge.textContent = `Total: ${snapshot.size}`;
             }
 
-            const data = await response.json();
-            return data.secure_url;
-        }
-
-        // Add Product Entry
-        addProductBtn.addEventListener('click', async () => {
-            const title = document.getElementById('prod-title').value.trim();
-            const price = document.getElementById('prod-price').value.trim();
-            const shortDesc = document.getElementById('prod-short-desc').value.trim();
-            const longDesc = document.getElementById('prod-long-desc').value;
-            const category = document.getElementById('prod-category-select').value;
-            const fileInput = document.getElementById('prod-file');
-
-            if (!title || !price || !fileInput.files[0]) {
-                prodStatus.innerText = "Error: Please fill in Title, Price, and select an Image file.";
+            if (snapshot.empty) {
+                liveProductsList.innerHTML = `<p style="color: #888; font-size: 0.85rem; text-align: center;">No live products found in database.</p>`;
                 return;
             }
 
-            prodStatus.innerText = "Uploading photo to Cloudinary...";
+            snapshot.forEach((docSnap) => {
+                const prod = docSnap.data();
+                const prodId = docSnap.id;
 
-            try {
-                const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+                const itemCard = document.createElement('div');
+                itemCard.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    background: #1a2020;
+                    border: 1px solid #0b4f37;
+                    border-radius: 4px;
+                    padding: 0.8rem;
+                    margin-bottom: 0.5rem;
+                `;
 
-                prodStatus.innerText = "Image uploaded! Saving product to database...";
+                itemCard.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <img src="${prod.imageUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                        <div>
+                            <div style="font-weight: bold; color: #fff; font-size: 0.9rem;">${prod.title}</div>
+                            <div style="color: #d4a373; font-size: 0.8rem;">৳ ${Number(prod.price).toLocaleString()} | Category: ${prod.category}</div>
+                        </div>
+                    </div>
+                    <button class="btn-industrial btn-danger delete-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Delete</button>
+                `;
 
-                await addDoc(collection(db, "products"), {
-                    title: title,
-                    price: Number(price),
-                    shortDescription: shortDesc,
-                    longDescription: longDesc,
-                    category: category,
-                    imageUrl: imageUrl,
-                    createdAt: serverTimestamp()
+                liveProductsList.appendChild(itemCard);
+            });
+
+            // Attach event listeners to all dynamic delete buttons
+            document.querySelectorAll('.delete-prod-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const idToDelete = e.target.getAttribute('data-id');
+                    if (confirm("Are you sure you want to permanently delete this product?")) {
+                        try {
+                            await deleteDoc(doc(db, "products", idToDelete));
+                            prodStatus.innerText = "Product deleted successfully!";
+                        } catch (err) {
+                            prodStatus.innerText = "Error deleting product: " + err.message;
+                        }
+                    }
                 });
+            });
+        });
+    }
 
-                prodStatus.innerText = "Success: Product successfully created and live!";
+    // Realtime Category Sync
+    function listenToCategories() {
+        onSnapshot(collection(db, "categories"), (snapshot) => {
+            prodCategorySelect.innerHTML = `
+                <option value="new-arrivals">New Arrivals</option>
+                <option value="other-products">Other Products</option>
+            `;
+            deleteCatSelect.innerHTML = '';
 
-                document.getElementById('prod-title').value = '';
-                document.getElementById('prod-price').value = '';
-                document.getElementById('prod-short-desc').value = '';
-                document.getElementById('prod-long-desc').value = '';
-                fileInput.value = '';
+            snapshot.forEach((docSnap) => {
+                const cat = docSnap.data();
+                const catId = docSnap.id;
 
-            } catch (err) {
-                prodStatus.innerText = "Deployment Error: " + err.message;
-            }
+                if (catId !== 'new-arrivals' && catId !== 'other-products') {
+                    const opt = document.createElement('option');
+                    opt.value = catId;
+                    opt.textContent = cat.name;
+                    prodCategorySelect.appendChild(opt);
+
+                    const delOpt = document.createElement('option');
+                    delOpt.value = catId;
+                    delOpt.textContent = cat.name;
+                    deleteCatSelect.appendChild(delOpt);
+                }
+            });
+        });
+    }
+
+    // Auth State Handler - Trigger listeners on login
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            authPanel.classList.add('hidden');
+            dashboardPanel.classList.remove('hidden');
+            listenToCategories();
+            listenToProducts(); // <--- This activates the Live Products catalog listener
+        } else {
+            authPanel.classList.remove('hidden');
+            dashboardPanel.classList.add('hidden');
+        }
+    });
+
+    // Login Handler
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+        } catch (err) {
+            document.getElementById('auth-status').innerText = "Login failed: " + err.message;
+        }
+    });
+
+    logoutBtn.addEventListener('click', () => signOut(auth));
+
+    // Upload Direct File to Cloudinary
+    async function uploadImageToCloudinary(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData
         });
 
-        // Add Custom Category Handler
-        addCatBtn.addEventListener('click', async () => {
-            const catName = document.getElementById('new-cat-name').value.trim();
-            if (!catName) return;
+        if (!response.ok) {
+            throw new Error("Image upload failed.");
+        }
 
-            const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            try {
-                await setDoc(doc(db, "categories", catSlug), {
-                    name: catName,
-                    createdAt: serverTimestamp()
-                });
-                document.getElementById('new-cat-name').value = '';
-                prodStatus.innerText = "Category added successfully!";
-            } catch (err) {
-                prodStatus.innerText = "Error adding category: " + err.message;
-            }
-        });
+        const data = await response.json();
+        return data.secure_url;
+    }
 
-        // Delete Category Handler
-        deleteCatBtn.addEventListener('click', async () => {
-            const selectedCat = deleteCatSelect.value;
-            if (!selectedCat) return;
+    // Add Product Entry
+    addProductBtn.addEventListener('click', async () => {
+        const title = document.getElementById('prod-title').value.trim();
+        const price = document.getElementById('prod-price').value.trim();
+        const shortDesc = document.getElementById('prod-short-desc').value.trim();
+        const longDesc = document.getElementById('prod-long-desc').value;
+        const category = document.getElementById('prod-category-select').value;
+        const fileInput = document.getElementById('prod-file');
 
-            try {
-                await deleteDoc(doc(db, "categories", selectedCat));
-                prodStatus.innerText = "Category deleted successfully!";
-            } catch (err) {
-                prodStatus.innerText = "Error deleting category: " + err.message;
-            }
-        });
-    </script>
-</body>
+        if (!title || !price || !fileInput.files[0]) {
+            prodStatus.innerText = "Error: Please fill in Title, Price, and select an Image file.";
+            return;
+        }
+
+        prodStatus.innerText = "Uploading photo to Cloudinary...";
+
+        try {
+            const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+
+            prodStatus.innerText = "Image uploaded! Saving product to database...";
+
+            await addDoc(collection(db, "products"), {
+                title: title,
+                price: Number(price),
+                shortDescription: shortDesc,
+                longDescription: longDesc,
+                category: category,
+                imageUrl: imageUrl,
+                createdAt: serverTimestamp()
+            });
+
+            prodStatus.innerText = "Success: Product successfully created and live!";
+
+            document.getElementById('prod-title').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-short-desc').value = '';
+            document.getElementById('prod-long-desc').value = '';
+            fileInput.value = '';
+
+        } catch (err) {
+            prodStatus.innerText = "Deployment Error: " + err.message;
+        }
+    });
+
+    // Add Custom Category Handler
+    addCatBtn.addEventListener('click', async () => {
+        const catName = document.getElementById('new-cat-name').value.trim();
+        if (!catName) return;
+
+        const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        try {
+            await setDoc(doc(db, "categories", catSlug), {
+                name: catName,
+                createdAt: serverTimestamp()
+            });
+            document.getElementById('new-cat-name').value = '';
+            prodStatus.innerText = "Category added successfully!";
+        } catch (err) {
+            prodStatus.innerText = "Error adding category: " + err.message;
+        }
+    });
+
+    // Delete Category Handler
+    deleteCatBtn.addEventListener('click', async () => {
+        const selectedCat = deleteCatSelect.value;
+        if (!selectedCat) return;
+
+        try {
+            await deleteDoc(doc(db, "categories", selectedCat));
+            prodStatus.innerText = "Category deleted successfully!";
+        } catch (err) {
+            prodStatus.innerText = "Error deleting category: " + err.message;
+        }
+    });
+</script>
 </html>
