@@ -322,3 +322,104 @@ body {
         background: rgba(11, 79, 55, 0.2);
     }
 }
+/* ==========================================
+   CLASSY INDUSTRIAL NAVBAR & DROPDOWN STYLES
+   ========================================== */
+
+/* Align navbar links and dropdown cleanly in a row */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.8rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure dropdown wrapper acts as a seamless nav item */
+.category-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Transform the button to match your navbar links */
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.3s ease;
+    outline: none;
+}
+
+/* Subtle gold hover state matching nav links */
+.nav-btn:hover,
+.nav-btn.active {
+    color: #d4a373;
+}
+
+/* Little dropdown arrow styling */
+.nav-btn::after {
+    content: '▾';
+    font-size: 0.75rem;
+    color: #d4a373;
+    transition: transform 0.3s ease;
+}
+
+.nav-btn.active::after {
+    transform: rotate(180deg);
+}
+
+/* Sleek Floating Dark Glass Menu */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    background: rgba(18, 22, 22, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212, 163, 115, 0.25);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    list-style: none;
+    padding: 0.5rem 0;
+    min-width: 210px;
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hidden state */
+.dropdown-menu.hidden {
+    display: none;
+}
+
+/* Menu items styling */
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 0.7rem 1.2rem;
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+/* Premium emerald hover effect inside the dropdown */
+.dropdown-menu li a:hover {
+    background: rgba(11, 79, 55, 0.6);
+    color: #d4a373;
+    padding-left: 1.5rem; /* Subtle glide effect on hover */
+}
