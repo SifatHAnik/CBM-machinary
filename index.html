@@ -6,7 +6,6 @@
     <title>CBM Machineries</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
 </head>
 <body>
 
@@ -14,49 +13,50 @@
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <!-- NAVBAR HEADER -->
-<header class="navbar-header" id="main-navbar">
-    <nav class="nav-container">
-        <!-- Brand Logo -->
-        <a href="index.html" class="brand-logo" id="nav-brand">
-            <span class="logo-bold">CBM</span>
-        </a>
+    <header class="navbar-header" id="main-navbar">
+        <nav class="nav-container">
+            <!-- Brand Logo -->
+            <a href="index.html" class="brand-logo" id="nav-brand">
+                <span class="logo-bold">CBM</span>
+            </a>
 
-        <!-- Mobile Hamburger Toggle -->
-        <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
-        <!-- Navigation Links -->
-        <div class="nav-menu-wrapper" id="nav-menu">
-            <button class="mobile-close" id="mobile-close" aria-label="Close menu">
-                <i class="fa-solid fa-xmark"></i>
+            <!-- Mobile Hamburger Toggle -->
+            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
             </button>
 
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active">Home</a></li>
-                <li><a href="#about" class="nav-link">About Us</a></li>
-                
-                <!-- Dynamic Dropdown -->
-                <div class="category-dropdown-wrapper">
-                    <button id="category-dropdown-btn" class="nav-btn">
-                        Product Categories
-                    </button>
-                    <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
-                </div>
+            <!-- Navigation Links -->
+            <div class="nav-menu-wrapper" id="nav-menu">
+                <button class="mobile-close" id="mobile-close" aria-label="Close menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
 
-                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link active">Home</a></li>
+                    <li><a href="#about" class="nav-link">About Us</a></li>
+                    
+                    <!-- Dynamic Dropdown -->
+                    <div class="category-dropdown-wrapper">
+                        <button id="category-dropdown-btn" class="nav-btn">
+                            Product Categories
+                        </button>
+                        <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
+                    </div>
 
-                <!-- White Cart Button with Badge -->
-                <li style="display: flex; align-items: center;">
-                    <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span id="cart-badge-count" class="cart-badge">0</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </nav>
-</header>
+                    <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+
+                    <!-- Cart Button with Badge -->
+                    <li style="display: flex; align-items: center;">
+                        <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span id="cart-badge-count" class="cart-badge">0</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
 
     <!-- HERO SECTION (Full Screen Video) -->
     <section class="hero-section" id="hero">
@@ -72,14 +72,61 @@
         </div>
     </section>
 
-    <!-- 1. NEW ARRIVALS CATEGORY CONTAINER -->
+    <!-- CATEGORIES CONTAINER (New Arrivals & Dynamic Categories injected via JS) -->
     <main id="categories-container" style="padding: 2rem 0; background-color: #0e1111;">
-        <!-- New Arrivals renders here automatically via script.js -->
+        <!-- Dynamic Category sliders and impact stats render here -->
     </main>
 
-    <!-- 3. REMAINING DYNAMIC CATEGORIES CONTAINER -->
+    <!-- REMAINING DYNAMIC CATEGORIES CONTAINER -->
     <section id="other-categories-container" style="padding: 2rem 0; background-color: #0e1111;">
-        <!-- Other Products & Custom Categories render here automatically via script.js -->
+        <!-- Other Products & Custom Categories render here -->
+    </section>
+
+    <!-- CUSTOMER REVIEWS & OPINIONS SECTION -->
+    <section id="reviews-section" class="reviews-section">
+        <div class="reviews-container">
+            <div class="reviews-header">
+                <h2>Client Opinions & Reviews</h2>
+                <p>Discover direct feedback from industry professionals relying on CBM Machineries.</p>
+            </div>
+
+            <!-- Glowing Cards Review Grid -->
+            <div id="reviews-grid" class="reviews-grid">
+                <p style="color: #8a9090; font-size: 0.9rem; grid-column: 1 / -1; text-align: center;">Loading opinions...</p>
+            </div>
+
+            <!-- Leave a Review Form -->
+            <div class="review-form-card">
+                <h3>Leave Your Opinion</h3>
+                <form id="review-form">
+                    <div class="form-group">
+                        <label for="review-name">Your Name / Organization</label>
+                        <input type="text" id="review-name" class="form-control" placeholder="e.g. Apex Industrial Solutions" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="star-rating-select" id="star-rating-select">
+                            <i class="fa-solid fa-star" data-rating="1"></i>
+                            <i class="fa-solid fa-star" data-rating="2"></i>
+                            <i class="fa-solid fa-star" data-rating="3"></i>
+                            <i class="fa-solid fa-star" data-rating="4"></i>
+                            <i class="fa-solid fa-star" data-rating="5"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review-comment">Your Review or Experience</label>
+                        <textarea id="review-comment" class="form-control" rows="4" placeholder="Share your experience working with CBM Machinery..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-action" style="background: var(--accent-gold); color: #0e1111; font-weight: 700;">
+                        Submit Review for Approval
+                    </button>
+                    <div id="review-form-msg" class="review-form-msg"></div>
+                </form>
+            </div>
+        </div>
     </section>
 
     <!-- SLIDE-OUT CART DRAWER & OVERLAY -->
@@ -96,7 +143,7 @@
                 <span id="cart-total-price">৳ 0</span>
             </div>
             <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp" style="margin-bottom: 0.75rem;">
-                Order Cart via WhatsApp
+                <i class="fa-brands fa-whatsapp" style="margin-right: 8px;"></i> Order Cart via WhatsApp
             </button>
             <button id="cart-bkash-btn" class="btn-action btn-bkash">
                 Checkout Cart via bKash
@@ -107,90 +154,32 @@
     <!-- CUSTOM BKASH MODAL INSTRUCTIONS BOX -->
     <div id="bkash-modal-overlay" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="margin: 0 0 0.5rem 0; color: #e2136e; font-size: 1.2rem;">bKash Direct Payment Instructions</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <h3 style="margin: 0; color: #e2136e; font-size: 1.2rem;">bKash Direct Payment</h3>
+                <button id="close-bkash-modal-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
             <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem;">Follow the simple steps below to process your transaction directly.</p>
 
-            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                 <div style="margin-bottom: 0.6rem; font-size: 0.9rem;">
                     <span style="color: #8a9090;">bKash Account:</span> 
-                    <strong id="bkash-modal-account" style="color: #fff; margin-left: 0.5rem;"></strong>
+                    <strong id="bkash-modal-account" style="color: #e2136e; font-size: 1.1rem; margin-left: 0.5rem;">01700000000</strong>
                 </div>
                 <div style="font-size: 0.9rem;">
                     <span style="color: #8a9090;">Total Amount:</span> 
-                    <strong id="bkash-modal-amount" style="color: #d4a373; margin-left: 0.5rem;"></strong>
+                    <strong id="bkash-modal-amount" style="color: #d4a373; font-size: 1.1rem; margin-left: 0.5rem;">৳ 0</strong>
                 </div>
             </div>
 
-            <div style="font-size: 0.88rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.85rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
                 1. Open your bKash Mobile App.<br>
                 2. Select <strong>Send Money</strong> or <strong>Merchant Pay</strong>.<br>
                 3. Send the total amount to the account listed above.<br>
-                4. Contact our support team with your transaction reference.
+                4. Contact our support team on WhatsApp with your Transaction ID.
             </div>
-
-            <button id="close-bkash-modal-btn" class="btn-action" style="background: #d4a373; color: #0d1111;">
-                I Understand / Done
-            </button>
         </div>
     </div>
-    
-<!-- CART SLIDE-OUT DRAWER -->
-<div class="cart-overlay" id="cart-overlay"></div>
 
-<div class="cart-drawer" id="cart-drawer">
-    <div class="cart-header">
-        <h3 style="color: #fff; margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">
-            Your Cart
-        </h3>
-        <button id="close-cart-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">
-            &times;
-        </button>
-    </div>
-
-    <div class="cart-items-list" id="cart-items-container">
-        <!-- Cart items injected dynamically via script.js -->
-    </div>
-
-    <div class="cart-footer">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <span style="color: #a0aab0; font-size: 0.9rem;">Total:</span>
-            <span id="cart-total-price" style="color: #d4a373; font-size: 1.2rem; font-weight: bold;">৳ 0</span>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp">
-                <i class="fa-brands fa-whatsapp" style="margin-right: 8px;"></i> Order via WhatsApp
-            </button>
-            <button id="cart-bkash-btn" class="btn-action btn-bkash">
-                Checkout via bKash
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- BKASH PAYMENT MODAL -->
-<div class="modal-overlay" id="bkash-modal-overlay">
-    <div class="modal-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-            <h3 style="color: #e2136e; margin: 0; font-size: 1.2rem;">bKash Payment Details</h3>
-            <button id="close-bkash-modal-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
-        </div>
-        <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">
-            Please send the total amount to the bKash Merchant / Personal number below:
-        </p>
-        <div style="background: #0d1111; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(226, 19, 110, 0.3);">
-            <div style="font-size: 0.85rem; color: #aaa;">bKash Account Number:</div>
-            <div id="bkash-modal-account" style="font-size: 1.3rem; font-weight: bold; color: #e2136e; letter-spacing: 1px; margin-top: 0.2rem;">01700000000</div>
-        </div>
-        <div style="background: #0d1111; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(212, 163, 115, 0.3);">
-            <div style="font-size: 0.85rem; color: #aaa;">Total Amount Due:</div>
-            <div id="bkash-modal-amount" style="font-size: 1.3rem; font-weight: bold; color: #d4a373; margin-top: 0.2rem;">৳ 0</div>
-        </div>
-        <p style="color: #888; font-size: 0.8rem; text-align: center;">
-            After completing payment, contact us on WhatsApp with your Transaction ID.
-        </p>
-    </div>
-</div>
     <!-- SINGLE SCRIPT SOURCE -->
     <script type="module" src="script.js"></script>
 </body>

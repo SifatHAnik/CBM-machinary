@@ -8,7 +8,9 @@ import {
     where, 
     onSnapshot, 
     doc, 
-    getDoc 
+    getDoc,
+    addDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ========================================================
@@ -16,6 +18,7 @@ import {
 // ========================================================
 let targetStats = { machines: 0, clients: 0, years: 0 };
 let hasAnimated = false;
+let selectedRating = 5; // Default star rating for review submit
 
 // UNIFIED LOCAL STORAGE KEY: Uses 'cart' to sync across all pages
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -290,6 +293,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await initStats();
     initCart();
     loadDynamicCategories();
+    initReviewsSection();
 });
 
 // Sync cart dynamically when user navigates back to index.html
@@ -471,7 +475,139 @@ function updateCartUI() {
 }
 
 // ========================================================
-// 5. HELPER FUNCTIONS & ANIMATION COUNTER
+// 5. CUSTOMER REVIEWS & OPINIONS SYSTEM
+// ========================================================
+function initReviewsSection() {
+    const reviewsGrid = document.getElementById('reviews-grid');
+    const reviewForm = document.getElementById('review-form');
+    const formMsg = document.getElementById('review-form-msg');
+    const starContainer = document.getElementById('star-rating-select');
+
+    // 1. Interactive Star Rating Picker
+    if (starContainer) {
+        const stars = starContainer.querySelectorAll('.fa-star');
+        const updateStarUI = (val) => {
+            stars.forEach((star) => {
+                const r = parseInt(star.getAttribute('data-rating'));
+                if (r <= val) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        };
+
+        // Default setup: 5 stars active
+        updateStarUI(5);
+
+        stars.forEach((star) => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.getAttribute('data-rating'));
+                updateStarUI(selectedRating);
+            });
+        });
+    }
+
+    // 2. Fetch & Render Approved Reviews in Real-Time
+    if (reviewsGrid) {
+        const qReviews = query(collection(db, "reviews"), where("approved", "==", true));
+        onSnapshot(qReviews, (snapshot) => {
+            reviewsGrid.innerHTML = '';
+
+            if (snapshot.empty) {
+                reviewsGrid.innerHTML = `
+                    <p style="color: #666; font-size: 0.9rem; grid-column: 1 / -1; text-align: center; font-style: italic;">
+                        No customer opinions submitted yet. Be the first to share your experience!
+                    </p>
+                `;
+                return;
+            }
+
+            snapshot.forEach((rDoc) => {
+                const data = rDoc.data();
+                const starsCount = Number(data.rating) || 5;
+
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= starsCount) {
+                        starsHtml += `<i class="fa-solid fa-star"></i> `;
+                    } else {
+                        starsHtml += `<i class="fa-regular fa-star" style="color: #444;"></i> `;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'review-card';
+                card.innerHTML = `
+                    <div class="card-stars">${starsHtml}</div>
+                    <div class="card-comment">"${escapeHtml(data.comment || '')}"</div>
+                    <div class="card-author">${escapeHtml(data.name || 'Anonymous Client')}</div>
+                `;
+
+                reviewsGrid.appendChild(card);
+            });
+        });
+    }
+
+    // 3. Review Submission Form Handler
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('review-name');
+            const commentInput = document.getElementById('review-comment');
+
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+            const commentVal = commentInput ? commentInput.value.trim() : '';
+
+            if (!nameVal || !commentVal) {
+                if (formMsg) {
+                    formMsg.className = 'review-form-msg error';
+                    formMsg.textContent = 'Please complete all required fields.';
+                }
+                return;
+            }
+
+            try {
+                if (formMsg) {
+                    formMsg.className = 'review-form-msg';
+                    formMsg.style.color = '#d4a373';
+                    formMsg.textContent = 'Submitting your opinion...';
+                }
+
+                await addDoc(collection(db, "reviews"), {
+                    name: nameVal,
+                    comment: commentVal,
+                    rating: selectedRating,
+                    approved: false, // Moderation gate: requires admin approval
+                    createdAt: serverTimestamp()
+                });
+
+                if (formMsg) {
+                    formMsg.className = 'review-form-msg success';
+                    formMsg.textContent = 'Thank you! Your opinion has been submitted for verification.';
+                }
+
+                reviewForm.reset();
+                selectedRating = 5;
+                if (starContainer) {
+                    const stars = starContainer.querySelectorAll('.fa-star');
+                    stars.forEach(s => s.classList.add('active'));
+                }
+
+            } catch (err) {
+                console.error("Error submitting review:", err);
+                if (formMsg) {
+                    formMsg.className = 'review-form-msg error';
+                    formMsg.textContent = 'Failed to send review. Please try again later.';
+                }
+            }
+        });
+    }
+}
+
+// ========================================================
+// 6. HELPER FUNCTIONS & ANIMATION COUNTER
 // ========================================================
 function escapeHtml(str) {
     return String(str)
