@@ -1,9 +1,9 @@
 import { db } from "./firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Business Phone for WhatsApp Orders
+// Business Phone for WhatsApp & bKash Orders
 const WHATSAPP_NUMBER = "8801700000000"; // Replace with client's phone number
-const BKASH_MERCHANT_NUMBER = "01700000000"; // Replace with client's bKash Personal/Merchant number
+const BKASH_ACCOUNT_NUMBER = "01700000000"; // Replace with client's bKash Personal/Merchant number
 
 let currentProduct = null;
 let cart = JSON.parse(localStorage.getItem('cbm_cart')) || [];
@@ -196,24 +196,42 @@ function closeCart() {
     document.getElementById('cart-overlay')?.classList.remove('active');
 }
 
-// --- BKASH CHECKOUT ENGINE ---
+// --- BKASH DIRECT CHECKOUT (OPTION B) ---
 
 function initiateBkashCheckout(amount, items) {
-    // If you have configured a server backend endpoint for bKash Tokenized PGW API:
-    // window.location.href = `/api/bkash-create-payment?amount=${amount}`;
+    if (amount <= 0) {
+        alert("Please select a valid item to proceed.");
+        return;
+    }
 
-    // Standard Direct Merchant Payment Validation Flow
-    const userTrxId = prompt(
-        `CBM Machineries - bKash Payment\n\n` +
-        `Total Amount: ৳ ${amount.toLocaleString()}\n` +
-        `Please Send Money / Merchant Pay to bKash Number: ${BKASH_MERCHANT_NUMBER}\n\n` +
-        `Enter your 10-digit bKash Transaction ID (TrxID) below to confirm order:`
-    );
+    const formattedAmount = Number(amount).toLocaleString();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    if (userTrxId && userTrxId.trim() !== "") {
-        alert(`Thank you! Your Transaction ID (${userTrxId}) has been received. Our support team will verify and contact you shortly.`);
-        cart = [];
-        saveAndUpdateCart();
-        closeCart();
+    if (isMobile) {
+        // Direct App Link for bKash
+        const bkashDeepLink = `bkash://payment?number=${BKASH_ACCOUNT_NUMBER}&amount=${amount}`;
+        
+        // Launch bKash app
+        window.location.href = bkashDeepLink;
+
+        // Fallback notice if the app does not auto-open on their device
+        setTimeout(() => {
+            alert(
+                `Direct bKash Payment\n\n` +
+                `Account Number: ${BKASH_ACCOUNT_NUMBER}\n` +
+                `Total Amount: ৳ ${formattedAmount}\n\n` +
+                `If your bKash app did not launch automatically, please send ৳ ${formattedAmount} directly to ${BKASH_ACCOUNT_NUMBER}.`
+            );
+        }, 1500);
+
+    } else {
+        // Desktop user display box
+        alert(
+            `CBM Machineries - Direct bKash Payment\n\n` +
+            `Please make a payment using your bKash Mobile App:\n\n` +
+            `• Target bKash Account: ${BKASH_ACCOUNT_NUMBER}\n` +
+            `• Total Amount: ৳ ${formattedAmount}\n\n` +
+            `Once the payment is completed, our team will process your order immediately.`
+        );
     }
 }
