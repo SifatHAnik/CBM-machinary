@@ -10,7 +10,8 @@
         .cart-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
             z-index: 999;
             opacity: 0; visibility: hidden;
             transition: all 0.3s ease;
@@ -25,114 +26,157 @@
             border-left: 1px solid rgba(212, 163, 115, 0.25);
             z-index: 1000;
             display: flex; flex-direction: column;
-            transition: right 0.3s ease;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-sizing: border-box;
         }
         .cart-drawer.open { right: 0; }
 
         .cart-header {
             padding: 1.2rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .cart-items-list {
-            flex: 1; overflow-y: auto; padding: 1.5rem;
-        }
+        .cart-items-list { flex: 1; overflow-y: auto; padding: 1.5rem; }
         .cart-item {
             display: flex; gap: 1rem; margin-bottom: 1.2rem;
             padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .cart-footer {
             padding: 1.5rem; background: #0d1111;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.08);
         }
+
+        /* Modernized Action Buttons (Classic Theme Alignment) */
         .btn-action {
-            display: block; width: 100%; text-align: center;
-            padding: 0.85rem; border-radius: 6px; font-weight: 600;
-            text-decoration: none; margin-bottom: 0.75rem;
-            border: none; cursor: pointer; transition: 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 100%; text-align: center;
+            padding: 0.95rem 1.2rem; border-radius: 8px; 
+            font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px;
+            text-transform: uppercase; text-decoration: none; 
+            border: 1px solid transparent; cursor: pointer; 
+            transition: all 0.25s ease; box-sizing: border-box;
         }
-        .btn-whatsapp { background: #25D366; color: #fff; }
-        .btn-bkash { background: #e2136e; color: #fff; }
-        .btn-add-cart { background: #d4a373; color: #0d1111; margin-bottom: 2rem; }
+
+        .btn-add-cart { 
+            background: #d4a373; color: #0d1111; 
+            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.15);
+        }
+        .btn-add-cart:hover { background: #e0b080; }
+
+        .btn-whatsapp { 
+            background: rgba(37, 211, 102, 0.1); 
+            color: #25D366; 
+            border-color: rgba(37, 211, 102, 0.3);
+        }
+        .btn-whatsapp:hover { background: rgba(37, 211, 102, 0.2); }
+
+        .btn-bkash { 
+            background: rgba(226, 19, 110, 0.1); 
+            color: #e2136e; 
+            border-color: rgba(226, 19, 110, 0.3);
+        }
+        .btn-bkash:hover { background: rgba(226, 19, 110, 0.2); }
 
         /* Nav Cart Icon Badge */
         .cart-nav-btn {
             position: relative; background: transparent; border: none;
-            color: #d4a373; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center;
+            color: #d4a373; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center;
         }
         .cart-badge {
             position: absolute; top: -6px; right: -10px;
             background: #e2136e; color: #fff; border-radius: 50%;
-            font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px;
+            font-size: 0.65rem; font-weight: bold; width: 18px; height: 18px;
             display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Custom bKash Payment Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 1100; opacity: 0; visibility: hidden;
+            transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: #161b1c; border: 1px solid rgba(212, 163, 115, 0.3);
+            border-radius: 12px; width: 100%; max-width: 480px; padding: 2rem;
+            color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Responsive Mobile Mechanics */
+        @media (max-width: 768px) {
+            .product-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; padding: 1.2rem !important; }
+            .product-image-box { height: 260px !important; }
+            .product-title-text { font-size: 1.5rem !important; }
+            .product-price-text { font-size: 1.4rem !important; }
+            main { margin-top: 15px !important; padding: 0 0.8rem !important; }
         }
     </style>
 </head>
 <body style="background-color: #0d1111; color: #fff; min-height: 100vh;">
 
     <!-- Navbar Container -->
-    <nav id="main-navbar" class="scrolled" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #121616; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1100px; margin: 0 auto;">
-            <a href="index.html" class="logo" style="color: #fff; text-decoration: none; font-size: 1.3rem; font-weight: bold;">CBM Machineries</a>
+    <nav id="main-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #121616; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1100px; margin: 0 auto;">
+            <a href="index.html" style="color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.5px;">CBM Machineries</a>
             
             <div style="display: flex; align-items: center; gap: 1.2rem;">
-                <!-- Cart Icon Button -->
                 <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
-                    🛒
+                    CART
                     <span id="cart-badge-count" class="cart-badge">0</span>
                 </button>
-                <a href="index.html" class="nav-link" style="color: #d4a373; text-decoration: none; font-size: 0.9rem;">← Back to Shop</a>
+                <a href="index.html" style="color: #d4a373; text-decoration: none; font-size: 0.85rem; font-weight: 500;">Back to Catalog</a>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main style="max-width: 1100px; margin: 40px auto 3rem; padding: 0 1.5rem;">
+    <main style="max-width: 1100px; margin: 30px auto 3rem; padding: 0 1.5rem;">
         
-        <!-- Loading State -->
-        <div id="loading-spinner" style="text-align: center; padding: 4rem; color: #d4a373; font-size: 1.2rem;">
-            Loading product specifications...
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" style="text-align: center; padding: 4rem; color: #d4a373; font-size: 1rem; letter-spacing: 1px;">
+            Loading product specs...
         </div>
 
         <!-- Product Card Layout -->
-        <div id="product-detail-card" style="display: none; background: #121616; border: 1px solid rgba(212, 163, 115, 0.25); border-radius: 12px; overflow: hidden;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; padding: 2.5rem;">
+        <div id="product-detail-card" style="display: none; background: #121616; border: 1px solid rgba(212, 163, 115, 0.2); border-radius: 12px; overflow: hidden;">
+            <div class="product-grid" style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 2.5rem; padding: 2.5rem;">
                 
-                <!-- Product Image -->
-                <div style="background: #000; border-radius: 8px; overflow: hidden; height: 380px; border: 1px solid rgba(255,255,255,0.05);">
+                <!-- Product Image Box -->
+                <div class="product-image-box" style="background: #080a0a; border-radius: 8px; overflow: hidden; height: 380px; border: 1px solid rgba(255,255,255,0.05);">
                     <img id="product-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
 
                 <!-- Product Details Column -->
                 <div style="display: flex; flex-direction: column;">
-                    <span id="product-category" style="color: #0b4f37; background: rgba(11, 79, 55, 0.2); border: 1px solid #0b4f37; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px; padding: 0.3rem 0.8rem; border-radius: 4px; width: fit-content; margin-bottom: 1rem;"></span>
+                    <span id="product-category" style="color: #d4a373; background: rgba(212, 163, 115, 0.1); border: 1px solid rgba(212, 163, 115, 0.2); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1.5px; padding: 0.3rem 0.8rem; border-radius: 4px; width: fit-content; margin-bottom: 0.8rem;"></span>
                     
-                    <h1 id="product-title" style="font-size: 2rem; color: #fff; margin: 0 0 0.8rem 0; font-weight: 600;"></h1>
+                    <h1 id="product-title" class="product-title-text" style="font-size: 1.8rem; color: #fff; margin: 0 0 0.8rem 0; font-weight: 600; line-height: 1.3;"></h1>
                     
-                    <p id="product-short-desc" style="color: #ccc; font-size: 1rem; line-height: 1.6; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;"></p>
+                    <p id="product-short-desc" style="color: #a0a5a5; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;"></p>
 
                     <!-- Price Tag -->
-                    <div id="product-price" style="font-size: 1.8rem; color: #d4a373; font-weight: bold; margin-bottom: 1rem;"></div>
+                    <div id="product-price" class="product-price-text" style="font-size: 1.7rem; color: #d4a373; font-weight: bold; margin-bottom: 1.2rem;"></div>
                     
                     <!-- Add to Cart Button -->
-                    <button id="add-to-cart-btn" class="btn-action btn-add-cart">
-                        ➕ ADD TO CART
+                    <button id="add-to-cart-btn" class="btn-action btn-add-cart" style="margin-bottom: 1.8rem;">
+                        Add to Cart
                     </button>
 
                     <!-- Detailed Description -->
                     <div style="margin-bottom: 2rem;">
-                        <h3 style="color: #d4a373; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Detailed Description</h3>
-                        <p id="product-full-desc" style="color: #999; font-size: 0.9rem; line-height: 1.7; white-space: pre-line;"></p>
+                        <h3 style="color: #d4a373; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Product Specifications</h3>
+                        <p id="product-full-desc" style="color: #8a9090; font-size: 0.9rem; line-height: 1.7; white-space: pre-line; margin: 0;"></p>
                     </div>
 
-                    <!-- Dual Direct Action Buttons -->
-                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <!-- Action Buttons -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                         <a id="direct-whatsapp-btn" href="#" target="_blank" class="btn-action btn-whatsapp">
-                            💬 ORDER THIS PRODUCT ON WHATSAPP
+                            Order via WhatsApp
                         </a>
                         <button id="direct-bkash-btn" class="btn-action btn-bkash">
-                            💳 CHECK OUT VIA BKASH
+                            Checkout via bKash
                         </button>
                     </div>
                 </div>
@@ -145,22 +189,51 @@
     <div id="cart-overlay" class="cart-overlay"></div>
     <div id="cart-drawer" class="cart-drawer">
         <div class="cart-header">
-            <h3 style="margin: 0; color: #fff; font-size: 1.1rem;">Your Machinery Cart</h3>
-            <button id="close-cart-btn" style="background: none; border: none; color: #999; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h3 style="margin: 0; color: #fff; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Selected Machinery</h3>
+            <button id="close-cart-btn" style="background: none; border: none; color: #8a9090; font-size: 1.5rem; cursor: pointer;">&times;</button>
         </div>
-        <div id="cart-items-container" class="cart-items-list">
-            <!-- Dynamic Cart Items Injected Here -->
-        </div>
+        <div id="cart-items-container" class="cart-items-list"></div>
         <div class="cart-footer">
-            <div style="display: flex; justify-content: space-between; color: #fff; margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem;">
+            <div style="display: flex; justify-content: space-between; color: #fff; margin-bottom: 1.2rem; font-weight: bold; font-size: 1rem;">
                 <span>Total:</span>
                 <span id="cart-total-price">৳ 0</span>
             </div>
-            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp">
-                💬 ORDER ALL IN CART VIA WHATSAPP
+            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp" style="margin-bottom: 0.75rem;">
+                Order Cart via WhatsApp
             </button>
             <button id="cart-bkash-btn" class="btn-action btn-bkash">
-                💳 CHECK OUT ALL VIA BKASH
+                Checkout Cart via bKash
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom bKash Instructions Modal Box -->
+    <div id="bkash-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin: 0 0 0.5rem 0; color: #e2136e; font-size: 1.2rem;">bKash Direct Payment Instructions</h3>
+            <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem;">Follow the simple steps below to process your transaction directly.</p>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <div style="margin-bottom: 0.6rem; font-size: 0.9rem;">
+                    <span style="color: #8a9090;">bKash Account:</span> 
+                    <strong id="bkash-modal-account" style="color: #fff; margin-left: 0.5rem;"></strong>
+                </div>
+                <div style="font-size: 0.9rem;">
+                    <span style="color: #8a9090;">Total Amount:</span> 
+                    <strong id="bkash-modal-amount" style="color: #d4a373; margin-left: 0.5rem;"></strong>
+                </div>
+            </div>
+
+            <!-- CUSTOMIZABLE INSTRUCTION MESSAGE AREA -->
+            <div style="font-size: 0.88rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
+                1. Open your bKash Mobile App.<br>
+                2. Select <strong>Send Money</strong> or <strong>Merchant Pay</strong>.<br>
+                3. Send the total amount to the account listed above.<br>
+                4. Contact our support team with your transaction reference.
+            </div>
+
+            <button id="close-bkash-modal-btn" class="btn-action btn-add-cart">
+                I Understand / Done
             </button>
         </div>
     </div>

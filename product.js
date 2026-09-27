@@ -1,15 +1,16 @@
 import { db } from "./firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Business Phone for WhatsApp & bKash Orders
-const WHATSAPP_NUMBER = "8801700000000"; // Replace with client's phone number
-const BKASH_ACCOUNT_NUMBER = "01700000000"; // Replace with client's bKash Personal/Merchant number
+// Business Phone Numbers
+const WHATSAPP_NUMBER = "8801700000000"; 
+const BKASH_ACCOUNT_NUMBER = "01700000000"; 
 
 let currentProduct = null;
 let cart = JSON.parse(localStorage.getItem('cbm_cart')) || [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     setupCartDrawerUI();
+    setupBkashModal();
     updateCartUI();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -38,12 +39,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('product-img').src = currentProduct.imageUrl || '';
         document.getElementById('product-img').alt = currentProduct.title || 'Product Image';
         document.getElementById('product-title').textContent = currentProduct.title || 'Untitled Product';
-        document.getElementById('product-category').textContent = currentProduct.category || 'General';
+        document.getElementById('product-category').textContent = currentProduct.category || 'Machinery';
         document.getElementById('product-price').textContent = `৳ ${Number(currentProduct.price || 0).toLocaleString()}`;
         document.getElementById('product-short-desc').textContent = currentProduct.shortDescription || '';
         
         document.getElementById('product-full-desc').textContent = 
-            currentProduct.longDescription || currentProduct.detailedDescription || currentProduct.description || currentProduct.fullDescription || currentProduct.shortDescription || 'No additional specifications listed.';
+            currentProduct.longDescription || currentProduct.detailedDescription || currentProduct.description || currentProduct.shortDescription || 'No detailed specifications available.';
         
         // Single Product Direct WhatsApp Order
         const directWaBtn = document.getElementById('direct-whatsapp-btn');
@@ -55,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Single Product Direct bKash Checkout
         const directBkashBtn = document.getElementById('direct-bkash-btn');
         if (directBkashBtn) {
-            directBkashBtn.addEventListener('click', () => initiateBkashCheckout(currentProduct.price || 0, [currentProduct]));
+            directBkashBtn.addEventListener('click', () => showBkashModal(currentProduct.price || 0));
         }
 
         // Add To Cart Event
@@ -76,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// --- CART STATE MANAGEMENT ---
+// --- CART MANAGEMENT ---
 
 function addToCart(product) {
     const existingIndex = cart.findIndex(item => item.id === product.id);
@@ -124,20 +125,20 @@ function updateCartUI() {
     if (!container) return;
 
     if (cart.length === 0) {
-        container.innerHTML = `<p style="color: #888; text-align: center; padding: 2rem;">Your cart is empty.</p>`;
+        container.innerHTML = `<p style="color: #8a9090; text-align: center; padding: 2rem; font-size: 0.9rem;">Your cart is empty.</p>`;
         return;
     }
 
     container.innerHTML = cart.map(item => `
         <div class="cart-item">
-            <img src="${item.imageUrl || ''}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+            <img src="${item.imageUrl || ''}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">
             <div style="flex: 1;">
-                <div style="color: #fff; font-size: 0.9rem; font-weight: 600;">${item.title}</div>
-                <div style="color: #d4a373; font-size: 0.85rem; margin-top: 0.2rem;">৳ ${item.price.toLocaleString()}</div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                    <button onclick="window.adjustCartQty('${item.id}', -1)" style="background: #222; border: 1px solid #444; color: #fff; width: 24px; height: 24px; border-radius: 4px; cursor: pointer;">-</button>
-                    <span style="font-size: 0.85rem; color: #fff;">${item.qty}</span>
-                    <button onclick="window.adjustCartQty('${item.id}', 1)" style="background: #222; border: 1px solid #444; color: #fff; width: 24px; height: 24px; border-radius: 4px; cursor: pointer;">+</button>
+                <div style="color: #fff; font-size: 0.85rem; font-weight: 600;">${item.title}</div>
+                <div style="color: #d4a373; font-size: 0.8rem; margin-top: 0.2rem;">৳ ${item.price.toLocaleString()}</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
+                    <button onclick="window.adjustCartQty('${item.id}', -1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">-</button>
+                    <span style="font-size: 0.8rem; color: #fff;">${item.qty}</span>
+                    <button onclick="window.adjustCartQty('${item.id}', 1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">+</button>
                 </div>
             </div>
         </div>
@@ -162,8 +163,7 @@ function setupCartDrawerUI() {
     if (cartWaBtn) {
         cartWaBtn.addEventListener('click', () => {
             if (cart.length === 0) return alert('Your cart is empty.');
-            
-            let message = "Hello CBM Machineries, I would like to order the following items from my cart:\n\n";
+            let message = "Hello CBM Machineries, I would like to order the following items:\n\n";
             let grandTotal = 0;
 
             cart.forEach((item, index) => {
@@ -172,7 +172,7 @@ function setupCartDrawerUI() {
                 message += `${index + 1}. ${item.title} x ${item.qty} = ৳${subtotal.toLocaleString()}\n`;
             });
 
-            message += `\nTotal Payable Amount: ৳${grandTotal.toLocaleString()}`;
+            message += `\nTotal Amount: ৳${grandTotal.toLocaleString()}`;
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
         });
     }
@@ -181,7 +181,7 @@ function setupCartDrawerUI() {
         cartBkashBtn.addEventListener('click', () => {
             if (cart.length === 0) return alert('Your cart is empty.');
             const grandTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-            initiateBkashCheckout(grandTotal, cart);
+            showBkashModal(grandTotal);
         });
     }
 }
@@ -196,42 +196,31 @@ function closeCart() {
     document.getElementById('cart-overlay')?.classList.remove('active');
 }
 
-// --- BKASH DIRECT CHECKOUT (OPTION B) ---
+// --- BKASH MODAL CONTROL ---
 
-function initiateBkashCheckout(amount, items) {
-    if (amount <= 0) {
-        alert("Please select a valid item to proceed.");
-        return;
+function setupBkashModal() {
+    const closeBtn = document.getElementById('close-bkash-modal-btn');
+    const overlay = document.getElementById('bkash-modal-overlay');
+
+    if (closeBtn) closeBtn.addEventListener('click', hideBkashModal);
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) hideBkashModal();
+        });
     }
+}
 
-    const formattedAmount = Number(amount).toLocaleString();
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+function showBkashModal(amount) {
+    const overlay = document.getElementById('bkash-modal-overlay');
+    const accountEl = document.getElementById('bkash-modal-account');
+    const amountEl = document.getElementById('bkash-modal-amount');
 
-    if (isMobile) {
-        // Direct App Link for bKash
-        const bkashDeepLink = `bkash://payment?number=${BKASH_ACCOUNT_NUMBER}&amount=${amount}`;
-        
-        // Launch bKash app
-        window.location.href = bkashDeepLink;
+    if (accountEl) accountEl.textContent = BKASH_ACCOUNT_NUMBER;
+    if (amountEl) amountEl.textContent = `৳ ${Number(amount).toLocaleString()}`;
+    if (overlay) overlay.classList.add('active');
+}
 
-        // Fallback notice if the app does not auto-open on their device
-        setTimeout(() => {
-            alert(
-                `Direct bKash Payment\n\n` +
-                `Account Number: ${BKASH_ACCOUNT_NUMBER}\n` +
-                `Total Amount: ৳ ${formattedAmount}\n\n` +
-                `If your bKash app did not launch automatically, please send ৳ ${formattedAmount} directly to ${BKASH_ACCOUNT_NUMBER}.`
-            );
-        }, 1500);
-
-    } else {
-        // Desktop user display box
-        alert(
-            `CBM Machineries - Direct bKash Payment\n\n` +
-            `Please make a payment using your bKash Mobile App:\n\n` +
-            `• Target bKash Account: ${BKASH_ACCOUNT_NUMBER}\n` +
-            `• Total Amount: ৳ ${formattedAmount}\n\n` +
-            `Once the payment is completed, our team will process your order immediately.`
-        );
-    }
+function hideBkashModal() {
+    const overlay = document.getElementById('bkash-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
 }
