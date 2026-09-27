@@ -5,19 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - CBM Machineries</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Cart Slide-out Drawer Styles */
+        .cart-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .cart-overlay.active { opacity: 1; visibility: visible; }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0; right: -420px;
+            width: 100%; max-width: 400px; height: 100%;
+            background: #121616;
+            border-left: 1px solid rgba(212, 163, 115, 0.25);
+            z-index: 1000;
+            display: flex; flex-direction: column;
+            transition: right 0.3s ease;
+            box-sizing: border-box;
+        }
+        .cart-drawer.open { right: 0; }
+
+        .cart-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cart-items-list {
+            flex: 1; overflow-y: auto; padding: 1.5rem;
+        }
+        .cart-item {
+            display: flex; gap: 1rem; margin-bottom: 1.2rem;
+            padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .cart-footer {
+            padding: 1.5rem; background: #0d1111;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-action {
+            display: block; width: 100%; text-align: center;
+            padding: 0.85rem; border-radius: 6px; font-weight: 600;
+            text-decoration: none; margin-bottom: 0.75rem;
+            border: none; cursor: pointer; transition: 0.2s ease;
+        }
+        .btn-whatsapp { background: #25D366; color: #fff; }
+        .btn-bkash { background: #e2136e; color: #fff; }
+        .btn-add-cart { background: #d4a373; color: #0d1111; margin-bottom: 2rem; }
+
+        /* Nav Cart Icon Badge */
+        .cart-nav-btn {
+            position: relative; background: transparent; border: none;
+            color: #d4a373; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center;
+        }
+        .cart-badge {
+            position: absolute; top: -6px; right: -10px;
+            background: #e2136e; color: #fff; border-radius: 50%;
+            font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
 </head>
 <body style="background-color: #0d1111; color: #fff; min-height: 100vh;">
 
     <!-- Navbar Container -->
-    <nav id="main-navbar" class="scrolled">
-        <div class="nav-container">
-            <a href="index.html" class="logo">CBM Machineries</a>
-            <a href="index.html" class="nav-link" style="color: #d4a373;">← Back to Shop</a>
+    <nav id="main-navbar" class="scrolled" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #121616; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1100px; margin: 0 auto;">
+            <a href="index.html" class="logo" style="color: #fff; text-decoration: none; font-size: 1.3rem; font-weight: bold;">CBM Machineries</a>
+            
+            <div style="display: flex; align-items: center; gap: 1.2rem;">
+                <!-- Cart Icon Button -->
+                <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
+                    🛒
+                    <span id="cart-badge-count" class="cart-badge">0</span>
+                </button>
+                <a href="index.html" class="nav-link" style="color: #d4a373; text-decoration: none; font-size: 0.9rem;">← Back to Shop</a>
+            </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main style="max-width: 1100px; margin: 120px auto 3rem; padding: 0 1.5rem;">
+    <main style="max-width: 1100px; margin: 40px auto 3rem; padding: 0 1.5rem;">
         
         <!-- Loading State -->
         <div id="loading-spinner" style="text-align: center; padding: 4rem; color: #d4a373; font-size: 1.2rem;">
@@ -34,29 +105,65 @@
                 </div>
 
                 <!-- Product Details Column -->
-                <div style="display: flex; flex-direction: column; justify-content: center;">
+                <div style="display: flex; flex-direction: column;">
                     <span id="product-category" style="color: #0b4f37; background: rgba(11, 79, 55, 0.2); border: 1px solid #0b4f37; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px; padding: 0.3rem 0.8rem; border-radius: 4px; width: fit-content; margin-bottom: 1rem;"></span>
                     
                     <h1 id="product-title" style="font-size: 2rem; color: #fff; margin: 0 0 0.8rem 0; font-weight: 600;"></h1>
                     
-                    <div id="product-price" style="font-size: 1.8rem; color: #d4a373; font-weight: bold; margin-bottom: 1.5rem;"></div>
+                    <p id="product-short-desc" style="color: #ccc; font-size: 1rem; line-height: 1.6; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;"></p>
+
+                    <!-- Price Tag -->
+                    <div id="product-price" style="font-size: 1.8rem; color: #d4a373; font-weight: bold; margin-bottom: 1rem;"></div>
                     
-                    <p id="product-short-desc" style="color: #ccc; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem;"></p>
-                    
+                    <!-- Add to Cart Button -->
+                    <button id="add-to-cart-btn" class="btn-action btn-add-cart">
+                        ➕ ADD TO CART
+                    </button>
+
+                    <!-- Detailed Description -->
                     <div style="margin-bottom: 2rem;">
                         <h3 style="color: #d4a373; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Detailed Description</h3>
                         <p id="product-full-desc" style="color: #999; font-size: 0.9rem; line-height: 1.7; white-space: pre-line;"></p>
                     </div>
 
-                    <!-- Inquiry Button -->
-                    <a id="inquire-btn" href="#" target="_blank" style="display: inline-block; text-align: center; background: #0b4f37; color: #fff; text-decoration: none; padding: 0.9rem 1.8rem; border-radius: 6px; font-weight: 600; letter-spacing: 1px; transition: background 0.3s ease;">
-                        INQUIRE ABOUT THIS MACHINE
-                    </a>
+                    <!-- Dual Direct Action Buttons -->
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <a id="direct-whatsapp-btn" href="#" target="_blank" class="btn-action btn-whatsapp">
+                            💬 ORDER THIS PRODUCT ON WHATSAPP
+                        </a>
+                        <button id="direct-bkash-btn" class="btn-action btn-bkash">
+                            💳 CHECK OUT VIA BKASH
+                        </button>
+                    </div>
                 </div>
 
             </div>
         </div>
     </main>
+
+    <!-- Slide-out Cart Drawer -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header">
+            <h3 style="margin: 0; color: #fff; font-size: 1.1rem;">Your Machinery Cart</h3>
+            <button id="close-cart-btn" style="background: none; border: none; color: #999; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div id="cart-items-container" class="cart-items-list">
+            <!-- Dynamic Cart Items Injected Here -->
+        </div>
+        <div class="cart-footer">
+            <div style="display: flex; justify-content: space-between; color: #fff; margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem;">
+                <span>Total:</span>
+                <span id="cart-total-price">৳ 0</span>
+            </div>
+            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp">
+                💬 ORDER ALL IN CART VIA WHATSAPP
+            </button>
+            <button id="cart-bkash-btn" class="btn-action btn-bkash">
+                💳 CHECK OUT ALL VIA BKASH
+            </button>
+        </div>
+    </div>
 
     <script type="module" src="product.js"></script>
 </body>
