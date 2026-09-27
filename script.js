@@ -16,6 +16,7 @@ import {
 // ========================================================
 let targetStats = { machines: 0, clients: 0, years: 0 };
 let hasAnimated = false;
+let cart = JSON.parse(localStorage.getItem('cbm_cart')) || [];
 
 // ========================================================
 // 3. MAIN INITIALIZATION
@@ -89,8 +90,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ----------------------------------------------------
     // Real-time Category Loader & Dropdown Sync
     // ----------------------------------------------------
-// 4. Real-time Category Loader & Dropdown Sync
-// Real-time Category Loader with Stats Bar Injection
     function loadDynamicCategories() {
         onSnapshot(collection(db, "categories"), (catSnapshot) => {
             if (categoriesContainer) categoriesContainer.innerHTML = '';
@@ -129,7 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // 2. Second, inject the Stats Section directly after New Arrivals
             renderStatsSectionBlock();
 
-            // 3. Third, render HELLO & all future dynamic categories below stats
+            // 3. Third, render middle categories below stats
             middleCategories.forEach(cat => renderCategorySection(cat));
 
             // 4. Finally, render Other Products at the end
@@ -183,14 +182,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                         animateCounter('stat-years-display', targetStats.years, "%");
                     }
                 });
-            }, { threshold: 0.5 }); // Triggers when 50% of section is actually visible
+            }, { threshold: 0.5 });
 
             statsObserver.observe(statsEl);
         }
     }
 
-    // Updated Helper to target specific container
-function renderCategorySection(cat) {
+    // Category Sections & Dropdown Links Helper
+    function renderCategorySection(cat) {
         if (!categoriesContainer) return;
 
         if (navCategoryDropdown) {
@@ -225,72 +224,6 @@ function renderCategorySection(cat) {
         categoriesContainer.appendChild(section);
         loadProductsForCategory(cat.id);
     }
-
-    // Helper: Category Sections & Dropdown Links
-    function renderCategorySection(cat) {
-        if (navCategoryDropdown) {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = `#category-${cat.id}`;
-            a.textContent = cat.name;
-            a.style.cssText = `
-                display: block;
-                padding: 0.6rem 1rem;
-                color: #fff;
-                text-decoration: none;
-                transition: background 0.2s ease;
-            `;
-            a.addEventListener('mouseenter', () => a.style.background = '#0b4f37');
-            a.addEventListener('mouseleave', () => a.style.background = 'transparent');
-            
-            a.addEventListener('click', () => {
-                navCategoryDropdown.classList.add('hidden');
-                if (dropdownBtn) dropdownBtn.classList.remove('active');
-            });
-
-            li.appendChild(a);
-            navCategoryDropdown.appendChild(li);
-        }
-
-        if (categoriesContainer) {
-            const section = document.createElement('section');
-            section.id = `category-${cat.id}`;
-            section.style.cssText = `padding: 2rem; margin-bottom: 1rem; scroll-margin-top: 90px;`;
-            
-            section.innerHTML = `
-                <h2 style="color: #d4a373; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 1.2rem; border-left: 4px solid #0b4f37; padding-left: 0.8rem;">
-                    ${escapeHtml(cat.name)}
-                </h2>
-                <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
-                    <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
-                </div>
-            `;
-
-            categoriesContainer.appendChild(section);
-            loadProductsForCategory(cat.id);
-        }
-    }
-
-    // Helper: Promo Block
-    // function renderCustomContentBlock() {
-    //     if (!categoriesContainer) return;
-
-    //     const promoBlock = document.createElement('div');
-    //     promoBlock.style.cssText = `
-    //         margin: 1.5rem 2rem;
-    //         padding: 2rem;
-    //         background: linear-gradient(135deg, #121616 0%, #0b4f37 100%);
-    //         border: 1px solid rgba(212, 163, 115, 0.3);
-    //         border-radius: 12px;
-    //         text-align: center;
-    //         color: #fff;
-    //     `;
-    //     promoBlock.innerHTML = `
-    //         <h3 style="color: #d4a373; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: 1px;">HEAVY INDUSTRIAL MACHINERY & SPARES</h3>
-    //         <p style="color: #ccc; margin: 0; font-size: 0.95rem;">Engineered for high-capacity performance and industrial durability.</p>
-    //     `;
-    //     categoriesContainer.appendChild(promoBlock);
-    // }
 
     // Query Products per Category Slider
     function loadProductsForCategory(categorySlug) {
@@ -351,19 +284,185 @@ function renderCategorySection(cat) {
         });
     }
 
-    // ----------------------------------------------------
-    // Initialize Stats Observer
-    // ----------------------------------------------------
+    // Initializations
     await initStats();
-    const statsSection = document.getElementById('impact-stats-section');
-    if (statsSection) observer.observe(statsSection);
-
-    // Initialize category loading
+    initCart();
     loadDynamicCategories();
 });
 
 // ========================================================
-// 4. HELPER FUNCTIONS & ANIMATION COUNTER
+// 4. CART & DRAWER FUNCTIONALITY
+// ========================================================
+function initCart() {
+    const cartBtn = document.getElementById('nav-cart-btn');
+    const closeCartBtn = document.getElementById('close-cart-btn');
+    const cartDrawer = document.getElementById('cart-drawer');
+    const cartOverlay = document.getElementById('cart-overlay');
+    const bkashModalOverlay = document.getElementById('bkash-modal-overlay');
+    const closeBkashModalBtn = document.getElementById('close-bkash-modal-btn');
+    const cartWhatsappBtn = document.getElementById('cart-whatsapp-btn');
+    const cartBkashBtn = document.getElementById('cart-bkash-btn');
+
+    const openCart = () => {
+        if (cartDrawer) cartDrawer.classList.add('open');
+        if (cartOverlay) cartOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeCart = () => {
+        if (cartDrawer) cartDrawer.classList.remove('open');
+        if (cartOverlay) cartOverlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    if (cartBtn) cartBtn.addEventListener('click', openCart);
+    if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
+    if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
+
+    if (closeBkashModalBtn && bkashModalOverlay) {
+        closeBkashModalBtn.addEventListener('click', () => {
+            bkashModalOverlay.classList.remove('active');
+        });
+    }
+
+    if (cartWhatsappBtn) {
+        cartWhatsappBtn.addEventListener('click', async () => {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            let phone = "8801700000000"; // Default phone number fallback
+            try {
+                const statsSnap = await getDoc(doc(db, "site_stats", "global"));
+                if (statsSnap.exists() && statsSnap.data().whatsappNumber) {
+                    phone = statsSnap.data().whatsappNumber.replace(/[^0-9]/g, '');
+                }
+            } catch (e) {
+                console.error("Error fetching WhatsApp phone:", e);
+            }
+
+            let message = "Hello CBM Machineries, I would like to order the following items:\n\n";
+            let total = 0;
+            cart.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                message += `${index + 1}. ${item.title} x ${item.quantity} - ৳${subtotal.toLocaleString()}\n`;
+            });
+            message += `\nTotal Amount: ৳${total.toLocaleString()}`;
+
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        });
+    }
+
+    if (cartBkashBtn) {
+        cartBkashBtn.addEventListener('click', async () => {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            let bkashAcc = "01700000000"; // Default bKash account fallback
+            try {
+                const statsSnap = await getDoc(doc(db, "site_stats", "global"));
+                if (statsSnap.exists() && statsSnap.data().bkashNumber) {
+                    bkashAcc = statsSnap.data().bkashNumber;
+                }
+            } catch (e) {
+                console.error("Error fetching bKash info:", e);
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            const modalAccount = document.getElementById('bkash-modal-account');
+            const modalAmount = document.getElementById('bkash-modal-amount');
+
+            if (modalAccount) modalAccount.textContent = bkashAcc;
+            if (modalAmount) modalAmount.textContent = `৳ ${total.toLocaleString()}`;
+
+            if (bkashModalOverlay) bkashModalOverlay.classList.add('active');
+        });
+    }
+
+    updateCartUI();
+}
+
+function updateCartUI() {
+    const badge = document.getElementById('cart-badge-count');
+    const container = document.getElementById('cart-items-container');
+    const totalEl = document.getElementById('cart-total-price');
+
+    localStorage.setItem('cbm_cart', JSON.stringify(cart));
+
+    const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    if (badge) badge.textContent = totalCount;
+
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (cart.length === 0) {
+        container.innerHTML = `<p style="color: #666; font-size: 0.85rem; text-align: center; margin-top: 2rem;">Your cart is currently empty.</p>`;
+        if (totalEl) totalEl.textContent = "৳ 0";
+        return;
+    }
+
+    let grandTotal = 0;
+
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        grandTotal += itemTotal;
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cart-item';
+        itemEl.innerHTML = `
+            <img src="${escapeHtml(item.imageUrl || '')}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+            <div style="flex: 1;">
+                <div style="color: #fff; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">${escapeHtml(item.title)}</div>
+                <div style="color: #d4a373; font-size: 0.8rem; font-weight: bold;">৳ ${Number(item.price).toLocaleString()}</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
+                    <button class="cart-qty-btn" data-action="dec" data-index="${index}" style="background: #222; border: 1px solid #444; color: #fff; width: 22px; height: 22px; cursor: pointer; border-radius: 4px;">-</button>
+                    <span style="color: #fff; font-size: 0.8rem;">${item.quantity}</span>
+                    <button class="cart-qty-btn" data-action="inc" data-index="${index}" style="background: #222; border: 1px solid #444; color: #fff; width: 22px; height: 22px; cursor: pointer; border-radius: 4px;">+</button>
+                </div>
+            </div>
+            <button class="cart-remove-btn" data-index="${index}" style="background: none; border: none; color: #e2136e; font-size: 0.9rem; cursor: pointer; align-self: flex-start;">&times;</button>
+        `;
+
+        container.appendChild(itemEl);
+    });
+
+    if (totalEl) totalEl.textContent = `৳ ${grandTotal.toLocaleString()}`;
+
+    // Event Delegation for Cart Item Actions
+    container.querySelectorAll('.cart-qty-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'));
+            const action = e.target.getAttribute('data-action');
+
+            if (action === 'inc') {
+                cart[idx].quantity += 1;
+            } else if (action === 'dec') {
+                if (cart[idx].quantity > 1) {
+                    cart[idx].quantity -= 1;
+                } else {
+                    cart.splice(idx, 1);
+                }
+            }
+            updateCartUI();
+        });
+    });
+
+    container.querySelectorAll('.cart-remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'));
+            cart.splice(idx, 1);
+            updateCartUI();
+        });
+    });
+}
+
+// ========================================================
+// 5. HELPER FUNCTIONS & ANIMATION COUNTER
 // ========================================================
 function escapeHtml(str) {
     return String(str)
@@ -414,14 +513,3 @@ async function initStats() {
         console.error("Failed to load site stats:", err);
     }
 }
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting && !hasAnimated) {
-            hasAnimated = true;
-            animateCounter('stat-machines-display', targetStats.machines, "+");
-            animateCounter('stat-clients-display', targetStats.clients, "+");
-            animateCounter('stat-years-display', targetStats.years, " Years");
-        }
-    });
-}, { threshold: 0.3 });
