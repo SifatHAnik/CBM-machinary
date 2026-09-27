@@ -16,7 +16,9 @@ import {
 // ========================================================
 let targetStats = { machines: 0, clients: 0, years: 0 };
 let hasAnimated = false;
-let cart = JSON.parse(localStorage.getItem('cbm_cart')) || [];
+
+// UNIFIED LOCAL STORAGE KEY: Uses 'cart' to sync across all pages
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // ========================================================
 // 3. MAIN INITIALIZATION
@@ -290,6 +292,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadDynamicCategories();
 });
 
+// Sync cart dynamically when user navigates back to index.html
+window.addEventListener('pageshow', () => {
+    cart = JSON.parse(localStorage.getItem('cart')) || [];
+    updateCartUI();
+});
+
 // ========================================================
 // 4. CART & DRAWER FUNCTIONALITY
 // ========================================================
@@ -332,7 +340,7 @@ function initCart() {
                 return;
             }
 
-            let phone = "8801700000000"; // Default phone number fallback
+            let phone = "8801700000000"; // Fallback phone
             try {
                 const statsSnap = await getDoc(doc(db, "site_stats", "global"));
                 if (statsSnap.exists() && statsSnap.data().whatsappNumber) {
@@ -362,7 +370,7 @@ function initCart() {
                 return;
             }
 
-            let bkashAcc = "01700000000"; // Default bKash account fallback
+            let bkashAcc = "01700000000"; // Fallback account
             try {
                 const statsSnap = await getDoc(doc(db, "site_stats", "global"));
                 if (statsSnap.exists() && statsSnap.data().bkashNumber) {
@@ -392,7 +400,8 @@ function updateCartUI() {
     const container = document.getElementById('cart-items-container');
     const totalEl = document.getElementById('cart-total-price');
 
-    localStorage.setItem('cbm_cart', JSON.stringify(cart));
+    // UNIFIED STORAGE SAVING: Using 'cart'
+    localStorage.setItem('cart', JSON.stringify(cart));
 
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     if (badge) badge.textContent = totalCount;
