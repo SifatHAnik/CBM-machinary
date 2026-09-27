@@ -115,7 +115,7 @@
         .inline-group { display: flex; gap: 0.5rem; }
         hr.divider { border: 0; height: 1px; background: rgba(212, 163, 115, 0.2); margin: 2rem 0; }
 
-        /* Review Card Styling inside Admin */
+        /* Review Card Styling */
         .review-admin-card {
             background: #1a2020;
             border: 1px solid #0b4f37;
@@ -325,7 +325,7 @@
     </div>
 
     <script type="module">
-    import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "./firebase-config.js";
+    import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
     import { collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -616,30 +616,6 @@
         });
     }
 
-    // Account Password Change Handler
-    const changePassBtn = document.getElementById('change-pass-btn');
-    if (changePassBtn) {
-        changePassBtn.addEventListener('click', async () => {
-            const newPass = document.getElementById('new-account-pass').value.trim();
-            const accountStatus = document.getElementById('account-status');
-            
-            if (!newPass) {
-                accountStatus.innerText = "Please enter a valid new password.";
-                return;
-            }
-
-            try {
-                if (auth.currentUser) {
-                    await updatePassword(auth.currentUser, newPass);
-                    accountStatus.innerText = "Password updated successfully!";
-                    document.getElementById('new-account-pass').value = '';
-                }
-            } catch (err) {
-                accountStatus.innerText = "Password update failed: " + err.message;
-            }
-        });
-    }
-
     // Auth State Handler
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -735,7 +711,7 @@
 
         const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         try {
-            await setDoc(doc(db, "categories", catSlug), {
+            await setDoc(doc(doc(db, "categories", catSlug)), {
                 name: catName,
                 createdAt: serverTimestamp()
             });
