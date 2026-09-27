@@ -33,7 +33,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('product-category').textContent = product.category || 'General';
         document.getElementById('product-price').textContent = `৳ ${Number(product.price || 0).toLocaleString()}`;
         document.getElementById('product-short-desc').textContent = product.shortDescription || '';
-        document.getElementById('product-full-desc').textContent = product.fullDescription || product.shortDescription || 'No additional specifications listed.';
+        
+        // Checks detailedDescription, description, and fullDescription before falling back to shortDescription
+        document.getElementById('product-full-desc').textContent = 
+            product.detailedDescription || product.description || product.fullDescription || product.shortDescription || 'No additional specifications listed.';
         
         // 4. WhatsApp / Phone Contact Link Integration
         const inquireBtn = document.getElementById('inquire-btn');
