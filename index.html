@@ -123,51 +123,49 @@
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <!-- NAVBAR HEADER -->
-    <header class="navbar-header" id="main-navbar">
-        <nav class="nav-container">
-            <!-- Brand Logo -->
-            <a href="index.html" class="brand-logo" id="nav-brand">
-                <span class="logo-bold">CBM</span>
-            </a>
+<header class="navbar-header" id="main-navbar">
+    <nav class="nav-container">
+        <!-- Brand Logo -->
+        <a href="index.html" class="brand-logo" id="nav-brand">
+            <span class="logo-bold">CBM</span>
+        </a>
 
-            <!-- Right-aligned Header Actions (Cart Icon + Hamburger Menu) -->
-            <div style="display: flex; align-items: center;">
-                <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span id="cart-badge-count" class="cart-badge">0</span>
-                </button>
+        <!-- Mobile Hamburger Toggle -->
+        <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-                <!-- Mobile Hamburger Toggle -->
-                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-            </div>
+        <!-- Navigation Links -->
+        <div class="nav-menu-wrapper" id="nav-menu">
+            <button class="mobile-close" id="mobile-close" aria-label="Close menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
-            <!-- Navigation Links -->
-            <div class="nav-menu-wrapper" id="nav-menu">
-                <button class="mobile-close" id="mobile-close" aria-label="Close menu">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About Us</a></li>
+                
+                <!-- Dynamic Dropdown -->
+                <div class="category-dropdown-wrapper">
+                    <button id="category-dropdown-btn" class="nav-btn">
+                        Product Categories
+                    </button>
+                    <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
+                </div>
 
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="#about" class="nav-link">About Us</a></li>
-                    
-                    <!-- Dynamic Dropdown -->
-                    <div class="category-dropdown-wrapper">
-                        <button id="category-dropdown-btn" class="nav-btn">
-                            Product Categories ▼
-                        </button>
-                        <ul id="nav-category-dropdown" class="dropdown-menu hidden">
-                            <!-- Dynamic links inject here automatically -->
-                        </ul>
-                    </div>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
 
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+                <!-- White Cart Button with Badge -->
+                <li style="display: flex; align-items: center;">
+                    <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span id="cart-badge-count" class="cart-badge">0</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
 
     <!-- HERO SECTION (Full Screen Video) -->
     <section class="hero-section" id="hero">
@@ -244,7 +242,64 @@
             </button>
         </div>
     </div>
+    
+<!-- CART SLIDE-OUT DRAWER -->
+<div class="cart-overlay" id="cart-overlay"></div>
 
+<div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+        <h3 style="color: #fff; margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">
+            Your Cart
+        </h3>
+        <button id="close-cart-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">
+            &times;
+        </button>
+    </div>
+
+    <div class="cart-items-list" id="cart-items-container">
+        <!-- Cart items injected dynamically via script.js -->
+    </div>
+
+    <div class="cart-footer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span style="color: #a0aab0; font-size: 0.9rem;">Total:</span>
+            <span id="cart-total-price" style="color: #d4a373; font-size: 1.2rem; font-weight: bold;">৳ 0</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp">
+                <i class="fa-brands fa-whatsapp" style="margin-right: 8px;"></i> Order via WhatsApp
+            </button>
+            <button id="cart-bkash-btn" class="btn-action btn-bkash">
+                Checkout via bKash
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- BKASH PAYMENT MODAL -->
+<div class="modal-overlay" id="bkash-modal-overlay">
+    <div class="modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+            <h3 style="color: #e2136e; margin: 0; font-size: 1.2rem;">bKash Payment Details</h3>
+            <button id="close-bkash-modal-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">
+            Please send the total amount to the bKash Merchant / Personal number below:
+        </p>
+        <div style="background: #0d1111; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(226, 19, 110, 0.3);">
+            <div style="font-size: 0.85rem; color: #aaa;">bKash Account Number:</div>
+            <div id="bkash-modal-account" style="font-size: 1.3rem; font-weight: bold; color: #e2136e; letter-spacing: 1px; margin-top: 0.2rem;">01700000000</div>
+        </div>
+        <div style="background: #0d1111; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(212, 163, 115, 0.3);">
+            <div style="font-size: 0.85rem; color: #aaa;">Total Amount Due:</div>
+            <div id="bkash-modal-amount" style="font-size: 1.3rem; font-weight: bold; color: #d4a373; margin-top: 0.2rem;">৳ 0</div>
+        </div>
+        <p style="color: #888; font-size: 0.8rem; text-align: center;">
+            After completing payment, contact us on WhatsApp with your Transaction ID.
+        </p>
+    </div>
+</div>
     <!-- SINGLE SCRIPT SOURCE -->
     <script type="module" src="script.js"></script>
 </body>

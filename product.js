@@ -6,7 +6,9 @@ const WHATSAPP_NUMBER = "8801700000000";
 const BKASH_ACCOUNT_NUMBER = "01700000000"; 
 
 let currentProduct = null;
-let cart = JSON.parse(localStorage.getItem('cbm_cart')) || [];
+
+// FIXED: Uses unified storage key 'cart'
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     setupCartDrawerUI();
@@ -82,14 +84,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 function addToCart(product) {
     const existingIndex = cart.findIndex(item => item.id === product.id);
     if (existingIndex > -1) {
-        cart[existingIndex].qty += 1;
+        // FIXED: Uses 'quantity' instead of 'qty'
+        cart[existingIndex].quantity += 1;
     } else {
         cart.push({
             id: product.id,
             title: product.title,
             price: Number(product.price || 0),
             imageUrl: product.imageUrl,
-            qty: 1
+            quantity: 1
         });
     }
     saveAndUpdateCart();
@@ -98,8 +101,8 @@ function addToCart(product) {
 function updateQuantity(id, delta) {
     const index = cart.findIndex(item => item.id === id);
     if (index > -1) {
-        cart[index].qty += delta;
-        if (cart[index].qty <= 0) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) {
             cart.splice(index, 1);
         }
     }
@@ -107,7 +110,8 @@ function updateQuantity(id, delta) {
 }
 
 function saveAndUpdateCart() {
-    localStorage.setItem('cbm_cart', JSON.stringify(cart));
+    // FIXED: Saves to key 'cart'
+    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartUI();
 }
 
@@ -116,8 +120,9 @@ function updateCartUI() {
     const badge = document.getElementById('cart-badge-count');
     const totalEl = document.getElementById('cart-total-price');
 
-    const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
-    const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    // FIXED: Uses 'quantity' for recalculation
+    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
     if (badge) badge.textContent = totalItems;
     if (totalEl) totalEl.textContent = `৳ ${totalPrice.toLocaleString()}`;
@@ -137,7 +142,7 @@ function updateCartUI() {
                 <div style="color: #d4a373; font-size: 0.8rem; margin-top: 0.2rem;">৳ ${item.price.toLocaleString()}</div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
                     <button onclick="window.adjustCartQty('${item.id}', -1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">-</button>
-                    <span style="font-size: 0.8rem; color: #fff;">${item.qty}</span>
+                    <span style="font-size: 0.8rem; color: #fff;">${item.quantity}</span>
                     <button onclick="window.adjustCartQty('${item.id}', 1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">+</button>
                 </div>
             </div>
@@ -167,9 +172,9 @@ function setupCartDrawerUI() {
             let grandTotal = 0;
 
             cart.forEach((item, index) => {
-                const subtotal = item.price * item.qty;
+                const subtotal = item.price * item.quantity;
                 grandTotal += subtotal;
-                message += `${index + 1}. ${item.title} x ${item.qty} = ৳${subtotal.toLocaleString()}\n`;
+                message += `${index + 1}. ${item.title} x ${item.quantity} = ৳${subtotal.toLocaleString()}\n`;
             });
 
             message += `\nTotal Amount: ৳${grandTotal.toLocaleString()}`;
@@ -180,7 +185,7 @@ function setupCartDrawerUI() {
     if (cartBkashBtn) {
         cartBkashBtn.addEventListener('click', () => {
             if (cart.length === 0) return alert('Your cart is empty.');
-            const grandTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+            const grandTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
             showBkashModal(grandTotal);
         });
     }
