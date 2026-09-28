@@ -280,9 +280,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
                 card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
 
-                card.addEventListener('click', () => {
-                    window.location.href = `product.html?id=${productId}`;
-                });
+
+              card.addEventListener('click', () => {
+    if (window.trackProductView) window.trackProductView(product.title);
+    window.location.href = `product.html?id=${productId}`;
+});
 
                 sliderEl.appendChild(card);
             });
@@ -661,13 +663,3 @@ async function initStats() {
 
 
 
-// --- LEAD TRACKING EVENT LISTENER ---
-document.addEventListener('click', (e) => {
-  const card = e.target.closest('.product-card');
-  if (card) {
-    const productId = card.getAttribute('data-id') || card.dataset.id || card.id;
-    if (productId && typeof checkLeadPrompt === 'function') {
-      checkLeadPrompt(productId);
-    }
-  }
-});

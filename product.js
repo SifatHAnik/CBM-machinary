@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('product-category').textContent = currentProduct.category || 'Machinery';
         document.getElementById('product-price').textContent = `৳ ${Number(currentProduct.price || 0).toLocaleString()}`;
         document.getElementById('product-short-desc').textContent = currentProduct.shortDescription || '';
+        if (window.trackProductView) window.trackProductView(currentProduct.title, { prompt: true });
         
         document.getElementById('product-full-desc').textContent = 
             currentProduct.longDescription || currentProduct.detailedDescription || currentProduct.description || currentProduct.shortDescription || 'No detailed specifications available.';
@@ -79,9 +80,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+
+
+
+
+
+
+
 // --- CART MANAGEMENT ---
 
 function addToCart(product) {
+        if (window.trackCartAdd) window.trackCartAdd(product.title, 1);   // <-- ADD THIS
+
     const existingIndex = cart.findIndex(item => item.id === product.id);
     if (existingIndex > -1) {
         // FIXED: Uses 'quantity' instead of 'qty'
@@ -234,24 +244,3 @@ function hideBkashModal() {
 
 
 
-// --- PRODUCT PAGE LEAD & CART TRACKING ---
-document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const productId = urlParams.get('id');
-
-  if (productId && typeof checkLeadPrompt === 'function') {
-    checkLeadPrompt(productId);
-  }
-
-  const addToCartBtn = document.getElementById('addToCartBtn');
-  if (addToCartBtn && productId) {
-    addToCartBtn.addEventListener('click', () => {
-      if (window.userSession && !window.userSession.cart.includes(productId)) {
-        window.userSession.cart.push(productId);
-        if (typeof saveSessionLocally === 'function') {
-          saveSessionLocally();
-        }
-      }
-    });
-  }
-});

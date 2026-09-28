@@ -1,36 +1,104 @@
-// Analytics & Lead Tracking Core
-window.userSession = {
-  id: localStorage.getItem('lead_user_id') || 'guest_' + Math.random().toString(36).substr(2, 9),
-  phone: localStorage.getItem('lead_phone') || null,
-  views: [],
-  cart: [],
-  lastActive: new Date().toISOString()
-};
+// ============================================================
+// LEAD TRACKING — invisible to users, feeds admin panel
+// ============================================================
+import { db } from "./firebase-config.js";
+import { doc, setDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// --- Build / restore the visitor session ---
+window.userSession = window.userSession || {
+  id: localStorage.getItem('lead_user_id') || 'guest_' + Math.random().toString(36).slice(2, 11),
+  phone: localStorage.getItem('lead_phone') || null,
+  views: JSON.parse(localStorage.getItem('lead_views') || '[]'),
+  cart: JSON.parse(localStorage.getItem('lead_cart') || '[]')
+};
 localStorage.setItem('lead_user_id', window.userSession.id);
 
-function checkLeadPrompt(productId) {
-  logProductView(productId);
-  if (!localStorage.getItem('lead_prompt_shown')) {
-    showLeadModal(productId);
+function persistLocal() {
+  localStorage.setItem('lead_views', JSON.stringify(window.userSession.views));
+  localStorage.setItem('lead_cart', JSON.stringify(window.userSession.cart));
+}
+
+// --- Debounced Firestore sync (avoids hammering the DB) ---
+let syncTimer = null;
+function scheduleSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(pushToFirestore, 600);
+}
+
+async function pushToFirestore() {
+  try {
+    await setDoc(doc(db, "analytics_leads", window.userSession.id), {
+      userId: window.userSession.id,
+      phone: window.userSession.phone || 'Guest User',
+      productViews: window.userSession.views,
+      cartItems: window.userSession.cart.map(c => `${c.title} (x${c.quantity})`),
+      lastActive: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Lead sync failed (check Firestore rules):", err);
   }
 }
 
-function showLeadModal(productId) {
+// ============================================================
+// PUBLIC API — other scripts call these
+// ============================================================
+
+/** Call when a product page loads or a card is clicked.
+ *  Pass { prompt: true } to also pop the phone-number modal. */
+window.trackProductView = function (productTitle, opts = {}) {
+  if (productTitle && !window.userSession.views.includes(productTitle)) {
+    window.userSession.views.push(productTitle);
+    persistLocal();
+    scheduleSync();
+  }
+  if (opts.prompt) maybeShowModal();
+};
+
+/** Call whenever a product is added to cart. */
+window.trackCartAdd = function (productTitle, qty = 1) {
+  if (!productTitle) return;
+  const row = window.userSession.cart.find(c => c.title === productTitle);
+  if (row) row.quantity += qty;
+  else window.userSession.cart.push({ title: productTitle, quantity: qty });
+  persistLocal();
+  scheduleSync();
+};
+
+// ============================================================
+// LEAD CAPTURE MODAL
+// ============================================================
+function maybeShowModal() {
+  if (localStorage.getItem('lead_prompt_shown')) return;
   if (document.getElementById('leadModal')) return;
 
-  const modalHtml = `
-    <div id="leadModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:sans-serif;">
-      <div style="background:#fff;padding:25px;border-radius:12px;max-width:380px;width:90%;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
-        <h3 style="margin-top:0;color:#333;">Exclusive Offers & Support</h3>
-        <p style="font-size:14px;color:#555;line-height:1.4;">Enter your phone number to unlock special deals and direct support for items you view!</p>
-        <input type="tel" id="leadPhoneInput" placeholder="Enter Phone Number" style="width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;">
-        <button id="submitLeadBtn" style="width:100%;padding:10px;background:#28a745;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:8px;">Claim Offer & Continue</button>
-        <button id="skipLeadBtn" style="background:none;border:none;color:#777;cursor:pointer;font-size:12px;text-decoration:underline;">Skip & Browse as Guest</button>
+  const html = `
+    <div id="leadModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;">
+      <div style="background:#161b1c;border:1px solid rgba(212,163,115,0.3);padding:28px;border-radius:12px;max-width:400px;width:100%;text-align:center;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">👋</div>
+        <h3 style="margin:0 0 0.5rem;color:#d4a373;font-size:1.2rem;">Welcome to CBM Machineries</h3>
+        <p style="font-size:0.9rem;color:#a0a5a5;line-height:1.5;margin:0 0 1.2rem;">
+          Drop your phone number and we'll send you exclusive deals & priority support on the machines you're browsing.
+        </p>
+        <input type="tel" id="leadPhoneInput" placeholder="01XXXXXXXXX"
+          style="width:100%;padding:12px;margin-bottom:12px;background:#0d1111;border:1px solid #0b4f37;color:#fff;border-radius:8px;box-sizing:border-box;font-size:0.95rem;outline:none;">
+        <button id="submitLeadBtn"
+          style="width:100%;padding:12px;background:#d4a373;color:#0d1111;border:none;border-radius:8px;font-weight:700;letter-spacing:0.5px;cursor:pointer;text-transform:uppercase;font-size:0.85rem;">
+          Get Deals & Continue
+        </button>
+        <button id="skipLeadBtn"
+          style="background:none;border:none;color:#666;cursor:pointer;font-size:0.8rem;margin-top:10px;text-decoration:underline;">
+          Skip for now
+        </button>
       </div>
-    </div>
-  `;
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  const dismiss = () => {
+    localStorage.setItem('lead_prompt_shown', 'true');
+    document.getElementById('leadModal')?.remove();
+    pushToFirestore();
+  };
 
   document.getElementById('submitLeadBtn').addEventListener('click', () => {
     const phone = document.getElementById('leadPhoneInput').value.trim();
@@ -38,49 +106,8 @@ function showLeadModal(productId) {
       window.userSession.phone = phone;
       localStorage.setItem('lead_phone', phone);
     }
-    closeLeadModal();
-    syncAnalyticsToFirestore();
+    dismiss();
   });
 
-  document.getElementById('skipLeadBtn').addEventListener('click', () => {
-    closeLeadModal();
-    syncAnalyticsToFirestore();
-  });
+  document.getElementById('skipLeadBtn').addEventListener('click', dismiss);
 }
-
-function closeLeadModal() {
-  localStorage.setItem('lead_prompt_shown', 'true');
-  const modal = document.getElementById('leadModal');
-  if (modal) modal.remove();
-}
-
-function logProductView(productId) {
-  if (productId && !window.userSession.views.includes(productId)) {
-    window.userSession.views.push(productId);
-  }
-  window.userSession.lastActive = new Date().toISOString();
-  saveSessionLocally();
-}
-
-function saveSessionLocally() {
-  sessionStorage.setItem('active_lead_session', JSON.stringify(window.userSession));
-}
-
-function syncAnalyticsToFirestore() {
-  const sessionData = JSON.parse(sessionStorage.getItem('active_lead_session'));
-  if (!sessionData || sessionData.views.length === 0 || !window.db) return;
-
-  window.db.collection('analytics_leads').doc(sessionData.id).set({
-    userId: sessionData.id,
-    phone: sessionData.phone || 'Guest User',
-    productViews: sessionData.views,
-    cartItems: sessionData.cart || [],
-    lastActive: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true }).catch(err => console.error("Analytics sync deferred:", err));
-}
-
-window.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    syncAnalyticsToFirestore();
-  }
-});

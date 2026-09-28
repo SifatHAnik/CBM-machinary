@@ -346,10 +346,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CONNECTIONS -->
-    <script src="firebase-config.js"></script>
-    <script src="analytics.js"></script>
-    <script src="script.js"></script>
+
 
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
@@ -420,50 +417,67 @@
         }
     });
 
-    // Lead Analytics Data Fetching
-    async function loadLeadAnalytics() {
-        const tbody = document.getElementById('leadTableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373;">Loading analytics logs...</td></tr>';
+// Lead Analytics Data Fetching
+async function loadLeadAnalytics() {
+    const tbody = document.getElementById('leadTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373;">Loading analytics logs...</td></tr>';
 
-        try {
-            const qLeads = query(collection(db, "analytics_leads"), orderBy("lastActive", "desc"), limit(50));
-            onSnapshot(qLeads, (snapshot) => {
-                tbody.innerHTML = '';
-                if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No lead activity recorded yet.</td></tr>';
-                    return;
+    try {
+        // Simple collection listener without strict ordering requirements to ensure data streams immediately
+        const leadsRef = collection(db, "analytics_leads");
+        
+        onSnapshot(leadsRef, (snapshot) => {
+            tbody.innerHTML = '';
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No lead activity recorded yet.</td></tr>';
+                return;
+            }
+
+            // Client-side sorting by lastActive timestamp
+            const docs = [];
+            snapshot.forEach(docSnap => docs.push({ id: docSnap.id, ...docSnap.data() }));
+            
+            docs.sort((a, b) => {
+                const timeA = a.lastActive ? new Date(a.lastActive.toDate ? a.lastActive.toDate() : a.lastActive).getTime() : 0;
+                const timeB = b.lastActive ? new Date(b.lastActive.toDate ? b.lastActive.toDate() : b.lastActive).getTime() : 0;
+                return timeB - timeA;
+            });
+
+            docs.forEach((data) => {
+                const views = Array.isArray(data.productViews) && data.productViews.length > 0 ? data.productViews.join(', ') : 'None';
+                const cart = Array.isArray(data.cartItems) && data.cartItems.length > 0 ? data.cartItems.join(', ') : 'Empty';
+                const isGuest = !data.phone || data.phone === 'Guest User';
+
+                let formattedTime = 'N/A';
+                if (data.lastActive) {
+                    formattedTime = new Date(data.lastActive.toDate ? data.lastActive.toDate() : data.lastActive).toLocaleString();
                 }
 
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const views = data.productViews ? data.productViews.join(', ') : 'None';
-                    const cart = data.cartItems && data.cartItems.length > 0 ? data.cartItems.join(', ') : 'Empty';
-                    const isGuest = data.phone === 'Guest User';
-
-                    let formattedTime = 'N/A';
-                    if (data.lastActive) {
-                        formattedTime = new Date(data.lastActive.toDate ? data.lastActive.toDate() : data.lastActive).toLocaleString();
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #0b4f37';
-                    tr.innerHTML = `
-                        <td style="padding:0.8rem;"><strong>${escapeHtml(data.phone || 'Guest')}</strong><br><small style="color:#a0aab0;">${escapeHtml(data.userId || '')}</small></td>
-                        <td style="padding:0.8rem; color:#ccc;">${escapeHtml(views)}</td>
-                        <td style="padding:0.8rem; color:#ccc;">${escapeHtml(cart)}</td>
-                        <td style="padding:0.8rem; font-size:0.85rem; color:#a0aab0;">${formattedTime}</td>
-                        <td style="padding:0.8rem;">
-                            ${!isGuest && data.phone ? `<a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.75rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>` : '<span style="color:#777; font-size:0.85rem;">Guest User</span>'}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #0b4f37';
+                tr.innerHTML = `
+                    <td style="padding:0.8rem;">
+                        <strong>${escapeHtml(data.phone || 'Guest')}</strong><br>
+                        <small style="color:#a0aab0;">${escapeHtml(data.userId || data.id || '')}</small>
+                    </td>
+                    <td style="padding:0.8rem; color:#ccc;">${escapeHtml(views)}</td>
+                    <td style="padding:0.8rem; color:#ccc;">${escapeHtml(cart)}</td>
+                    <td style="padding:0.8rem; font-size:0.85rem; color:#a0aab0;">${formattedTime}</td>
+                    <td style="padding:0.8rem;">
+                        ${!isGuest ? `<a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.75rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>` : '<span style="color:#777; font-size:0.85rem;">Guest User</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error loading leads: ${err.message}</td></tr>`;
-        }
+        }, (error) => {
+            console.error("Firestore Lead Error:", error);
+            tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Permission/Read Error: ${error.message}</td></tr>`;
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error initializing leads: ${err.message}</td></tr>`;
     }
+}
 
     // Review Moderation Filter Buttons
     if (filterReviewPending && filterReviewApproved) {
