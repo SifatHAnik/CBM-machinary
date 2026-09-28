@@ -2,8 +2,8 @@ import { db } from "./firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Business Phone Numbers
-const WHATSAPP_NUMBER = "8801700000000"; 
-const BKASH_ACCOUNT_NUMBER = "01700000000"; 
+let WHATSAPP_NUMBER = "8801700000000"; 
+let BKASH_ACCOUNT_NUMBER = "01700000000"; 
 
 let currentProduct = null;
 
@@ -11,6 +11,21 @@ let currentProduct = null;
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const statsSnap = await getDoc(doc(db, "site_stats", "global"));
+        if (statsSnap.exists()) {
+            const statsData = statsSnap.data();
+            if (statsData.whatsappNumber) {
+                WHATSAPP_NUMBER = String(statsData.whatsappNumber).replace(/[^0-9]/g, '');
+            }
+            if (statsData.bkashNumber) {
+                BKASH_ACCOUNT_NUMBER = statsData.bkashNumber;
+            }
+        }
+    } catch (e) {
+        console.warn("Using fallback contact numbers:", e);
+    }
+
     setupCartDrawerUI();
     setupBkashModal();
     updateCartUI();

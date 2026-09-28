@@ -309,8 +309,25 @@
                 <input type="number" id="stat-years" placeholder="e.g. 15">
             </div>
 
-            <button id="save-stats-btn" class="btn-industrial">Update Homepage Stats</button>
-            <p id="stats-status" class="status-msg"></p>
+                        <button id="save-stats-btn" class="btn-industrial">Update Homepage Stats</button>
+                        <p id="stats-status" class="status-msg"></p>
+
+                        <hr class="divider">
+
+                        <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Showcase Slider Images</div>
+                        <p style="color:#8a9090; font-size:0.8rem; margin:0 0 1rem 0; line-height:1.5;">
+                            Select 5–6 images at once. Uploading a new set will <strong style="color:#d4a373;">replace</strong> the old slider.
+                        </p>
+
+                        <div class="form-group">
+                            <label>Select Images (from device)</label>
+                            <input type="file" id="showcase-files" accept="image/*" multiple>
+                        </div>
+
+                        <button id="upload-showcase-btn" class="btn-industrial">Upload &amp; Replace Slider</button>
+                        <p id="showcase-status" class="status-msg"></p>
+
+                        <div id="showcase-thumbnails" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:0.6rem; margin-top:1.2rem;"></div>
         </div>
 
         <!-- SECTION 4: LEAD ANALYTICS & RECOVERY -->
@@ -736,6 +753,7 @@ async function loadLeadAnalytics() {
             dashboardPanel.classList.remove('hidden');
             listenToCategories();
             listenToProducts();
+            listenToShowcaseThumbs();
         } else {
             authPanel.classList.remove('hidden');
             dashboardPanel.classList.add('hidden');
@@ -824,7 +842,7 @@ async function loadLeadAnalytics() {
 
         const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         try {
-            await setDoc(doc(doc(db, "categories", catSlug)), {
+            await setDoc(doc(db, "categories", catSlug), {
                 name: catName,
                 createdAt: serverTimestamp()
             });
@@ -847,6 +865,73 @@ async function loadLeadAnalytics() {
             prodStatus.innerText = "Error deleting category: " + err.message;
         }
     });
+
+
+
+            // ============================================================
+// SHOWCASE SLIDER MANAGEMENT
+// ============================================================
+const uploadShowcaseBtn = document.getElementById('upload-showcase-btn');
+if (uploadShowcaseBtn) {
+    uploadShowcaseBtn.addEventListener('click', async () => {
+        const fileInput = document.getElementById('showcase-files');
+        const statusEl = document.getElementById('showcase-status');
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            statusEl.innerText = "Please select at least one image.";
+            return;
+        }
+
+        statusEl.innerText = `Uploading ${files.length} image(s) to Cloudinary...`;
+
+        try {
+            const urls = await Promise.all(
+                [...files].map(f => uploadImageToCloudinary(f))
+            );
+
+            statusEl.innerText = "Clearing previous slider...";
+            const existing = await getDocs(collection(db, "showcase"));
+            await Promise.all(existing.docs.map(d => deleteDoc(d.ref)));
+
+            statusEl.innerText = "Saving new slider...";
+            for (const url of urls) {
+                await addDoc(collection(db, "showcase"), {
+                    imageUrl: url,
+                    createdAt: serverTimestamp()
+                });
+            }
+
+            statusEl.innerText = `Success! ${urls.length} image(s) are now live on the storefront.`;
+            fileInput.value = '';
+        } catch (err) {
+            statusEl.innerText = "Error: " + err.message;
+        }
+    });
+}
+
+let showcaseThumbsStarted = false;
+function listenToShowcaseThumbs() {
+    if (showcaseThumbsStarted) return;
+    showcaseThumbsStarted = true;
+    onSnapshot(collection(db, "showcase"), (snapshot) => {
+        const grid = document.getElementById('showcase-thumbnails');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        if (snapshot.empty) {
+            grid.innerHTML = `<p style="color:#666; font-size:0.8rem; grid-column:1/-1; text-align:center;">No slider images uploaded yet.</p>`;
+            return;
+        }
+
+        snapshot.forEach(d => {
+            const img = document.createElement('img');
+            img.src = d.data().imageUrl;
+            img.style.cssText = 'width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; border:1px solid #0b4f37;';
+            grid.appendChild(img);
+        });
+    });
+}
 
     // HTML Escape Helper
     function escapeHtml(str) {

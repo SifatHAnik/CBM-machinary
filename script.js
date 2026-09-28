@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // 2. Second, inject the Stats Section directly after New Arrivals
             renderStatsSectionBlock();
+            renderShowcaseBlock();
 
             // 3. Third, render middle categories below stats
             middleCategories.forEach(cat => renderCategorySection(cat));
@@ -146,9 +147,271 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+
+    function renderShowcaseBlock() {
+    if (!categoriesContainer) return;
+
+    if (!document.getElementById('showcase-styles')) {
+        const style = document.createElement('style');
+        style.id = 'showcase-styles';
+        style.textContent = `
+            #showcase-section {
+                background: #0e1111;
+                padding: 3rem 0 5rem;
+                margin: 0;
+                overflow: hidden;
+            }
+            .showcase-stage {
+                padding: 3rem 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                perspective: 1400px;
+            }
+            .showcase-float-wrap {
+                width: 100%;
+                max-width: 780px;
+                animation: showcaseFloat 8s ease-in-out infinite;
+                will-change: transform;
+            }
+            @keyframes showcaseFloat {
+                0%   { transform: translateY(0)     rotate(-0.5deg); }
+                50%  { transform: translateY(-14px) rotate(0.5deg);  }
+                100% { transform: translateY(0)     rotate(-0.5deg); }
+            }
+            .showcase-card {
+                position: relative;
+                width: 100%;
+                aspect-ratio: 4 / 3;
+                border-radius: 28px;
+                overflow: hidden;
+                background: #121616;
+                box-shadow:
+                    0 40px 80px -30px rgba(0, 0, 0, 0.85),
+                    0 20px 50px -20px rgba(11, 79, 55, 0.55),
+                    0 0 0 1px rgba(212, 163, 115, 0.05);
+                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                cursor: grab;
+                user-select: none;
+                touch-action: pan-y;
+            }
+            .showcase-card:active { cursor: grabbing; }
+            .showcase-card.swiping { transition: none; }
+            .showcase-track {
+                display: flex;
+                height: 100%;
+                transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+                will-change: transform;
+            }
+            .showcase-track.no-transition { transition: none; }
+            .showcase-slide {
+                min-width: 100%;
+                height: 100%;
+                flex-shrink: 0;
+            }
+            .showcase-slide img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                pointer-events: none;
+                -webkit-user-drag: none;
+            }
+            .showcase-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: rgba(11, 79, 55, 0.15);
+                border: 1px solid rgba(212, 163, 115, 0.18);
+                color: rgba(212, 163, 115, 0.45);
+                font-size: 1.5rem;
+                line-height: 1;
+                cursor: pointer;
+                z-index: 5;
+                opacity: 0.35;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 0 3px 0;
+            }
+            .showcase-arrow:hover {
+                opacity: 1;
+                background: rgba(11, 79, 55, 0.9);
+                border-color: #d4a373;
+                color: #d4a373;
+                box-shadow:
+                    0 0 28px rgba(212, 163, 115, 0.6),
+                    0 0 10px rgba(212, 163, 115, 0.4) inset;
+                transform: translateY(-50%) scale(1.1);
+            }
+            .showcase-arrow-prev { left: 16px; }
+            .showcase-arrow-next { right: 16px; }
+
+            @media (hover: none) and (pointer: coarse) {
+                .showcase-arrow { display: none; }
+            }
+            @media (max-width: 640px) {
+                .showcase-stage { padding: 2rem 1rem; }
+                .showcase-card { border-radius: 20px; }
+                #showcase-section { padding: 2rem 0 3.5rem; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const section = document.createElement('section');
+    section.id = 'showcase-section';
+    section.innerHTML = `
+        <div class="showcase-stage">
+            <div class="showcase-float-wrap">
+                <div class="showcase-card" id="showcase-card">
+                    <div class="showcase-track" id="showcase-track"></div>
+                    <button class="showcase-arrow showcase-arrow-prev" id="showcase-prev" aria-label="Previous image">‹</button>
+                    <button class="showcase-arrow showcase-arrow-next" id="showcase-next" aria-label="Next image">›</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    categoriesContainer.appendChild(section);
+    loadShowcaseImages();
+}
+
+function loadShowcaseImages() {
+    const track = document.getElementById('showcase-track');
+    const card = document.getElementById('showcase-card');
+    if (!track || !card) return;
+
+    onSnapshot(collection(db, "showcase"), (snapshot) => {
+        track.innerHTML = '';
+
+        if (snapshot.empty) {
+            track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
+            return;
+        }
+
+        const images = [];
+        snapshot.forEach(d => images.push(d.data().imageUrl));
+
+        images.forEach(url => {
+            const slide = document.createElement('div');
+            slide.className = 'showcase-slide';
+            slide.innerHTML = `<img src="${url}" alt="" loading="lazy">`;
+            track.appendChild(slide);
+        });
+
+        const total = images.length;
+        if (total === 0) return;
+
+        let current = 0;
+        let autoTimer = null;
+        let isInteracting = false;
+        let dragging = false;
+        let startX = 0;
+        let currentX = 0;
+
+        const goTo = (idx, instant = false) => {
+            current = (idx + total) % total;
+            if (instant) {
+                track.classList.add('no-transition');
+                track.style.transform = `translateX(-${current * 100}%)`;
+                void track.offsetWidth;
+                track.classList.remove('no-transition');
+            } else {
+                track.classList.remove('no-transition');
+                track.style.transform = `translateX(-${current * 100}%)`;
+            }
+        };
+
+        const startAuto = () => {
+            stopAuto();
+            if (total <= 1) return;
+            autoTimer = setInterval(() => {
+                if (!isInteracting) goTo(current + 1);
+            }, 5000);
+        };
+        const stopAuto = () => {
+            if (autoTimer) clearInterval(autoTimer);
+            autoTimer = null;
+        };
+
+        const prevBtn = document.getElementById('showcase-prev');
+        const nextBtn = document.getElementById('showcase-next');
+        if (prevBtn) prevBtn.addEventListener('click', () => { goTo(current - 1); startAuto(); });
+        if (nextBtn) nextBtn.addEventListener('click', () => { goTo(current + 1); startAuto(); });
+
+        const pauseFloat = () => {
+            const wrap = card.closest('.showcase-float-wrap');
+            if (wrap) wrap.style.animationPlayState = 'paused';
+        };
+        const resumeFloat = () => {
+            const wrap = card.closest('.showcase-float-wrap');
+            if (wrap) wrap.style.animationPlayState = 'running';
+        };
+
+        const onPointerDown = (e) => {
+            if (total <= 1) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            dragging = true;
+            isInteracting = true;
+            startX = e.clientX;
+            currentX = startX;
+            try { card.setPointerCapture(e.pointerId); } catch (_) {}
+            card.classList.add('swiping');
+            track.classList.add('no-transition');
+            pauseFloat();
+        };
+
+        const onPointerMove = (e) => {
+            if (!dragging) return;
+            currentX = e.clientX;
+            const delta = currentX - startX;
+            const percent = (delta / card.offsetWidth) * 100;
+            track.style.transform = `translateX(calc(-${current * 100}% + ${percent}%))`;
+            const tilt = Math.max(-3, Math.min(3, delta / 45));
+            card.style.transform = `rotate(${tilt}deg)`;
+        };
+
+        const onPointerUp = () => {
+            if (!dragging) return;
+            dragging = false;
+            const delta = currentX - startX;
+            const threshold = card.offsetWidth * 0.15;
+
+            card.classList.remove('swiping');
+            track.classList.remove('no-transition');
+            card.style.transform = '';
+
+            if (delta > threshold) goTo(current - 1);
+            else if (delta < -threshold) goTo(current + 1);
+            else goTo(current);
+
+            setTimeout(resumeFloat, 700);
+            setTimeout(() => { isInteracting = false; }, 800);
+            startAuto();
+        };
+
+        card.addEventListener('pointerdown', onPointerDown);
+        card.addEventListener('pointermove', onPointerMove);
+        card.addEventListener('pointerup', onPointerUp);
+        card.addEventListener('pointercancel', onPointerUp);
+        card.addEventListener('dragstart', (e) => e.preventDefault());
+
+        goTo(0, true);
+        startAuto();
+    });
+}
+
     // Helper: Dynamically creates and places the Stats Section in sequence
     function renderStatsSectionBlock() {
         if (!categoriesContainer) return;
+        hasAnimated = false;
 
         const statsSection = document.createElement('section');
         statsSection.id = 'impact-stats-section';
