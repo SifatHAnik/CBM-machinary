@@ -39,10 +39,12 @@ function showLeadModal(productId) {
       localStorage.setItem('lead_phone', phone);
     }
     closeLeadModal();
+    syncAnalyticsToFirestore();
   });
 
   document.getElementById('skipLeadBtn').addEventListener('click', () => {
     closeLeadModal();
+    syncAnalyticsToFirestore();
   });
 }
 

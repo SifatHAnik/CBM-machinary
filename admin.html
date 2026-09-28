@@ -189,8 +189,8 @@
                 <option value="product-mgmt" selected>Product Management</option>
                 <option value="reviews-mgmt">Review Moderation</option>
                 <option value="stats-mgmt">Site Metrics & Stats</option>
+                <option value="leads-mgmt">📊 Lead Analytics & Recovery</option>
                 <option value="account-mgmt">Account Management</option>
-                <option value="leads">Lead Analytics & Recovery</option>
             </select>
         </div>
 
@@ -313,7 +313,28 @@
             <p id="stats-status" class="status-msg"></p>
         </div>
 
-        <!-- SECTION 4: ACCOUNT MANAGEMENT -->
+        <!-- SECTION 4: LEAD ANALYTICS & RECOVERY -->
+        <div id="section-leads-mgmt" class="hidden">
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem;">Lead Analytics & Recovery Logs</div>
+            <div id="lead-analytics-content">
+                <table border="1" cellpadding="10" style="width:100%; border-collapse:collapse; background:#1a2020; color:#fff; border-color:#0b4f37; border-radius:4px;">
+                    <thead>
+                        <tr style="background:#0b4f37; color:#d4a373; text-align:left;">
+                            <th>User Phone / ID</th>
+                            <th>Stared / Viewed Products</th>
+                            <th>Cart Items</th>
+                            <th>Last Active</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadTableBody">
+                        <tr><td colspan="5" style="text-align:center;">Select "Lead Analytics & Recovery" to fetch logs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 5: ACCOUNT MANAGEMENT -->
         <div id="section-account-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Account Credentials & Access</div>
             <div class="form-group">
@@ -325,10 +346,15 @@
         </div>
     </div>
 
+    <!-- SCRIPT CONNECTIONS -->
+    <script src="firebase-config.js"></script>
+    <script src="analytics.js"></script>
+    <script src="script.js"></script>
+
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
-    import { collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Cloudinary Configuration
     const CLOUD_NAME = "w4tlz3yl";
@@ -344,6 +370,7 @@
     const secProduct = document.getElementById('section-product-mgmt');
     const secReviews = document.getElementById('section-reviews-mgmt');
     const secStats = document.getElementById('section-stats-mgmt');
+    const secLeads = document.getElementById('section-leads-mgmt');
     const secAccount = document.getElementById('section-account-mgmt');
     
     const prodCategorySelect = document.getElementById('prod-category-select');
@@ -374,6 +401,7 @@
         secProduct.classList.add('hidden');
         secReviews.classList.add('hidden');
         secStats.classList.add('hidden');
+        secLeads.classList.add('hidden');
         secAccount.classList.add('hidden');
 
         if (e.target.value === 'product-mgmt') {
@@ -384,10 +412,58 @@
         } else if (e.target.value === 'stats-mgmt') {
             secStats.classList.remove('hidden');
             loadCurrentStats();
+        } else if (e.target.value === 'leads-mgmt') {
+            secLeads.classList.remove('hidden');
+            loadLeadAnalytics();
         } else if (e.target.value === 'account-mgmt') {
             secAccount.classList.remove('hidden');
         }
     });
+
+    // Lead Analytics Data Fetching
+    async function loadLeadAnalytics() {
+        const tbody = document.getElementById('leadTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373;">Loading analytics logs...</td></tr>';
+
+        try {
+            const qLeads = query(collection(db, "analytics_leads"), orderBy("lastActive", "desc"), limit(50));
+            onSnapshot(qLeads, (snapshot) => {
+                tbody.innerHTML = '';
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No lead activity recorded yet.</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const views = data.productViews ? data.productViews.join(', ') : 'None';
+                    const cart = data.cartItems && data.cartItems.length > 0 ? data.cartItems.join(', ') : 'Empty';
+                    const isGuest = data.phone === 'Guest User';
+
+                    let formattedTime = 'N/A';
+                    if (data.lastActive) {
+                        formattedTime = new Date(data.lastActive.toDate ? data.lastActive.toDate() : data.lastActive).toLocaleString();
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #0b4f37';
+                    tr.innerHTML = `
+                        <td style="padding:0.8rem;"><strong>${escapeHtml(data.phone || 'Guest')}</strong><br><small style="color:#a0aab0;">${escapeHtml(data.userId || '')}</small></td>
+                        <td style="padding:0.8rem; color:#ccc;">${escapeHtml(views)}</td>
+                        <td style="padding:0.8rem; color:#ccc;">${escapeHtml(cart)}</td>
+                        <td style="padding:0.8rem; font-size:0.85rem; color:#a0aab0;">${formattedTime}</td>
+                        <td style="padding:0.8rem;">
+                            ${!isGuest && data.phone ? `<a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.75rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>` : '<span style="color:#777; font-size:0.85rem;">Guest User</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error loading leads: ${err.message}</td></tr>`;
+        }
+    }
 
     // Review Moderation Filter Buttons
     if (filterReviewPending && filterReviewApproved) {
@@ -745,60 +821,6 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
-
-
-
-    function loadLeadAnalytics() {
-  const content = document.getElementById('adminContent');
-  if (!content) return;
-
-  content.innerHTML = `
-    <h2>Lead Analytics & Recovery Logs</h2>
-    <table border="1" cellpadding="10" style="width:100%; border-collapse:collapse; margin-top:20px;">
-      <thead>
-        <tr style="background:#f4f4f4;">
-          <th>User Phone / ID</th>
-          <th>Stared / Viewed Products</th>
-          <th>Cart Items</th>
-          <th>Last Active</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="leadTableBody">
-        <tr><td colspan="5">Loading leads...</td></tr>
-      </tbody>
-    </table>
-  `;
-
-  db.collection('analytics_leads').orderBy('lastActive', 'desc').limit(50).get().then(snapshot => {
-    const tbody = document.getElementById('leadTableBody');
-    tbody.innerHTML = '';
-
-    if (snapshot.empty) {
-      tbody.innerHTML = '<tr><td colspan="5">No lead activity recorded yet.</td></tr>';
-      return;
-    }
-
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const views = data.productViews ? data.productViews.join(', ') : 'None';
-      const cart = data.cartItems && data.cartItems.length > 0 ? data.cartItems.join(', ') : 'Empty';
-      const isGuest = data.phone === 'Guest User';
-      
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${data.phone}</strong><br><small style="color:#777;">${data.userId}</small></td>
-        <td>${views}</td>
-        <td>${cart}</td>
-        <td>${data.lastActive ? new Date(data.lastActive.toDate()).toLocaleString() : 'N/A'}</td>
-        <td>
-          ${!isGuest ? `<a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px;">Contact Lead</a>` : '<span style="color:#888;">Guest User</span>'}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  });
-}
     </script>
     
 </body>
