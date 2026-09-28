@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 border-radius: 28px;
                 overflow: hidden;
                 background: #121616;
-                transform-style: preserve-3d;
+               
 box-shadow:
                 0 30px 60px -20px rgba(11, 79, 55, 0.9),
                 0 20px 50px -15px rgba(212, 163, 115, 0.35),
@@ -220,19 +220,20 @@ box-shadow:
                 display: flex;
                 width: 100%;
                 height: 100%;
-                overflow: hidden;
                 transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
                 will-change: transform;
             }
             .showcase-track.no-transition { transition: none; }
-            .showcase-slide {
-                flex: 0 0 100%;
-                width: 100%;
-                min-width: 100%;
-                max-width: 100%;
-                height: 100%;
-                overflow: hidden;
-            }
+                .showcase-slide {
+                    flex: 0 0 100%;
+                    width: 100%;
+                    min-width: 0;
+                    max-width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    backface-visibility: hidden;
+                    -webkit-backface-visibility: hidden;
+                }
             .showcase-slide img {
                 width: 100%;
                 height: 100%;
@@ -280,9 +281,9 @@ box-shadow:
             @media (hover: none) and (pointer: coarse) {
                 .showcase-arrow { display: none; }
             }
-            @media (max-width: 640px) {
-                .showcase-stage { padding: 2rem 1rem; }
-                .showcase-card { border-radius: 20px; }
+                @media (max-width: 640px) {
+                .showcase-stage { padding: 2rem 1.5rem; }
+                .showcase-float-wrap { max-width: 82%; }
                 #showcase-section { padding: 2rem 0 3.5rem; }
             }
         `;
