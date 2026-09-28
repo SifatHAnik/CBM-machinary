@@ -315,7 +315,10 @@
 
         <!-- SECTION 4: LEAD ANALYTICS & RECOVERY -->
         <div id="section-leads-mgmt" class="hidden">
-            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem;">Lead Analytics & Recovery Logs</div>
+            <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem; justify-content: space-between;">
+    <span>Lead Analytics & Recovery Logs</span>
+    <button id="clear-leads-btn" class="btn-industrial btn-danger" style="width: auto; padding: 0.4rem 0.9rem; font-size: 0.75rem;">Clear All Logs</button>
+</div>
             <div id="lead-analytics-content">
                 <table border="1" cellpadding="10" style="width:100%; border-collapse:collapse; background:#1a2020; color:#fff; border-color:#0b4f37; border-radius:4px;">
                     <thead>
@@ -351,7 +354,7 @@
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
-    import { collection, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, addDoc, doc, setDoc, getDoc,getDocs, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Cloudinary Configuration
     const CLOUD_NAME = "w4tlz3yl";
@@ -420,6 +423,25 @@
 // Lead Analytics Data Fetching
 async function loadLeadAnalytics() {
     const tbody = document.getElementById('leadTableBody');
+        const clearBtn = document.getElementById('clear-leads-btn');
+    if (clearBtn && !clearBtn.dataset.bound) {
+        clearBtn.dataset.bound = '1';
+        clearBtn.addEventListener('click', async () => {
+            if (!confirm("Delete ALL lead logs permanently? This cannot be undone.")) return;
+            clearBtn.disabled = true;
+            clearBtn.textContent = "Clearing...";
+            try {
+                const snap = await getDocs(collection(db, "analytics_leads"));
+                const deletions = snap.docs.map(d => deleteDoc(d.ref));
+                await Promise.all(deletions);
+                alert(`Cleared ${snap.size} lead log(s).`);
+            } catch (err) {
+                alert("Error clearing logs: " + err.message);
+            }
+            clearBtn.disabled = false;
+            clearBtn.textContent = "Clear All Logs";
+        });
+    }
     if (!tbody) return;
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373;">Loading analytics logs...</td></tr>';
 
