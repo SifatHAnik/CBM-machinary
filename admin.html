@@ -190,6 +190,7 @@
                 <option value="reviews-mgmt">Review Moderation</option>
                 <option value="stats-mgmt">Site Metrics & Stats</option>
                 <option value="account-mgmt">Account Management</option>
+                <option value="leads">Lead Analytics & Recovery</option>
             </select>
         </div>
 
@@ -744,6 +745,60 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+
+
+
+    function loadLeadAnalytics() {
+  const content = document.getElementById('adminContent');
+  if (!content) return;
+
+  content.innerHTML = `
+    <h2>Lead Analytics & Recovery Logs</h2>
+    <table border="1" cellpadding="10" style="width:100%; border-collapse:collapse; margin-top:20px;">
+      <thead>
+        <tr style="background:#f4f4f4;">
+          <th>User Phone / ID</th>
+          <th>Stared / Viewed Products</th>
+          <th>Cart Items</th>
+          <th>Last Active</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="leadTableBody">
+        <tr><td colspan="5">Loading leads...</td></tr>
+      </tbody>
+    </table>
+  `;
+
+  db.collection('analytics_leads').orderBy('lastActive', 'desc').limit(50).get().then(snapshot => {
+    const tbody = document.getElementById('leadTableBody');
+    tbody.innerHTML = '';
+
+    if (snapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="5">No lead activity recorded yet.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const views = data.productViews ? data.productViews.join(', ') : 'None';
+      const cart = data.cartItems && data.cartItems.length > 0 ? data.cartItems.join(', ') : 'Empty';
+      const isGuest = data.phone === 'Guest User';
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${data.phone}</strong><br><small style="color:#777;">${data.userId}</small></td>
+        <td>${views}</td>
+        <td>${cart}</td>
+        <td>${data.lastActive ? new Date(data.lastActive.toDate()).toLocaleString() : 'N/A'}</td>
+        <td>
+          ${!isGuest ? `<a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px;">Contact Lead</a>` : '<span style="color:#888;">Guest User</span>'}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
     </script>
     
 </body>

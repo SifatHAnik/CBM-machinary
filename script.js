@@ -658,3 +658,16 @@ async function initStats() {
         console.error("Failed to load site stats:", err);
     }
 }
+
+
+
+// --- LEAD TRACKING EVENT LISTENER ---
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.product-card');
+  if (card) {
+    const productId = card.getAttribute('data-id') || card.dataset.id || card.id;
+    if (productId && typeof checkLeadPrompt === 'function') {
+      checkLeadPrompt(productId);
+    }
+  }
+});

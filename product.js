@@ -229,3 +229,29 @@ function hideBkashModal() {
     const overlay = document.getElementById('bkash-modal-overlay');
     if (overlay) overlay.classList.remove('active');
 }
+
+
+
+
+
+// --- PRODUCT PAGE LEAD & CART TRACKING ---
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+
+  if (productId && typeof checkLeadPrompt === 'function') {
+    checkLeadPrompt(productId);
+  }
+
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  if (addToCartBtn && productId) {
+    addToCartBtn.addEventListener('click', () => {
+      if (window.userSession && !window.userSession.cart.includes(productId)) {
+        window.userSession.cart.push(productId);
+        if (typeof saveSessionLocally === 'function') {
+          saveSessionLocally();
+        }
+      }
+    });
+  }
+});
