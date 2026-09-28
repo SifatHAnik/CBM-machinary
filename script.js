@@ -161,24 +161,42 @@ document.addEventListener("DOMContentLoaded", async () => {
                 margin: 0;
                 overflow: hidden;
             }
-            .showcase-stage {
-                padding: 3rem 2rem;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                perspective: 1400px;
-            }
-            .showcase-float-wrap {
-                width: 100%;
-                max-width: 780px;
-                animation: showcaseFloat 8s ease-in-out infinite;
-                will-change: transform;
-            }
-            @keyframes showcaseFloat {
-                0%   { transform: translateY(0)     rotate(-0.5deg); }
-                50%  { transform: translateY(-14px) rotate(0.5deg);  }
-                100% { transform: translateY(0)     rotate(-0.5deg); }
-            }
+        .showcase-stage {
+    padding: 3rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 900px;
+}
+         .showcase-float-wrap {
+    width: 100%;
+    max-width: 580px;
+    animation: showcaseFloat 9s ease-in-out infinite;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+@keyframes showcaseFloat {
+    0% {
+        transform: translateY(0) translateZ(0)
+                   rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg);
+    }
+    25% {
+        transform: translateY(-10px) translateZ(20px)
+                   rotateX(2.5deg) rotateY(2deg) rotateZ(0.3deg);
+    }
+    50% {
+        transform: translateY(-18px) translateZ(35px)
+                   rotateX(-2deg) rotateY(4deg) rotateZ(0.5deg);
+    }
+    75% {
+        transform: translateY(-8px) translateZ(15px)
+                   rotateX(1.5deg) rotateY(-2deg) rotateZ(-0.3deg);
+    }
+    100% {
+        transform: translateY(0) translateZ(0)
+                   rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg);
+    }
+}
             .showcase-card {
                 position: relative;
                 width: 100%;
@@ -186,10 +204,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 border-radius: 28px;
                 overflow: hidden;
                 background: #121616;
-                box-shadow:
-                    0 40px 80px -30px rgba(0, 0, 0, 0.85),
-                    0 20px 50px -20px rgba(11, 79, 55, 0.55),
-                    0 0 0 1px rgba(212, 163, 115, 0.05);
+                transform-style: preserve-3d;
+box-shadow:
+                0 30px 60px -20px rgba(11, 79, 55, 0.9),
+                0 20px 50px -15px rgba(212, 163, 115, 0.35),
+                0 0 80px -10px rgba(14, 98, 69, 0.6);
                 transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
                 cursor: grab;
                 user-select: none;
@@ -199,15 +218,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             .showcase-card.swiping { transition: none; }
             .showcase-track {
                 display: flex;
+                width: 100%;
                 height: 100%;
+                overflow: hidden;
                 transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
                 will-change: transform;
             }
             .showcase-track.no-transition { transition: none; }
             .showcase-slide {
+                flex: 0 0 100%;
+                width: 100%;
                 min-width: 100%;
+                max-width: 100%;
                 height: 100%;
-                flex-shrink: 0;
+                overflow: hidden;
             }
             .showcase-slide img {
                 width: 100%;
@@ -355,10 +379,11 @@ function loadShowcaseImages() {
             if (wrap) wrap.style.animationPlayState = 'running';
         };
 
-        const onPointerDown = (e) => {
-            if (total <= 1) return;
-            if (e.pointerType === 'mouse' && e.button !== 0) return;
-            dragging = true;
+     const onPointerDown = (e) => {
+    if (e.target.closest('.showcase-arrow')) return;
+    if (total <= 1) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
             isInteracting = true;
             startX = e.clientX;
             currentX = startX;
@@ -374,8 +399,8 @@ function loadShowcaseImages() {
             const delta = currentX - startX;
             const percent = (delta / card.offsetWidth) * 100;
             track.style.transform = `translateX(calc(-${current * 100}% + ${percent}%))`;
-            const tilt = Math.max(-3, Math.min(3, delta / 45));
-            card.style.transform = `rotate(${tilt}deg)`;
+            const tilt = Math.max(-12, Math.min(12, delta / 12));
+            card.style.transform = `perspective(900px) rotateY(${tilt}deg) rotateZ(${tilt * 0.15}deg)`;
         };
 
         const onPointerUp = () => {
