@@ -982,8 +982,27 @@ function applySiteInfo(data) {
     setLink('footer-linkedin', data.linkedinUrl);
     setLink('footer-instagram', data.instagramUrl);
 
+    // Clickable contact links
     const waNum = sanitizePhone(data.whatsappNumber);
-    const callNum = sanitizePhone(data.hotlineNumber);
+    const callNum = data.hotlineNumber
+        ? String(data.hotlineNumber).replace(/[^0-9+]/g, '')
+        : '';
+
+    const waLink = document.getElementById('footer-whatsapp-link');
+    if (waLink && waNum) waLink.href = `https://wa.me/${waNum}`;
+
+    const callLink = document.getElementById('footer-hotline-link');
+    if (callLink && callNum) callLink.href = `tel:${callNum}`;
+
+    const emailLink = document.getElementById('footer-email-link');
+    if (emailLink && data.emailAddress) emailLink.href = `mailto:${data.emailAddress}`;
+
+    const addrLink = document.getElementById('footer-address-link');
+    if (addrLink && data.address) {
+        addrLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
+    }
+
+    // FAB
     const fabWa = document.getElementById('fab-whatsapp');
     const fabCall = document.getElementById('fab-call');
     const fabEmail = document.getElementById('fab-email');

@@ -825,6 +825,21 @@ body {
     padding-left: 6px;
 }
 
+.footer-col ul li a[href^="tel:"],
+.footer-col ul li a[href^="mailto:"],
+.footer-col ul li a[href^="https://wa.me"],
+.footer-col ul li a[href^="https://www.google.com/maps"] {
+    color: #a0aab0;
+    transition: color 0.25s ease;
+}
+.footer-col ul li a[href^="tel:"]:hover,
+.footer-col ul li a[href^="mailto:"]:hover,
+.footer-col ul li a[href^="https://wa.me"]:hover,
+.footer-col ul li a[href^="https://www.google.com/maps"]:hover {
+    color: #d4a373;
+    padding-left: 0;
+}
+
 .footer-bottom {
     max-width: 1200px;
     margin: 0 auto;
