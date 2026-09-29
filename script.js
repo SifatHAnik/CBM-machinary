@@ -9,6 +9,7 @@ import {
     onSnapshot, 
     doc, 
     getDoc,
+    getDocs,
     addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -506,14 +507,17 @@ function loadShowcaseImages() {
         section.id = `category-${cat.id}`;
         section.style.cssText = `padding: 2rem; margin-bottom: 1rem; scroll-margin-top: 90px;`;
         
-        section.innerHTML = `
-            <h2 style="color: #d4a373; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 1.2rem; border-left: 4px solid #0b4f37; padding-left: 0.8rem;">
-                ${escapeHtml(cat.name)}
-            </h2>
-            <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
-                <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
-            </div>
-        `;
+section.innerHTML = `
+    <div class="category-heading-row">
+        <h2>${escapeHtml(cat.name)}</h2>
+        <a class="see-all-btn" href="catalog.html?category=${encodeURIComponent(cat.id)}">
+            See All <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
+        <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
+    </div>
+`;
 
         categoriesContainer.appendChild(section);
         loadProductsForCategory(cat.id);
@@ -1037,5 +1041,104 @@ function sanitizePhone(num) {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') fab.classList.remove('open');
+    });
+})();
+// ============================================================
+// PRODUCT SEARCH
+// ============================================================
+(function () {
+    const searchBtn = document.getElementById('nav-search-btn');
+    const overlay = document.getElementById('search-overlay');
+    const closeBtn = document.getElementById('search-close');
+    const input = document.getElementById('search-input');
+    const resultsBox = document.getElementById('search-results');
+
+    if (!searchBtn || !overlay || !input || !resultsBox) return;
+
+    let allProducts = null;
+
+    const openSearch = () => {
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => input.focus(), 100);
+        preloadProducts();
+    };
+
+    const closeSearch = () => {
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        input.value = '';
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
+    };
+
+    async function preloadProducts() {
+        if (allProducts) return;
+        try {
+            const snap = await getDocs(collection(db, "products"));
+            allProducts = [];
+            snap.forEach(d => allProducts.push({ id: d.id, ...d.data() }));
+        } catch (err) {
+            console.error("Search preload failed:", err);
+            allProducts = [];
+        }
+    }
+
+    function renderResults(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) { resultsBox.style.display = 'none'; return; }
+        if (!allProducts) {
+            resultsBox.style.display = 'block';
+            resultsBox.innerHTML = `<div class="search-empty">Loading products...</div>`;
+            return;
+        }
+
+        const matches = allProducts.filter(p =>
+            (p.title || '').toLowerCase().includes(q) ||
+            (p.shortDescription || '').toLowerCase().includes(q) ||
+            (p.longDescription || '').toLowerCase().includes(q) ||
+            (p.category || '').toLowerCase().includes(q)
+        ).slice(0, 12);
+
+        resultsBox.style.display = 'block';
+
+        if (matches.length === 0) {
+            resultsBox.innerHTML = `<div class="search-empty">No products found for "${escapeHtml(query)}"</div>`;
+            return;
+        }
+
+        resultsBox.innerHTML = matches.map(p => {
+            const img = p.imageUrl
+                ? `<img src="${escapeHtml(p.imageUrl)}" alt="">`
+                : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Crect fill='%23121216' width='52' height='52'/%3E%3C/svg%3E" alt="">`;
+            return `
+                <a class="search-result-row" href="product.html?id=${encodeURIComponent(p.id)}">
+                    ${img}
+                    <div class="search-result-info">
+                        <div class="search-result-title">${escapeHtml(p.title || 'Untitled')}</div>
+                        <div class="search-result-meta">${escapeHtml(p.shortDescription || p.category || '')}</div>
+                    </div>
+                    <div class="search-result-price">৳ ${Number(p.price || 0).toLocaleString()}</div>
+                </a>`;
+        }).join('');
+    }
+
+    searchBtn.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSearch(); });
+    input.addEventListener('input', () => renderResults(input.value));
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const first = resultsBox.querySelector('.search-result-row');
+            if (first) first.click();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) closeSearch();
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            overlay.classList.contains('active') ? closeSearch() : openSearch();
+        }
     });
 })();

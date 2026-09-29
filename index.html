@@ -43,10 +43,14 @@
                         </button>
                         <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
                     </div>
-
+<li><a href="catalog.html" class="nav-link">All Products</a></li>
                     <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
                     <li><a href="#contact" class="nav-link">Contact</a></li>
-
+<li style="display: flex; align-items: center;">
+    <button id="nav-search-btn" class="search-nav-btn" aria-label="Search products">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+</li>
                     <!-- Cart Button with Badge -->
                     <li style="display: flex; align-items: center;">
                         <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
@@ -197,6 +201,19 @@
         <i class="fa-solid fa-headset"></i>
     </button>
 </div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="search-overlay">
+    <div class="search-box-inner">
+        <div class="search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Search machines, models, specs..." autocomplete="off">
+            <button class="search-close-x" id="search-close" aria-label="Close search">&times;</button>
+        </div>
+        <div class="search-results" id="search-results" style="display:none;"></div>
+        <div class="search-hint">Press <kbd>Esc</kbd> to close · <kbd>Ctrl</kbd>+<kbd>K</kbd> to open</div>
+    </div>
+</div>
                                <!-- SITE FOOTER -->
 <footer class="site-footer">
     <div class="footer-inner">
@@ -234,12 +251,10 @@
 <div class="footer-col">
     <h4>Visit Us</h4>
     <ul>
-        <li>
-            <i class="fa-solid fa-location-dot"></i>
-            <a id="footer-address-link" href="#" target="_blank" rel="noopener" style="white-space: pre-line;">
-                <span id="footer-address">CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh</span>
-            </a>
-        </li>
+<li>
+    <i class="fa-solid fa-location-dot"></i>
+    <a id="footer-address-link" href="#" target="_blank" rel="noopener"><span id="footer-address" style="white-space: pre-line;">CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh</span></a>
+</li>
         <li><i class="fa-solid fa-clock"></i><span id="footer-hours">Sat – Thu · 9:00 AM – 7:00 PM</span></li>
     </ul>
 </div>
