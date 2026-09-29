@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page - CBM Machineries</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0e1111; color: #fff; min-height: 100vh; }
+
+        .page-wrap {
+            max-width: 860px;
+            margin: 90px auto 4rem;
+            padding: 0 1.5rem;
+        }
+        .page-heading {
+            color: #d4a373;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.9rem;
+            margin: 0 0 0.4rem 0;
+            font-weight: 700;
+        }
+        .page-divider {
+            width: 60px;
+            height: 3px;
+            background: #0b4f37;
+            border-radius: 2px;
+            margin: 0 0 2rem 0;
+        }
+        .page-body {
+            color: #c8cfd3;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        .page-body h2 {
+            color: #d4a373;
+            font-size: 1.35rem;
+            letter-spacing: 1px;
+            margin: 2rem 0 0.8rem 0;
+            font-weight: 600;
+        }
+        .page-body h3 {
+            color: #fff;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            margin: 1.5rem 0 0.6rem 0;
+            font-weight: 600;
+        }
+        .page-body p { margin: 0 0 1.1rem 0; }
+        .page-body ul {
+            margin: 0 0 1.2rem 0;
+            padding-left: 1.4rem;
+        }
+        .page-body ul li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .page-body ul li::marker { color: #d4a373; }
+        .page-body strong { color: #d4a373; font-weight: 700; }
+        .page-body a { color: #d4a373; text-decoration: underline; }
+        .page-body code {
+            background: #1a2020;
+            border: 1px solid #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #d4a373;
+        }
+        .page-loading, .page-error {
+            text-align: center;
+            padding: 5rem 1rem;
+            color: #8a9090;
+            font-style: italic;
+        }
+        .page-error { color: #e2136e; }
+
+        @media (max-width: 640px) {
+            .page-wrap { margin-top: 75px; }
+            .page-heading { font-size: 1.4rem; }
+            .page-body { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav style="position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:rgba(14,17,17,0.95); backdrop-filter:blur(12px); border-bottom:1px solid rgba(11,79,55,0.4); z-index:1000;">
+        <div style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:1300px; margin:0 auto;">
+            <a href="index.html" style="color:#fff; text-decoration:none; font-size:1.2rem; font-weight:bold; letter-spacing:0.5px;">CBM <span style="color:#d4a373;">Machineries</span></a>
+            <a href="index.html" style="color:#d4a373; text-decoration:none; font-size:0.85rem; font-weight:500;">← Home</a>
+        </div>
+    </nav>
+
+    <main class="page-wrap">
+        <h1 class="page-heading" id="page-heading">Loading...</h1>
+        <div class="page-divider"></div>
+        <div class="page-body" id="page-body">
+            <p class="page-loading">Loading page content...</p>
+        </div>
+    </main>
+
+    <!-- FLOATING CONTACT BUTTON -->
+    <div class="fab-container" id="fab-container">
+        <div class="fab-menu">
+            <a id="fab-whatsapp" class="fab-item whatsapp" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
+            <a id="fab-call" class="fab-item call" href="#"><i class="fa-solid fa-phone"></i></a>
+            <a id="fab-email" class="fab-item email" href="#"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+        <button id="fab-toggle" class="fab-toggle" aria-label="Contact"><i class="fa-solid fa-headset"></i></button>
+    </div>
+
+    <!-- SITE FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <h3>CBM <span>MACHINERIES</span></h3>
+                <p>High-performance industrial machinery solutions built for precision, durability, and the long haul.</p>
+                <div class="footer-socials">
+                    <a id="footer-facebook" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a id="footer-youtube" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
+                    <a id="footer-linkedin" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a id="footer-instagram" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="catalog.html">All Products</a></li>
+                    <li><a href="index.html#reviews-section">Reviews</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+<div class="footer-col">
+    <h4>Information</h4>
+    <ul id="footer-pages-list">
+        <li style="color:#666; font-size:0.85rem;">Loading...</li>
+    </ul>
+</div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul>
+                    <li><i class="fa-solid fa-phone"></i><a id="footer-hotline-link" href="#"><span id="footer-hotline">+880 1700-000000</span></a></li>
+                    <li><i class="fa-brands fa-whatsapp"></i><a id="footer-whatsapp-link" href="#" target="_blank" rel="noopener"><span id="footer-whatsapp">+880 1700-000000</span></a></li>
+                    <li><i class="fa-solid fa-envelope"></i><a id="footer-email-link" href="#"><span id="footer-email">info@cbmmachineries.com</span></a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Visit Us</h4>
+                <ul>
+                    <li>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <a id="footer-address-link" href="#" target="_blank" rel="noopener"><span id="footer-address" style="white-space: pre-line;">CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh</span></a>
+                    </li>
+                    <li><i class="fa-solid fa-clock"></i><span id="footer-hours">Sat – Thu · 9:00 AM – 7:00 PM</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="footer-year"></span> CBM Machineries. All rights reserved.</span>
+            <span class="footer-tag">Engineered for Industry</span>
+        </div>
+        <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+    </footer>
+
+    <script type="module" src="page.js"></script>
+</body>
+</html>

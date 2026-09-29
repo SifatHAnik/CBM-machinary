@@ -1,6 +1,5 @@
 import { db } from "./firebase-config.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+import { doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 // Business Phone Numbers
 let WHATSAPP_NUMBER = "8801700000000"; 
 let BKASH_ACCOUNT_NUMBER = "01700000000"; 
@@ -27,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     setupCartDrawerUI();
+    loadFooterPages();
     setupBkashModal();
     updateCartUI();
 
@@ -211,6 +211,30 @@ function updateCartUI() {
 }
 
 window.adjustCartQty = (id, delta) => updateQuantity(id, delta);
+
+async function loadFooterPages() {
+    const listEl = document.getElementById('footer-pages-list');
+    if (!listEl) return;
+    try {
+        const snap = await getDocs(collection(db, "footer_pages"));
+        const pages = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.showInFooter !== false) pages.push({ id: d.id, ...data });
+        });
+        pages.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+
+        if (pages.length === 0) {
+            listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
+            return;
+        }
+        listEl.innerHTML = pages.map(p =>
+            `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
+        ).join('');
+    } catch (err) {
+        console.error("Footer pages:", err);
+    }
+}
 
 // --- CART DRAWER CONTROLS ---
 

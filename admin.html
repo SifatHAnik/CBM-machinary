@@ -193,6 +193,7 @@
                 <option value="reviews-mgmt">Review Moderation</option>
                <option value="stats-mgmt">Stats &amp; Information</option>
                 <option value="leads-mgmt">Lead Analytics & Recovery</option>
+                <option value="pages-mgmt">Page Manager</option>
                 <option value="account-mgmt">Account Management</option>
             </select>
         </div>
@@ -411,7 +412,51 @@
                 </table>
             </div>
         </div>
+<!-- SECTION 6: PAGE MANAGER -->
+<div id="section-pages-mgmt" class="hidden">
+    <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Footer Pages Manager</div>
+    <p style="color:#8a9090; font-size:0.8rem; margin:0 0 1rem 0; line-height:1.5;">
+        Create editable pages that appear in the footer. Format: <code style="color:#d4a373;">## Heading</code>, <code style="color:#d4a373;">### Sub</code>, <code style="color:#d4a373;">- bullet</code>, <code style="color:#d4a373;">**bold**</code>. Blank line = new paragraph.
+    </p>
 
+    <input type="hidden" id="page-editing-id" value="">
+
+    <div class="form-group">
+        <label>Page Title</label>
+        <input type="text" id="page-title" placeholder="e.g. About Us">
+    </div>
+
+    <div class="form-group">
+        <label>Slug (URL name — lowercase, no spaces)</label>
+        <input type="text" id="page-slug" placeholder="about-us">
+    </div>
+
+    <div class="form-group">
+        <label>Page Content</label>
+        <textarea id="page-content" rows="14" placeholder="## Our Story&#10;&#10;Founded in 2008, CBM Machineries has supplied..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label style="display:flex; align-items:center; gap:0.6rem; cursor:pointer; text-transform:none; letter-spacing:0; font-size:0.9rem;">
+            <input type="checkbox" id="page-show-footer" checked style="width:auto; accent-color:#d4a373;">
+            Show link in footer
+        </label>
+    </div>
+
+    <div class="inline-group">
+        <button id="save-page-btn" class="btn-industrial">Save Page</button>
+        <button id="cancel-page-btn" class="btn-industrial btn-danger" style="display:none; width:40%;">Cancel Edit</button>
+    </div>
+    <p id="page-status" class="status-msg"></p>
+
+    <hr class="divider">
+
+    <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem; display:flex; justify-content:space-between;">
+        <span>Existing Pages</span>
+        <span id="page-count-badge" style="color:#d4a373; font-size:0.9rem;">Total: 0</span>
+    </div>
+    <div id="pages-list" style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1rem;"></div>
+</div>
         <!-- SECTION 5: ACCOUNT MANAGEMENT -->
         <div id="section-account-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Account Credentials & Access</div>
@@ -447,6 +492,7 @@
     const secStats = document.getElementById('section-stats-mgmt');
     const secLeads = document.getElementById('section-leads-mgmt');
     const secAccount = document.getElementById('section-account-mgmt');
+    const secPages = document.getElementById('section-pages-mgmt');
     
     const prodCategorySelect = document.getElementById('prod-category-select');
     const deleteCatSelect = document.getElementById('delete-cat-select');
@@ -478,6 +524,7 @@
         secStats.classList.add('hidden');
         secLeads.classList.add('hidden');
         secAccount.classList.add('hidden');
+        secPages.classList.add('hidden');
 
         if (e.target.value === 'product-mgmt') {
             secProduct.classList.remove('hidden');
@@ -490,6 +537,9 @@
         } else if (e.target.value === 'leads-mgmt') {
             secLeads.classList.remove('hidden');
             loadLeadAnalytics();
+        } else if (e.target.value === 'pages-mgmt') {
+    secPages.classList.remove('hidden');
+    listenToPages();
         } else if (e.target.value === 'account-mgmt') {
             secAccount.classList.remove('hidden');
         }
@@ -1031,7 +1081,151 @@ function listenToShowcaseThumbs() {
         });
     });
 }
+// ============================================================
+// FOOTER PAGES MANAGER
+// ============================================================
+let editingPageId = null;
 
+function slugify(str) {
+    return String(str).toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+function listenToPages() {
+    onSnapshot(collection(db, "footer_pages"), (snapshot) => {
+        const listEl = document.getElementById('pages-list');
+        const countEl = document.getElementById('page-count-badge');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (countEl) countEl.textContent = `Total: ${snapshot.size}`;
+
+        if (snapshot.empty) {
+            listEl.innerHTML = `<p style="color:#888; font-size:0.85rem; text-align:center; padding:1rem 0;">No pages yet. Create one above.</p>`;
+            return;
+        }
+
+        snapshot.forEach(d => {
+            const data = d.data();
+            const id = d.id;
+            const card = document.createElement('div');
+            card.style.cssText = `background:#1a2020;border:1px solid #0b4f37;border-radius:6px;padding:0.8rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;`;
+            card.innerHTML = `
+                <div style="min-width:0;flex:1;">
+                    <div style="font-weight:bold;color:#fff;font-size:0.9rem;">${escapeHtml(data.title || 'Untitled')}</div>
+                    <div style="color:#8a9090;font-size:0.75rem;margin-top:0.2rem;">
+                        /page.html?slug=${escapeHtml(data.slug || id)} · ${data.showInFooter ? '👁 In footer' : '🚫 Hidden'}
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+                    <button class="btn-industrial edit-page-btn" data-id="${id}" style="width:auto;padding:0.35rem 0.7rem;font-size:0.72rem;">Edit</button>
+                    <button class="btn-industrial btn-danger delete-page-btn" data-id="${id}" style="width:auto;padding:0.35rem 0.7rem;font-size:0.72rem;">Delete</button>
+                </div>
+            `;
+            listEl.appendChild(card);
+        });
+
+        listEl.querySelectorAll('.delete-page-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                if (!confirm("Delete this page permanently?")) return;
+                try {
+                    await deleteDoc(doc(db, "footer_pages", id));
+                    document.getElementById('page-status').innerText = "Page deleted.";
+                } catch (err) {
+                    document.getElementById('page-status').innerText = "Error: " + err.message;
+                }
+            });
+        });
+
+        listEl.querySelectorAll('.edit-page-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                const snap = await getDoc(doc(db, "footer_pages", id));
+                if (!snap.exists()) return;
+                const data = snap.data();
+                editingPageId = id;
+                document.getElementById('page-editing-id').value = id;
+                document.getElementById('page-title').value = data.title || '';
+                document.getElementById('page-slug').value = data.slug || id;
+                document.getElementById('page-content').value = data.content || '';
+                document.getElementById('page-show-footer').checked = !!data.showInFooter;
+                document.getElementById('save-page-btn').textContent = 'Update Page';
+                document.getElementById('cancel-page-btn').style.display = 'inline-block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    });
+}
+
+const cancelPageBtn = document.getElementById('cancel-page-btn');
+if (cancelPageBtn) {
+    cancelPageBtn.addEventListener('click', () => {
+        editingPageId = null;
+        document.getElementById('page-title').value = '';
+        document.getElementById('page-slug').value = '';
+        document.getElementById('page-content').value = '';
+        document.getElementById('page-show-footer').checked = true;
+        document.getElementById('save-page-btn').textContent = 'Save Page';
+        cancelPageBtn.style.display = 'none';
+        document.getElementById('page-status').innerText = '';
+    });
+}
+
+const savePageBtn = document.getElementById('save-page-btn');
+if (savePageBtn) {
+    savePageBtn.addEventListener('click', async () => {
+        const title = document.getElementById('page-title').value.trim();
+        let slug = document.getElementById('page-slug').value.trim();
+        const content = document.getElementById('page-content').value;
+        const showInFooter = document.getElementById('page-show-footer').checked;
+        const statusEl = document.getElementById('page-status');
+
+        if (!title) { statusEl.innerText = "Title is required."; return; }
+        if (!slug) slug = slugify(title);
+        if (!slug) { statusEl.innerText = "Slug is required."; return; }
+
+        try {
+            statusEl.innerText = editingPageId ? "Updating..." : "Creating...";
+            const payload = {
+                title, slug, content, showInFooter,
+                updatedAt: serverTimestamp()
+            };
+            if (editingPageId) {
+                await updateDoc(doc(db, "footer_pages", editingPageId), payload);
+                statusEl.innerText = "Page updated!";
+            } else {
+                await setDoc(doc(db, "footer_pages", slug), {
+                    ...payload,
+                    createdAt: serverTimestamp()
+                });
+                statusEl.innerText = "Page created!";
+            }
+            // Reset form
+            editingPageId = null;
+            document.getElementById('page-editing-id').value = '';
+            document.getElementById('page-title').value = '';
+            document.getElementById('page-slug').value = '';
+            document.getElementById('page-content').value = '';
+            document.getElementById('page-show-footer').checked = true;
+            savePageBtn.textContent = 'Save Page';
+            cancelPageBtn.style.display = 'none';
+        } catch (err) {
+            statusEl.innerText = "Error: " + err.message;
+        }
+    });
+}
+
+// Auto-generate slug as admin types the title (only when creating)
+const pageTitleInput = document.getElementById('page-title');
+if (pageTitleInput) {
+    pageTitleInput.addEventListener('input', () => {
+        if (editingPageId) return;
+        const slugInput = document.getElementById('page-slug');
+        if (slugInput) slugInput.value = slugify(pageTitleInput.value);
+    });
+}
     // HTML Escape Helper
     function escapeHtml(str) {
         return String(str)
