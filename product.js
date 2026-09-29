@@ -53,8 +53,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         currentProduct = { id: docSnap.id, ...docSnap.data() };
 
         // Populate DOM
-        document.getElementById('product-img').src = currentProduct.imageUrl || '';
-        document.getElementById('product-img').alt = currentProduct.title || 'Product Image';
+const imgEl = document.getElementById('product-img');
+const imgBox = imgEl.parentElement;
+const placeholderHtml = `<div class="img-placeholder" style="position:absolute;inset:0;">
+    <i class="fa-solid fa-image"></i>
+    <span class="ph-main">Photo not available</span>
+    <span class="ph-sub">Sorry about that</span>
+</div>`;
+
+if (currentProduct.imageUrl) {
+    imgEl.src = currentProduct.imageUrl;
+    imgEl.alt = currentProduct.title || 'Product Image';
+    imgEl.onerror = () => {
+        imgEl.style.display = 'none';
+        if (!imgBox.querySelector('.img-placeholder')) {
+            imgBox.insertAdjacentHTML('beforeend', placeholderHtml);
+        }
+    };
+} else {
+    imgEl.style.display = 'none';
+    imgBox.insertAdjacentHTML('beforeend', placeholderHtml);
+}
         document.getElementById('product-title').textContent = currentProduct.title || 'Untitled Product';
         document.getElementById('product-category').textContent = currentProduct.category || 'Machinery';
         document.getElementById('product-price').textContent = `৳ ${Number(currentProduct.price || 0).toLocaleString()}`;
@@ -283,3 +302,22 @@ function extractYouTubeId(url) {
     return m ? m[1] : null;
 }
 
+// --- FLOATING ACTION BUTTON ---
+(function () {
+    const fab = document.getElementById('fab-container');
+    const toggle = document.getElementById('fab-toggle');
+    if (!fab || !toggle) return;
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fab.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!fab.contains(e.target)) fab.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') fab.classList.remove('open');
+    });
+})();

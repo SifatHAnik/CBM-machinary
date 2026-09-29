@@ -873,3 +873,120 @@ body {
         flex-direction: column;
     }
 }
+
+
+/* ============================================
+   FALLBACK PRODUCT IMAGE PLACEHOLDER
+   ============================================ */
+.img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #0e1111 0%, #0b4f37 50%, #0e1111 100%);
+    background-size: 300% 300%;
+    animation: imgShimmer 5s ease-in-out infinite;
+    color: #d4a373;
+    text-align: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+.img-placeholder i { font-size: 2rem; opacity: 0.65; }
+.img-placeholder .ph-main {
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.img-placeholder .ph-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    color: #8a9090;
+    font-style: italic;
+}
+@keyframes imgShimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+
+/* ============================================
+   FLOATING CONTACT BUTTON
+   ============================================ */
+.fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 998;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+.fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.fab-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #121616;
+    border: 1px solid rgba(212, 163, 115, 0.4);
+    color: #d4a373;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(20px) scale(0.6);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.6);
+}
+.fab-container.open .fab-menu { pointer-events: auto; }
+.fab-container.open .fab-item {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.fab-container.open .fab-item:nth-child(1) { transition-delay: 0.04s; }
+.fab-container.open .fab-item:nth-child(2) { transition-delay: 0.09s; }
+.fab-container.open .fab-item:nth-child(3) { transition-delay: 0.14s; }
+.fab-item:hover { transform: translateY(-3px) scale(1.12); }
+.fab-item.whatsapp:hover { background: #25D366; color: #fff; border-color: #25D366; box-shadow: 0 0 25px rgba(37, 211, 102, 0.6); }
+.fab-item.call:hover { background: #0b4f37; color: #d4a373; border-color: #d4a373; box-shadow: 0 0 25px rgba(212, 163, 115, 0.5); }
+.fab-item.email:hover { background: #0b4f37; color: #d4a373; border-color: #d4a373; box-shadow: 0 0 25px rgba(212, 163, 115, 0.5); }
+.fab-toggle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0b4f37, #0e6245);
+    border: 1px solid #d4a373;
+    color: #d4a373;
+    font-size: 1.35rem;
+    cursor: pointer;
+    box-shadow: 0 8px 25px -6px rgba(11, 79, 55, 0.9), 0 0 20px rgba(212, 163, 115, 0.3);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.fab-toggle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 30px -4px rgba(212, 163, 115, 0.7), 0 0 30px rgba(212, 163, 115, 0.5);
+}
+.fab-toggle i { transition: transform 0.35s ease; }
+.fab-container.open .fab-toggle i { transform: rotate(90deg); }
+
+@media (max-width: 560px) {
+    .fab-container { bottom: 18px; right: 18px; }
+    .fab-toggle { width: 52px; height: 52px; font-size: 1.2rem; }
+    .fab-item { width: 44px; height: 44px; font-size: 1rem; }
+}

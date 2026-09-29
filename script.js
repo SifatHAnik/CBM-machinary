@@ -551,20 +551,31 @@ function loadShowcaseImages() {
                     flex-shrink: 0;
                 `;
 
-                card.innerHTML = `
-                    <div style="width: 100%; height: 200px; overflow: hidden; background: #000;">
-                        <img src="${escapeHtml(product.imageUrl || '')}" alt="${escapeHtml(product.title || '')}" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                    <div style="padding: 1.2rem; background: #161b1b;">
-                        <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || '')}</h3>
-                        <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${escapeHtml(product.shortDescription || '')}
-                        </p>
-                        <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
-                            ৳ ${Number(product.price || 0).toLocaleString()}
-                        </div>
-                    </div>
-                `;
+const hasImg = !!product.imageUrl;
+const imgHtml = hasImg
+    ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title || '')}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex';">`
+    : '';
+const phHtml = `<div class="img-placeholder" style="display:${hasImg ? 'none' : 'flex'};position:absolute;inset:0;">
+        <i class="fa-solid fa-image"></i>
+        <span class="ph-main">Photo not available</span>
+        <span class="ph-sub">Sorry about that</span>
+    </div>`;
+
+card.innerHTML = `
+    <div style="width: 100%; height: 200px; overflow: hidden; background: #000; position: relative;">
+        ${imgHtml}
+        ${phHtml}
+    </div>
+    <div style="padding: 1.2rem; background: #161b1b;">
+        <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || '')}</h3>
+        <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${escapeHtml(product.shortDescription || '')}
+        </p>
+        <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
+            ৳ ${Number(product.price || 0).toLocaleString()}
+        </div>
+    </div>
+`;
 
                 card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
                 card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
@@ -944,11 +955,68 @@ async function initStats() {
                 clients: data.clientsServed || 0,
                 years: data.yearsExperience || 0
             };
+            applySiteInfo(data);
         }
     } catch (err) {
         console.error("Failed to load site stats:", err);
     }
 }
 
+function applySiteInfo(data) {
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val) el.textContent = val;
+    };
+    setText('footer-hotline', data.hotlineNumber);
+    setText('footer-whatsapp', data.whatsappNumber);
+    setText('footer-email', data.emailAddress);
+    setText('footer-address', data.address);
+    setText('footer-hours', data.businessHours);
+
+    const setLink = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val) el.href = val;
+    };
+    setLink('footer-facebook', data.facebookUrl);
+    setLink('footer-youtube', data.youtubeUrl);
+    setLink('footer-linkedin', data.linkedinUrl);
+    setLink('footer-instagram', data.instagramUrl);
+
+    const waNum = sanitizePhone(data.whatsappNumber);
+    const callNum = sanitizePhone(data.hotlineNumber);
+    const fabWa = document.getElementById('fab-whatsapp');
+    const fabCall = document.getElementById('fab-call');
+    const fabEmail = document.getElementById('fab-email');
+    if (fabWa && waNum) fabWa.href = `https://wa.me/${waNum}`;
+    if (fabCall && callNum) fabCall.href = `tel:${callNum}`;
+    if (fabEmail && data.emailAddress) fabEmail.href = `mailto:${data.emailAddress}`;
+}
+
+function sanitizePhone(num) {
+    if (!num) return '';
+    let n = String(num).replace(/[^0-9]/g, '');
+    if (n.startsWith('0')) n = '880' + n.substring(1);
+    if (!n.startsWith('880') && n.length === 10) n = '880' + n;
+    return n;
+}
 
 
+// --- FLOATING ACTION BUTTON ---
+(function () {
+    const fab = document.getElementById('fab-container');
+    const toggle = document.getElementById('fab-toggle');
+    if (!fab || !toggle) return;
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fab.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!fab.contains(e.target)) fab.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') fab.classList.remove('open');
+    });
+})();

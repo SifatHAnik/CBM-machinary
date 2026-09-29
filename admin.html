@@ -6,6 +6,7 @@
     <title>CBM Machineries | Command Center</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         body {
             background-color: #0e1111;
@@ -114,7 +115,9 @@
         .status-msg { margin-top: 0.8rem; color: #d4a373; font-size: 0.85rem; text-align: center; }
         .inline-group { display: flex; gap: 0.5rem; }
         hr.divider { border: 0; height: 1px; background: rgba(212, 163, 115, 0.2); margin: 2rem 0; }
-
+                    .stats-mini-inputs .form-group { margin-bottom: 0.6rem; }
+.stats-mini-inputs label { font-size: 0.72rem; margin-bottom: 0.25rem; }
+.stats-mini-inputs input { padding: 0.5rem 0.7rem; font-size: 0.85rem; }
         /* Review Card Styling */
         .review-admin-card {
             background: #1a2020;
@@ -188,7 +191,7 @@
             <select id="section-selector">
                 <option value="product-mgmt" selected>Product Management</option>
                 <option value="reviews-mgmt">Review Moderation</option>
-                <option value="stats-mgmt">Site Metrics & Stats</option>
+               <option value="stats-mgmt">Stats &amp; Information</option>
                 <option value="leads-mgmt">Lead Analytics & Recovery</option>
                 <option value="account-mgmt">Account Management</option>
             </select>
@@ -297,23 +300,75 @@
         <div id="section-stats-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Homepage Impact Counters</div>
             
-            <div class="form-group">
-                <label>Machines Deployed / Sold</label>
-                <input type="number" id="stat-machines" placeholder="e.g. 1250">
-            </div>
+            <div class="stats-mini-inputs">
+    <div class="form-group">
+        <label>Machines Deployed / Sold</label>
+        <input type="number" id="stat-machines" placeholder="e.g. 1250">
+    </div>
 
-            <div class="form-group">
-                <label>Industrial Clients Served</label>
-                <input type="number" id="stat-clients" placeholder="e.g. 450">
-            </div>
+    <div class="form-group">
+        <label>Industrial Clients Served</label>
+        <input type="number" id="stat-clients" placeholder="e.g. 450">
+    </div>
 
-            <div class="form-group">
-                <label>Years of Industry Expertise</label>
-                <input type="number" id="stat-years" placeholder="e.g. 15">
-            </div>
+    <div class="form-group">
+        <label>Percentage of positive reviews</label>
+        <input type="number" id="stat-years" placeholder="e.g. 15">
+    </div>
+</div>
 
                         <button id="save-stats-btn" class="btn-industrial">Update Homepage Stats</button>
-                        <p id="stats-status" class="status-msg"></p>
+                        <p id="stats-status"  class="status-msg"></p>
+                        <hr class="divider">
+
+<div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem;">Contact &amp; Footer Information</div>
+
+<div class="form-group">
+    <label>Hotline Number</label>
+    <input type="text" id="info-hotline" placeholder="+880 1700-000000">
+</div>
+
+<div class="form-group">
+    <label>WhatsApp Number</label>
+    <input type="text" id="info-whatsapp" placeholder="+880 1700-000000">
+</div>
+
+<div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="info-email" placeholder="info@cbmmachineries.com">
+</div>
+
+<div class="form-group">
+    <label>Physical Address</label>
+    <textarea id="info-address" rows="3" placeholder="Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh"></textarea>
+</div>
+
+<div class="form-group">
+    <label>Business Hours</label>
+    <input type="text" id="info-hours" placeholder="Sat – Thu · 9:00 AM – 7:00 PM">
+</div>
+
+<div class="admin-header" style="font-size: 0.9rem; border: none; margin: 1.2rem 0 0.6rem 0;">Social Media Links</div>
+
+<div class="form-group">
+    <label>Facebook URL</label>
+    <input type="text" id="info-facebook" placeholder="https://facebook.com/...">
+</div>
+<div class="form-group">
+    <label>YouTube URL</label>
+    <input type="text" id="info-youtube" placeholder="https://youtube.com/@...">
+</div>
+<div class="form-group">
+    <label>LinkedIn URL</label>
+    <input type="text" id="info-linkedin" placeholder="https://linkedin.com/company/...">
+</div>
+<div class="form-group">
+    <label>Instagram URL</label>
+    <input type="text" id="info-instagram" placeholder="https://instagram.com/...">
+</div>
+
+<button id="save-info-btn" class="btn-industrial">Save Contact Information</button>
+<p id="info-status" class="status-msg"></p></p>
 
                         <hr class="divider">
 
@@ -631,35 +686,73 @@ async function loadLeadAnalytics() {
     }
 
     // Load Stats into Inputs
-    async function loadCurrentStats() {
-        try {
-            const docRef = doc(db, "site_stats", "global");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                statMachines.value = data.machinesSold || 0;
-                statClients.value = data.clientsServed || 0;
-                statYears.value = data.yearsExperience || 0;
-            }
-        } catch (err) {
-            statsStatus.innerText = "Error loading stats: " + err.message;
+async function loadCurrentStats() {
+    try {
+        const docRef = doc(db, "site_stats", "global");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            statMachines.value = data.machinesSold || 0;
+            statClients.value = data.clientsServed || 0;
+            statYears.value = data.yearsExperience || 0;
+
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            setVal('info-hotline', data.hotlineNumber);
+            setVal('info-whatsapp', data.whatsappNumber);
+            setVal('info-email', data.emailAddress);
+            setVal('info-address', data.address);
+            setVal('info-hours', data.businessHours);
+            setVal('info-facebook', data.facebookUrl);
+            setVal('info-youtube', data.youtubeUrl);
+            setVal('info-linkedin', data.linkedinUrl);
+            setVal('info-instagram', data.instagramUrl);
         }
+    } catch (err) {
+        statsStatus.innerText = "Error loading stats: " + err.message;
     }
+}
 
     // Save Stats to Firestore
-    saveStatsBtn.addEventListener('click', async () => {
+   saveStatsBtn.addEventListener('click', async () => {
+    try {
+        await setDoc(doc(db, "site_stats", "global"), {
+            machinesSold: Number(statMachines.value),
+            clientsServed: Number(statClients.value),
+            yearsExperience: Number(statYears.value),
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        statsStatus.innerText = "Stats updated successfully!";
+    } catch (err) {
+        statsStatus.innerText = "Error saving stats: " + err.message;
+    }
+});
+
+const saveInfoBtn = document.getElementById('save-info-btn');
+if (saveInfoBtn) {
+    saveInfoBtn.addEventListener('click', async () => {
+        const infoStatus = document.getElementById('info-status');
         try {
+            const g = (id) => (document.getElementById(id)?.value || '').trim();
             await setDoc(doc(db, "site_stats", "global"), {
-                machinesSold: Number(statMachines.value),
-                clientsServed: Number(statClients.value),
-                yearsExperience: Number(statYears.value),
+                hotlineNumber: g('info-hotline'),
+                whatsappNumber: g('info-whatsapp'),
+                emailAddress: g('info-email'),
+                address: g('info-address'),
+                businessHours: g('info-hours'),
+                facebookUrl: g('info-facebook'),
+                youtubeUrl: g('info-youtube'),
+                linkedinUrl: g('info-linkedin'),
+                instagramUrl: g('info-instagram'),
                 updatedAt: serverTimestamp()
-            });
-            statsStatus.innerText = "Site stats updated successfully!";
+            }, { merge: true });
+            infoStatus.style.color = '#25D366';
+            infoStatus.innerText = "Contact information saved!";
         } catch (err) {
-            statsStatus.innerText = "Error saving stats: " + err.message;
+            infoStatus.style.color = '#f5c6cb';
+            infoStatus.innerText = "Error: " + err.message;
         }
     });
+}
 
     // Realtime Listener for Live Products & Deletion
     function listenToProducts() {
