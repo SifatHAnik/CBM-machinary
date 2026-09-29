@@ -63,6 +63,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         document.getElementById('product-full-desc').textContent = 
             currentProduct.longDescription || currentProduct.detailedDescription || currentProduct.description || currentProduct.shortDescription || 'No detailed specifications available.';
+
+            // --- YouTube Video ---
+const videoSection = document.getElementById('product-video-section');
+const videoId = extractYouTubeId(currentProduct.youtubeUrl);
+if (videoId && videoSection) {
+    videoSection.style.display = 'block';
+    document.getElementById('product-video-thumb').src =
+        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+    document.getElementById('product-video-play').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wrapper = document.getElementById('product-video-wrapper');
+        wrapper.style.cursor = 'default';
+        wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    });
+}
         
         // Single Product Direct WhatsApp Order
         const directWaBtn = document.getElementById('direct-whatsapp-btn');
@@ -257,5 +273,13 @@ function hideBkashModal() {
 
 
 
-
+function extractYouTubeId(url) {
+    if (!url) return null;
+    const trimmed = url.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+    const m = trimmed.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
+    );
+    return m ? m[1] : null;
+}
 

@@ -677,3 +677,199 @@ body {
         width: 75% !important;
     }
 }
+
+/* ============================================
+   SITE FOOTER — UPGRADED
+   ============================================ */
+.site-footer {
+    position: relative;
+    background: linear-gradient(180deg, #0a0d0d 0%, #0e1111 100%);
+    padding: 4rem 1.5rem 1.5rem;
+    color: #a0aab0;
+    font-size: 0.9rem;
+    margin-top: 4rem;
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(212, 163, 115, 0.5) 50%,
+        transparent 100%);
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.1fr 1.1fr;
+    gap: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer-brand h3 {
+    color: #d4a373;
+    font-size: 1.35rem;
+    letter-spacing: 2px;
+    margin: 0 0 0.8rem 0;
+    font-weight: 800;
+}
+
+.footer-brand h3 span {
+    color: #fff;
+    font-weight: 300;
+    letter-spacing: 3px;
+}
+
+.footer-brand p {
+    color: #8a9090;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin: 0 0 1.2rem 0;
+    max-width: 340px;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.footer-socials a {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(11, 79, 55, 0.3);
+    border: 1px solid rgba(212, 163, 115, 0.25);
+    color: #d4a373;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-socials a:hover {
+    background: #0b4f37;
+    border-color: #d4a373;
+    color: #d4a373;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px -8px rgba(212, 163, 115, 0.6);
+}
+
+.footer-col h4 {
+    color: #fff;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 1.2rem 0;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.6rem;
+}
+
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 28px;
+    height: 2px;
+    background: #d4a373;
+    border-radius: 1px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footer-col ul li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    color: #a0aab0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.footer-col ul li i {
+    color: #d4a373;
+    margin-top: 3px;
+    flex-shrink: 0;
+    width: 14px;
+    font-size: 0.85rem;
+}
+
+.footer-col ul li a {
+    color: #a0aab0;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 0.25s ease, padding-left 0.25s ease;
+    display: inline-block;
+}
+
+.footer-col ul li a:hover {
+    color: #d4a373;
+    padding-left: 6px;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    font-size: 0.78rem;
+    color: #666;
+    letter-spacing: 0.3px;
+}
+
+.footer-bottom .footer-tag {
+    color: #d4a373;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 900px) {
+    .footer-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .site-footer {
+        padding: 3rem 1.2rem 1.2rem;
+        margin-top: 3rem;
+    }
+    .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+    }
+    .footer-brand p { max-width: 100%; }
+    .footer-bottom {
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+    }
+}

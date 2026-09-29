@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 box-shadow:
                 0 30px 60px -20px rgba(11, 79, 55, 0.9),
                 0 20px 50px -15px rgba(212, 163, 115, 0.35),
-                0 0 80px -10px rgba(14, 98, 69, 0.6);
+                0 0 80px -10px rgba(14, 98, 69, 0.4);
                 transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
                 cursor: grab;
                 user-select: none;
@@ -283,7 +283,7 @@ box-shadow:
             }
                 @media (max-width: 640px) {
                 .showcase-stage { padding: 2rem 1.5rem; }
-                .showcase-float-wrap { max-width: 82%; }
+                .showcase-float-wrap { max-width: 92%; }
                 #showcase-section { padding: 2rem 0 3.5rem; }
             }
         `;

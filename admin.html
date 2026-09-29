@@ -189,7 +189,7 @@
                 <option value="product-mgmt" selected>Product Management</option>
                 <option value="reviews-mgmt">Review Moderation</option>
                 <option value="stats-mgmt">Site Metrics & Stats</option>
-                <option value="leads-mgmt">📊 Lead Analytics & Recovery</option>
+                <option value="leads-mgmt">Lead Analytics & Recovery</option>
                 <option value="account-mgmt">Account Management</option>
             </select>
         </div>
@@ -224,7 +224,10 @@
                 <label>Long Description (Full Specifications)</label>
                 <textarea id="prod-long-desc" placeholder="Enter detailed specs, lines, paragraphs, and formatted notes..."></textarea>
             </div>
-
+<div class="form-group">
+    <label>YouTube Video URL (optional)</label>
+    <input type="text" id="prod-youtube" placeholder="https://youtube.com/watch?v=... or youtu.be/...">
+</div>
             <div class="form-group">
                 <label>Select Category</label>
                 <select id="prod-category-select">
@@ -798,6 +801,7 @@ async function loadLeadAnalytics() {
         const shortDesc = document.getElementById('prod-short-desc').value.trim();
         const longDesc = document.getElementById('prod-long-desc').value;
         const category = document.getElementById('prod-category-select').value;
+        const youtubeUrl = document.getElementById('prod-youtube').value.trim();
         const fileInput = document.getElementById('prod-file');
 
         if (!title || !price || !fileInput.files[0]) {
@@ -812,15 +816,16 @@ async function loadLeadAnalytics() {
 
             prodStatus.innerText = "Image uploaded! Saving product to database...";
 
-            await addDoc(collection(db, "products"), {
-                title: title,
-                price: Number(price),
-                shortDescription: shortDesc,
-                longDescription: longDesc,
-                category: category,
-                imageUrl: imageUrl,
-                createdAt: serverTimestamp()
-            });
+           await addDoc(collection(db, "products"), {
+    title: title,
+    price: Number(price),
+    shortDescription: shortDesc,
+    longDescription: longDesc,
+    category: category,
+    imageUrl: imageUrl,
+    youtubeUrl: youtubeUrl,
+    createdAt: serverTimestamp()
+});
 
             prodStatus.innerText = "Success: Product successfully created and live!";
 
@@ -828,6 +833,7 @@ async function loadLeadAnalytics() {
             document.getElementById('prod-price').value = '';
             document.getElementById('prod-short-desc').value = '';
             document.getElementById('prod-long-desc').value = '';
+            document.getElementById('prod-youtube').value = '';
             fileInput.value = '';
 
         } catch (err) {
