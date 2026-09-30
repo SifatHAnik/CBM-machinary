@@ -388,7 +388,14 @@
 
                         <div id="showcase-thumbnails" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:0.6rem; margin-top:1.2rem;"></div>
         </div>
-
+<hr class="divider">
+<div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Static Fallback Snapshot</div>
+<p style="color:#8a9090; font-size:0.8rem; margin:0 0 1rem 0; line-height:1.5;">
+    Downloads every product, category, review, page and setting as <code style="color:#d4a373;">snapshot.json</code>.
+    Place the file in your site's <code style="color:#d4a373;">/static/</code> folder to protect first-time visitors when Firestore is unreachable.
+</p>
+<button id="export-snapshot-btn" class="btn-industrial">📦 Download Snapshot</button>
+<p id="snapshot-status" class="status-msg"></p>
         <!-- SECTION 4: LEAD ANALYTICS & RECOVERY -->
         <div id="section-leads-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem; justify-content: space-between;">
@@ -1224,6 +1231,54 @@ if (pageTitleInput) {
         if (editingPageId) return;
         const slugInput = document.getElementById('page-slug');
         if (slugInput) slugInput.value = slugify(pageTitleInput.value);
+    });
+}
+
+// ============================================================
+// STATIC SNAPSHOT EXPORT
+// ============================================================
+const exportSnapBtn = document.getElementById('export-snapshot-btn');
+if (exportSnapBtn) {
+    exportSnapBtn.addEventListener('click', async () => {
+        const statusEl = document.getElementById('snapshot-status');
+        statusEl.style.color = '#d4a373';
+        statusEl.innerText = 'Gathering all data...';
+
+        try {
+            const [cats, prods, reviews, showcase, pages, info] = await Promise.all([
+                getDocs(collection(db, "categories")),
+                getDocs(collection(db, "products")),
+                getDocs(collection(db, "reviews")),
+                getDocs(collection(db, "showcase")),
+                getDocs(collection(db, "footer_pages")),
+                getDoc(doc(db, "site_stats", "global"))
+            ]);
+
+            const snapshot = {
+                categories: cats.docs.map(d => ({ id: d.id, ...d.data() })),
+                products: prods.docs.map(d => ({ id: d.id, ...d.data() })),
+                reviews: reviews.docs.map(d => ({ id: d.id, ...d.data() })),
+                showcase: showcase.docs.map(d => ({ id: d.id, ...d.data() })),
+                footer_pages: pages.docs.map(d => ({ id: d.id, ...d.data() })),
+                site_info: info.exists() ? info.data() : null,
+                generatedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'snapshot.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            statusEl.style.color = '#25D366';
+            statusEl.innerText = `Downloaded! ${snapshot.products.length} products, ${snapshot.categories.length} categories. Replace /static/snapshot.json and redeploy.`;
+        } catch (err) {
+            console.error(err);
+            statusEl.style.color = '#f5c6cb';
+            statusEl.innerText = 'Error: ' + err.message;
+        }
     });
 }
     // HTML Escape Helper

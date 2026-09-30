@@ -2,6 +2,7 @@
 // 1. IMPORTS (ALL MUST BE AT THE TOP OF THE MODULE)
 // ========================================================
 import { db } from "./firebase-config.js";
+import { safeFetch, saveToCache, loadFromCache } from "./cache.js";
 import { 
     collection, 
     query, 
@@ -97,55 +98,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Real-time Category Loader & Dropdown Sync
     // ----------------------------------------------------
     function loadDynamicCategories() {
-        onSnapshot(collection(db, "categories"), (catSnapshot) => {
-            if (categoriesContainer) categoriesContainer.innerHTML = '';
-            if (navCategoryDropdown) navCategoryDropdown.innerHTML = '';
+        safeFetch(
+            'categories',
+            async () => {
+                const snap = await getDocs(collection(db, "categories"));
+                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+            'categories',
+            (cats) => {
+                if (!cats) return;
+                if (categoriesContainer) categoriesContainer.innerHTML = '';
+                if (navCategoryDropdown) navCategoryDropdown.innerHTML = '';
+                if (cats.length === 0) return;
 
-            if (catSnapshot.empty) return;
-
-            let fetchedCategories = [];
-            catSnapshot.forEach((catDoc) => {
-                fetchedCategories.push({
-                    id: catDoc.id,
-                    name: catDoc.data().name || catDoc.id
+                const hasNewArrivals = cats.find(c => {
+                    const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
+                    return cleanId === 'new-arrivals' || cleanId === 'newarrivals';
                 });
-            });
+                const hasOtherProducts = cats.find(c => {
+                    const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
+                    return cleanId === 'other-products' || cleanId === 'otherproducts';
+                });
+                const middleCategories = cats.filter(
+                    c => c.id !== hasNewArrivals?.id && c.id !== hasOtherProducts?.id
+                );
 
-            // Clean string comparison for category IDs
-            const hasNewArrivals = fetchedCategories.find(c => {
-                const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
-                return cleanId === 'new-arrivals' || cleanId === 'newarrivals';
-            });
+                if (hasNewArrivals) renderCategorySection(hasNewArrivals);
+                renderStatsSectionBlock();
+                renderShowcaseBlock();
+                middleCategories.forEach(cat => renderCategorySection(cat));
+                if (hasOtherProducts) renderCategorySection(hasOtherProducts);
 
-            const hasOtherProducts = fetchedCategories.find(c => {
-                const cleanId = c.id.toLowerCase().replace(/[\s_]+/g, '-');
-                return cleanId === 'other-products' || cleanId === 'otherproducts';
-            });
-
-            const middleCategories = fetchedCategories.filter(
-                c => c.id !== hasNewArrivals?.id && c.id !== hasOtherProducts?.id
-            );
-
-            // 1. First, render New Arrivals
-            if (hasNewArrivals) {
-                renderCategorySection(hasNewArrivals);
+                observeStatsSection();
             }
-
-            // 2. Second, inject the Stats Section directly after New Arrivals
-            renderStatsSectionBlock();
-            renderShowcaseBlock();
-
-            // 3. Third, render middle categories below stats
-            middleCategories.forEach(cat => renderCategorySection(cat));
-
-            // 4. Finally, render Other Products at the end
-            if (hasOtherProducts) {
-                renderCategorySection(hasOtherProducts);
-            }
-
-            // Re-bind the scroll observer AFTER elements exist in DOM
-            observeStatsSection();
-        });
+        );
     }
 
 
@@ -314,125 +300,102 @@ function loadShowcaseImages() {
     const card = document.getElementById('showcase-card');
     if (!track || !card) return;
 
-    onSnapshot(collection(db, "showcase"), (snapshot) => {
-        track.innerHTML = '';
-
-        if (snapshot.empty) {
-            track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
-            return;
-        }
-
-        const images = [];
-        snapshot.forEach(d => images.push(d.data().imageUrl));
-
-        images.forEach(url => {
-            const slide = document.createElement('div');
-            slide.className = 'showcase-slide';
-            slide.innerHTML = `<img src="${url}" alt="" loading="lazy">`;
-            track.appendChild(slide);
-        });
-
-        const total = images.length;
-        if (total === 0) return;
-
-        let current = 0;
-        let autoTimer = null;
-        let isInteracting = false;
-        let dragging = false;
-        let startX = 0;
-        let currentX = 0;
-
-        const goTo = (idx, instant = false) => {
-            current = (idx + total) % total;
-            if (instant) {
-                track.classList.add('no-transition');
-                track.style.transform = `translateX(-${current * 100}%)`;
-                void track.offsetWidth;
-                track.classList.remove('no-transition');
-            } else {
-                track.classList.remove('no-transition');
-                track.style.transform = `translateX(-${current * 100}%)`;
+    safeFetch(
+        'showcase',
+        async () => {
+            const snap = await getDocs(collection(db, "showcase"));
+            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        },
+        'showcase',
+        (images) => {
+            track.innerHTML = '';
+            if (!images || images.length === 0) {
+                track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
+                return;
             }
-        };
+            images.forEach(img => {
+                const slide = document.createElement('div');
+                slide.className = 'showcase-slide';
+                slide.innerHTML = `<img src="${img.imageUrl}" alt="" loading="lazy">`;
+                track.appendChild(slide);
+            });
 
-        const startAuto = () => {
-            stopAuto();
-            if (total <= 1) return;
-            autoTimer = setInterval(() => {
-                if (!isInteracting) goTo(current + 1);
-            }, 5000);
-        };
-        const stopAuto = () => {
-            if (autoTimer) clearInterval(autoTimer);
-            autoTimer = null;
-        };
+            const total = images.length;
+            if (total === 0) return;
+            let current = 0, autoTimer = null, isInteracting = false, dragging = false, startX = 0, currentX = 0;
 
-        const prevBtn = document.getElementById('showcase-prev');
-        const nextBtn = document.getElementById('showcase-next');
-        if (prevBtn) prevBtn.addEventListener('click', () => { goTo(current - 1); startAuto(); });
-        if (nextBtn) nextBtn.addEventListener('click', () => { goTo(current + 1); startAuto(); });
+            const goTo = (idx, instant = false) => {
+                current = (idx + total) % total;
+                if (instant) {
+                    track.classList.add('no-transition');
+                    track.style.transform = `translateX(-${current * 100}%)`;
+                    void track.offsetWidth;
+                    track.classList.remove('no-transition');
+                } else {
+                    track.classList.remove('no-transition');
+                    track.style.transform = `translateX(-${current * 100}%)`;
+                }
+            };
+            const startAuto = () => {
+                stopAuto();
+                if (total <= 1) return;
+                autoTimer = setInterval(() => { if (!isInteracting) goTo(current + 1); }, 5000);
+            };
+            const stopAuto = () => { if (autoTimer) clearInterval(autoTimer); autoTimer = null; };
 
-        const pauseFloat = () => {
-            const wrap = card.closest('.showcase-float-wrap');
-            if (wrap) wrap.style.animationPlayState = 'paused';
-        };
-        const resumeFloat = () => {
-            const wrap = card.closest('.showcase-float-wrap');
-            if (wrap) wrap.style.animationPlayState = 'running';
-        };
+            const prevBtn = document.getElementById('showcase-prev');
+            const nextBtn = document.getElementById('showcase-next');
+            if (prevBtn) prevBtn.addEventListener('click', () => { goTo(current - 1); startAuto(); });
+            if (nextBtn) nextBtn.addEventListener('click', () => { goTo(current + 1); startAuto(); });
 
-     const onPointerDown = (e) => {
-    if (e.target.closest('.showcase-arrow')) return;
-    if (total <= 1) return;
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    dragging = true;
-            isInteracting = true;
-            startX = e.clientX;
-            currentX = startX;
-            try { card.setPointerCapture(e.pointerId); } catch (_) {}
-            card.classList.add('swiping');
-            track.classList.add('no-transition');
-            pauseFloat();
-        };
+            const pauseFloat = () => { const w = card.closest('.showcase-float-wrap'); if (w) w.style.animationPlayState = 'paused'; };
+            const resumeFloat = () => { const w = card.closest('.showcase-float-wrap'); if (w) w.style.animationPlayState = 'running'; };
 
-        const onPointerMove = (e) => {
-            if (!dragging) return;
-            currentX = e.clientX;
-            const delta = currentX - startX;
-            const percent = (delta / card.offsetWidth) * 100;
-            track.style.transform = `translateX(calc(-${current * 100}% + ${percent}%))`;
-            const tilt = Math.max(-12, Math.min(12, delta / 12));
-            card.style.transform = `perspective(900px) rotateY(${tilt}deg) rotateZ(${tilt * 0.15}deg)`;
-        };
+            const onPointerDown = (e) => {
+                if (e.target.closest('.showcase-arrow')) return;
+                if (total <= 1) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                dragging = true; isInteracting = true;
+                startX = e.clientX; currentX = startX;
+                try { card.setPointerCapture(e.pointerId); } catch (_) {}
+                card.classList.add('swiping');
+                track.classList.add('no-transition');
+                pauseFloat();
+            };
+            const onPointerMove = (e) => {
+                if (!dragging) return;
+                currentX = e.clientX;
+                const delta = currentX - startX;
+                const percent = (delta / card.offsetWidth) * 100;
+                track.style.transform = `translateX(calc(-${current * 100}% + ${percent}%))`;
+                const tilt = Math.max(-12, Math.min(12, delta / 12));
+                card.style.transform = `perspective(900px) rotateY(${tilt}deg) rotateZ(${tilt * 0.15}deg)`;
+            };
+            const onPointerUp = () => {
+                if (!dragging) return;
+                dragging = false;
+                const delta = currentX - startX;
+                const threshold = card.offsetWidth * 0.15;
+                card.classList.remove('swiping');
+                track.classList.remove('no-transition');
+                card.style.transform = '';
+                if (delta > threshold) goTo(current - 1);
+                else if (delta < -threshold) goTo(current + 1);
+                else goTo(current);
+                setTimeout(resumeFloat, 700);
+                setTimeout(() => { isInteracting = false; }, 800);
+                startAuto();
+            };
+            card.addEventListener('pointerdown', onPointerDown);
+            card.addEventListener('pointermove', onPointerMove);
+            card.addEventListener('pointerup', onPointerUp);
+            card.addEventListener('pointercancel', onPointerUp);
+            card.addEventListener('dragstart', e => e.preventDefault());
 
-        const onPointerUp = () => {
-            if (!dragging) return;
-            dragging = false;
-            const delta = currentX - startX;
-            const threshold = card.offsetWidth * 0.15;
-
-            card.classList.remove('swiping');
-            track.classList.remove('no-transition');
-            card.style.transform = '';
-
-            if (delta > threshold) goTo(current - 1);
-            else if (delta < -threshold) goTo(current + 1);
-            else goTo(current);
-
-            setTimeout(resumeFloat, 700);
-            setTimeout(() => { isInteracting = false; }, 800);
+            goTo(0, true);
             startAuto();
-        };
-
-        card.addEventListener('pointerdown', onPointerDown);
-        card.addEventListener('pointermove', onPointerMove);
-        card.addEventListener('pointerup', onPointerUp);
-        card.addEventListener('pointercancel', onPointerUp);
-        card.addEventListener('dragstart', (e) => e.preventDefault());
-
-        goTo(0, true);
-        startAuto();
-    });
+        }
+    );
 }
 
     // Helper: Dynamically creates and places the Stats Section in sequence
@@ -528,71 +491,76 @@ section.innerHTML = `
         const sliderEl = document.getElementById(`slider-${categorySlug}`);
         if (!sliderEl) return;
 
-        const q = query(collection(db, "products"), where("category", "==", categorySlug));
+        safeFetch(
+            `products-${categorySlug}`,
+            async () => {
+                const q = query(collection(db, "products"), where("category", "==", categorySlug));
+                const snap = await getDocs(q);
+                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+            'products',
+            (allProducts) => {
+                sliderEl.innerHTML = '';
+                // allProducts may be the full list from snapshot — filter by category here
+                const products = (allProducts || []).filter(p => p.category === categorySlug);
 
-        onSnapshot(q, (prodSnapshot) => {
-            sliderEl.innerHTML = '';
+                if (products.length === 0) {
+                    sliderEl.innerHTML = `<p style="color: #666; font-size: 0.85rem; font-style: italic;">No items currently listed in this category.</p>`;
+                    return;
+                }
 
-            if (prodSnapshot.empty) {
-                sliderEl.innerHTML = `<p style="color: #666; font-size: 0.85rem; font-style: italic;">No items currently listed in this category.</p>`;
-                return;
+                products.forEach((product) => {
+                    const productId = product.id;
+                    const card = document.createElement('div');
+                    card.style.cssText = `
+                        min-width: 280px;
+                        max-width: 280px;
+                        background: #161b1b;
+                        border: 1px solid rgba(212, 163, 115, 0.2);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        cursor: pointer;
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        flex-shrink: 0;
+                    `;
+
+                    const hasImg = !!product.imageUrl;
+                    const imgHtml = hasImg
+                        ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title || '')}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex';">`
+                        : '';
+                    const phHtml = `<div class="img-placeholder" style="display:${hasImg ? 'none' : 'flex'};position:absolute;inset:0;">
+                        <i class="fa-solid fa-image"></i>
+                        <span class="ph-main">Photo not available</span>
+                        <span class="ph-sub">Sorry about that</span>
+                    </div>`;
+
+                    card.innerHTML = `
+                        <div style="width: 100%; height: 200px; overflow: hidden; background: #000; position: relative;">
+                            ${imgHtml}
+                            ${phHtml}
+                        </div>
+                        <div style="padding: 1.2rem; background: #161b1b;">
+                            <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || '')}</h3>
+                            <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${escapeHtml(product.shortDescription || '')}
+                            </p>
+                            <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
+                                ৳ ${Number(product.price || 0).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+
+                    card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
+                    card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+                    card.addEventListener('click', () => {
+                        if (window.trackProductView) window.trackProductView(product.title);
+                        window.location.href = `product.html?id=${productId}`;
+                    });
+
+                    sliderEl.appendChild(card);
+                });
             }
-
-            prodSnapshot.forEach((prodDoc) => {
-                const product = prodDoc.data();
-                const productId = prodDoc.id;
-
-                const card = document.createElement('div');
-                card.style.cssText = `
-                    min-width: 280px;
-                    max-width: 280px;
-                    background: #161b1b;
-                    border: 1px solid rgba(212, 163, 115, 0.2);
-                    border-radius: 12px;
-                    overflow: hidden;
-                    cursor: pointer;
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                    flex-shrink: 0;
-                `;
-
-const hasImg = !!product.imageUrl;
-const imgHtml = hasImg
-    ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title || '')}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex';">`
-    : '';
-const phHtml = `<div class="img-placeholder" style="display:${hasImg ? 'none' : 'flex'};position:absolute;inset:0;">
-        <i class="fa-solid fa-image"></i>
-        <span class="ph-main">Photo not available</span>
-        <span class="ph-sub">Sorry about that</span>
-    </div>`;
-
-card.innerHTML = `
-    <div style="width: 100%; height: 200px; overflow: hidden; background: #000; position: relative;">
-        ${imgHtml}
-        ${phHtml}
-    </div>
-    <div style="padding: 1.2rem; background: #161b1b;">
-        <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || '')}</h3>
-        <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            ${escapeHtml(product.shortDescription || '')}
-        </p>
-        <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
-            ৳ ${Number(product.price || 0).toLocaleString()}
-        </div>
-    </div>
-`;
-
-                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
-                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
-
-
-              card.addEventListener('click', () => {
-    if (window.trackProductView) window.trackProductView(product.title);
-    window.location.href = `product.html?id=${productId}`;
-});
-
-                sliderEl.appendChild(card);
-            });
-        });
+        );
     }
 
     // Initializations
@@ -817,43 +785,42 @@ function initReviewsSection() {
 
     // 2. Fetch & Render Approved Reviews in Real-Time
     if (reviewsGrid) {
-        const qReviews = query(collection(db, "reviews"), where("approved", "==", true));
-        onSnapshot(qReviews, (snapshot) => {
-            reviewsGrid.innerHTML = '';
-
-            if (snapshot.empty) {
-                reviewsGrid.innerHTML = `
-                    <p style="color: #666; font-size: 0.9rem; grid-column: 1 / -1; text-align: center; font-style: italic;">
-                        No customer opinions submitted yet. Be the first to share your experience!
-                    </p>
-                `;
-                return;
-            }
-
-            snapshot.forEach((rDoc) => {
-                const data = rDoc.data();
-                const starsCount = Number(data.rating) || 5;
-
-                let starsHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= starsCount) {
-                        starsHtml += `<i class="fa-solid fa-star"></i> `;
-                    } else {
-                        starsHtml += `<i class="fa-regular fa-star" style="color: #444;"></i> `;
-                    }
+        safeFetch(
+            'reviews',
+            async () => {
+                const qReviews = query(collection(db, "reviews"), where("approved", "==", true));
+                const snap = await getDocs(qReviews);
+                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+            'reviews',
+            (reviews) => {
+                reviewsGrid.innerHTML = '';
+                if (!reviews || reviews.length === 0) {
+                    reviewsGrid.innerHTML = `
+                        <p style="color: #666; font-size: 0.9rem; grid-column: 1 / -1; text-align: center; font-style: italic;">
+                            No customer opinions submitted yet. Be the first to share your experience!
+                        </p>`;
+                    return;
                 }
-
-                const card = document.createElement('div');
-                card.className = 'review-card';
-                card.innerHTML = `
-                    <div class="card-stars">${starsHtml}</div>
-                    <div class="card-comment">"${escapeHtml(data.comment || '')}"</div>
-                    <div class="card-author">${escapeHtml(data.name || 'Anonymous Client')}</div>
-                `;
-
-                reviewsGrid.appendChild(card);
-            });
-        });
+                reviews.forEach((data) => {
+                    const starsCount = Number(data.rating) || 5;
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        starsHtml += (i <= starsCount)
+                            ? `<i class="fa-solid fa-star"></i> `
+                            : `<i class="fa-regular fa-star" style="color: #444;"></i> `;
+                    }
+                    const card = document.createElement('div');
+                    card.className = 'review-card';
+                    card.innerHTML = `
+                        <div class="card-stars">${starsHtml}</div>
+                        <div class="card-comment">"${escapeHtml(data.comment || '')}"</div>
+                        <div class="card-author">${escapeHtml(data.name || 'Anonymous Client')}</div>
+                    `;
+                    reviewsGrid.appendChild(card);
+                });
+            }
+        );
     }
 
     // 3. Review Submission Form Handler
@@ -949,12 +916,15 @@ function animateCounter(elementId, targetValue, suffix = "+") {
 }
 
 async function initStats() {
-    try {
-        const docRef = doc(db, "site_stats", "global");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
+    await safeFetch(
+        'site_info',
+        async () => {
+            const docSnap = await getDoc(doc(db, "site_stats", "global"));
+            return docSnap.exists() ? docSnap.data() : null;
+        },
+        'site_info',
+        (data) => {
+            if (!data) return;
             targetStats = {
                 machines: data.machinesSold || 0,
                 clients: data.clientsServed || 0,
@@ -962,9 +932,7 @@ async function initStats() {
             };
             applySiteInfo(data);
         }
-    } catch (err) {
-        console.error("Failed to load site stats:", err);
-    }
+    );
 }
 
 function applySiteInfo(data) {
@@ -1164,25 +1132,28 @@ function sanitizePhone(num) {
 async function loadFooterPages() {
     const listEl = document.getElementById('footer-pages-list');
     if (!listEl) return;
-    try {
-        const snap = await getDocs(collection(db, "footer_pages"));
-        const pages = [];
-        snap.forEach(d => {
-            const data = d.data();
-            if (data.showInFooter !== false) pages.push({ id: d.id, ...data });
-        });
-        pages.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
 
-        if (pages.length === 0) {
-            listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
-            return;
+    await safeFetch(
+        'footer_pages',
+        async () => {
+            const snap = await getDocs(collection(db, "footer_pages"));
+            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        },
+        'footer_pages',
+        (pages) => {
+            if (!pages) return;
+            const visible = pages.filter(p => p.showInFooter !== false);
+            visible.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+
+            if (visible.length === 0) {
+                listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
+                return;
+            }
+            listEl.innerHTML = visible.map(p =>
+                `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
+            ).join('');
         }
-        listEl.innerHTML = pages.map(p =>
-            `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
-        ).join('');
-    } catch (err) {
-        console.error("Footer pages:", err);
-    }
+    );
 }
 
 // ============================================================

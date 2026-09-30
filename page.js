@@ -1,5 +1,6 @@
 import { db } from "./firebase-config.js";
 import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { safeFetch } from "./cache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -20,20 +21,27 @@ async function loadPage(slug) {
     const headingEl = document.getElementById('page-heading');
     const bodyEl = document.getElementById('page-body');
 
-    try {
-        const snap = await getDoc(doc(db, "footer_pages", slug));
-        if (!snap.exists()) {
-            showError("Page not found.");
-            return;
+    await safeFetch(
+        `page-${slug}`,
+        async () => {
+            const snap = await getDoc(doc(db, "footer_pages", slug));
+            return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+        },
+        'footer_pages',
+        (data) => {
+            let page = data;
+            if (Array.isArray(data)) page = data.find(p => (p.slug || p.id) === slug);
+
+            if (!page) {
+                headingEl.textContent = 'Oops';
+                bodyEl.innerHTML = `<p class="page-error">Page not found.</p>`;
+                return;
+            }
+            headingEl.textContent = page.title || 'Untitled';
+            bodyEl.innerHTML = renderContent(page.content || '');
+            document.title = `${page.title || 'Page'} - CBM Machineries`;
         }
-        const data = snap.data();
-        headingEl.textContent = data.title || 'Untitled';
-        bodyEl.innerHTML = renderContent(data.content || '');
-        document.title = `${data.title || 'Page'} - CBM Machineries`;
-    } catch (err) {
-        console.error(err);
-        showError("Failed to load page.");
-    }
+    );
 }
 
 function showError(msg) {
@@ -90,70 +98,77 @@ function renderContent(raw) {
 }
 
 async function initFooterInfo() {
-    try {
-        const snap = await getDoc(doc(db, "site_stats", "global"));
-        if (!snap.exists()) return;
-        const data = snap.data();
+    await safeFetch(
+        'site_info',
+        async () => {
+            const snap = await getDoc(doc(db, "site_stats", "global"));
+            return snap.exists() ? snap.data() : null;
+        },
+        'site_info',
+        (data) => {
+            if (!data) return;
 
-        const setText = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
-        setText('footer-hotline', data.hotlineNumber);
-        setText('footer-whatsapp', data.whatsappNumber);
-        setText('footer-email', data.emailAddress);
-        setText('footer-address', data.address);
-        setText('footer-hours', data.businessHours);
+            const setText = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+            setText('footer-hotline', data.hotlineNumber);
+            setText('footer-whatsapp', data.whatsappNumber);
+            setText('footer-email', data.emailAddress);
+            setText('footer-address', data.address);
+            setText('footer-hours', data.businessHours);
 
-        const setLink = (id, val) => { const el = document.getElementById(id); if (el && val) el.href = val; };
-        setLink('footer-facebook', data.facebookUrl);
-        setLink('footer-youtube', data.youtubeUrl);
-        setLink('footer-linkedin', data.linkedinUrl);
-        setLink('footer-instagram', data.instagramUrl);
+            const setLink = (id, val) => { const el = document.getElementById(id); if (el && val) el.href = val; };
+            setLink('footer-facebook', data.facebookUrl);
+            setLink('footer-youtube', data.youtubeUrl);
+            setLink('footer-linkedin', data.linkedinUrl);
+            setLink('footer-instagram', data.instagramUrl);
 
-        const waNum = sanitizePhone(data.whatsappNumber);
-        const callNum = data.hotlineNumber ? String(data.hotlineNumber).replace(/[^0-9+]/g, '') : '';
+            const waNum = sanitizePhone(data.whatsappNumber);
+            const callNum = data.hotlineNumber ? String(data.hotlineNumber).replace(/[^0-9+]/g, '') : '';
 
-        if (waNum) {
-            const a = document.getElementById('footer-whatsapp-link'); if (a) a.href = `https://wa.me/${waNum}`;
-            const b = document.getElementById('fab-whatsapp'); if (b) b.href = `https://wa.me/${waNum}`;
+            if (waNum) {
+                const a = document.getElementById('footer-whatsapp-link'); if (a) a.href = `https://wa.me/${waNum}`;
+                const b = document.getElementById('fab-whatsapp'); if (b) b.href = `https://wa.me/${waNum}`;
+            }
+            if (callNum) {
+                const a = document.getElementById('footer-hotline-link'); if (a) a.href = `tel:${callNum}`;
+                const b = document.getElementById('fab-call'); if (b) b.href = `tel:${callNum}`;
+            }
+            if (data.emailAddress) {
+                const a = document.getElementById('footer-email-link'); if (a) a.href = `mailto:${data.emailAddress}`;
+                const b = document.getElementById('fab-email'); if (b) b.href = `mailto:${data.emailAddress}`;
+            }
+            if (data.address) {
+                const a = document.getElementById('footer-address-link');
+                if (a) a.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
+            }
         }
-        if (callNum) {
-            const a = document.getElementById('footer-hotline-link'); if (a) a.href = `tel:${callNum}`;
-            const b = document.getElementById('fab-call'); if (b) b.href = `tel:${callNum}`;
-        }
-        if (data.emailAddress) {
-            const a = document.getElementById('footer-email-link'); if (a) a.href = `mailto:${data.emailAddress}`;
-            const b = document.getElementById('fab-email'); if (b) b.href = `mailto:${data.emailAddress}`;
-        }
-        if (data.address) {
-            const a = document.getElementById('footer-address-link');
-            if (a) a.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
-        }
-    } catch (err) {
-        console.error("Footer info:", err);
-    }
+    );
 }
 
 async function loadFooterPages() {
     const listEl = document.getElementById('footer-pages-list');
     if (!listEl) return;
-    try {
-        const snap = await getDocs(collection(db, "footer_pages"));
-        const pages = [];
-        snap.forEach(d => {
-            const data = d.data();
-            if (data.showInFooter !== false) pages.push({ id: d.id, ...data });
-        });
-        pages.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
 
-        if (pages.length === 0) {
-            listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
-            return;
+    await safeFetch(
+        'footer_pages',
+        async () => {
+            const snap = await getDocs(collection(db, "footer_pages"));
+            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        },
+        'footer_pages',
+        (pages) => {
+            if (!pages) return;
+            const visible = pages.filter(p => p.showInFooter !== false);
+            visible.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+
+            if (visible.length === 0) {
+                listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
+                return;
+            }
+            listEl.innerHTML = visible.map(p =>
+                `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
+            ).join('');
         }
-        listEl.innerHTML = pages.map(p =>
-            `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
-        ).join('');
-    } catch (err) {
-        console.error("Footer pages:", err);
-    }
+    );
 }
 
 function initFab() {
