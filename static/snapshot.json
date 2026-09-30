@@ -1,8 +1,231 @@
 {
-  "categories": [],
-  "products": [],
-  "site_info": null,
-  "reviews": [],
-  "showcase": [],
-  "footer_pages": []
+  "categories": [
+    {
+      "id": "hello",
+      "name": "hello",
+      "createdAt": {
+        "seconds": 1790421252,
+        "nanoseconds": 754000000
+      }
+    },
+    {
+      "id": "new-arrivals",
+      "name": "New Arrivals",
+      "createdAt": {
+        "seconds": 1790417228,
+        "nanoseconds": 680000000
+      },
+      "slug": "new-arrivals",
+      "isMandatory": true
+    },
+    {
+      "id": "other-products",
+      "isMandatory": false,
+      "slug": "other-products",
+      "createdAt": {
+        "seconds": 1790515798,
+        "nanoseconds": 0
+      },
+      "name": "Other Products"
+    },
+    {
+      "id": "seeee",
+      "name": "seeee",
+      "createdAt": {
+        "seconds": 1790446231,
+        "nanoseconds": 704000000
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "HEXRwLBNahVKmeYi2kfu",
+      "shortDescription": "ihrwhceciwe",
+      "price": 555,
+      "createdAt": {
+        "seconds": 1790446266,
+        "nanoseconds": 794000000
+      },
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790446266/ib4pyngymo6djbdsbowg.avif",
+      "longDescription": "refeifwe\nfecuuitwve\nvewvev",
+      "category": "seeee",
+      "title": "hello product"
+    },
+    {
+      "id": "RsKtQMIQJGsHKKEtzM4n",
+      "longDescription": "ricwyrcyerwfve",
+      "price": 3922,
+      "category": "hello",
+      "shortDescription": "hbfcywecre",
+      "createdAt": {
+        "seconds": 1790446213,
+        "nanoseconds": 317000000
+      },
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790446212/c0m9vfw1jsjudubezgfk.jpg",
+      "title": "hedweuxr"
+    },
+    {
+      "id": "UBXMGhfMlYj9E34jfneJ",
+      "createdAt": {
+        "seconds": 1790446411,
+        "nanoseconds": 267000000
+      },
+      "title": "heheheh",
+      "category": "seeee",
+      "longDescription": "dcycewcywecewWc\ncrweryywecewtf\ncetcehweyc\necewrcgwe",
+      "shortDescription": "udhxywrhw",
+      "price": 8888,
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790446410/h7pasytpue1mc9zz9p2w.png"
+    },
+    {
+      "id": "Vw5lmzHcUMbhVoJcp1gJ",
+      "title": "hell",
+      "category": "new-arrivals",
+      "createdAt": {
+        "seconds": 1790421285,
+        "nanoseconds": 840000000
+      },
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790421285/rmd9ihz9yeeboedvxk1b.png",
+      "longDescription": "wedwqeufdgwryfgweq\nfwqhfwfd\nfjwqfwfyw",
+      "shortDescription": "sdchuabwycg",
+      "price": 6666
+    },
+    {
+      "id": "j475VCt1SPZlITS5gXzB",
+      "title": "New yt check",
+      "category": "seeee",
+      "createdAt": {
+        "seconds": 1790694287,
+        "nanoseconds": 844000000
+      },
+      "youtubeUrl": "https://youtu.be/fdnL8rPOo5g?si=TOH5K2VUJz_vhjLE",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790694286/zjmb0ru28kascgd9skqz.jpg",
+      "shortDescription": "This is good 👍🏻",
+      "longDescription": "Jajdboac\nSibxiisicd\n\nSjcjow\n\nC\nShaoox\nA\nXina\n\n\n\nDjaobxb",
+      "price": 6666
+    },
+    {
+      "id": "mo9MCOU0PWtXUKFs3eBK",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790516596/ogl0yzm48xjasri3dsvt.jpg",
+      "shortDescription": "urcryywer rqwey fr",
+      "title": "heheoiiiii",
+      "price": 89964,
+      "category": "other-products",
+      "createdAt": {
+        "seconds": 1790516598,
+        "nanoseconds": 226000000
+      },
+      "longDescription": "Heavy-Duty Industrial Hydraulic Press (500 Ton)\nOverview\nThe CBM-500 Industrial Press is built for continuous, high-precision metal forming, stamping, and deep drawing operations. Engineered with high-grade structural steel and advanced hydraulic control systems to maximize daily factory throughput.\n\nKey Technical Specifications\nOperating Pressure: 500 Metric Tons\n\nMotor Power: 45 kW / 60 HP (3-Phase)\n\nStroke Length: 800 mm\n\nMax Working Table Size: 1200 x 1200 mm\n\nControl System: Semi-Automatic & Fully Manual Override\n\nSafety Features: Dual Palm Control Button & Infrared Light Curtain\n\nKey Features & Capabilities\nPrecision Guidance: Features 8-side guide rails for minimal deflection during high-pressure operations.\n\nEnergy Saver Unit: Variable displacement pump reduces power consumption during idle periods by up to 30%.\n\nHeavy Structural Frame: Stress-relieved steel frame ensures zero structural distortion under peak load conditions.\n\nMaintenance & Operational Guidelines\nPlease ensure daily lubrication checks before starting operation. Hydraulic oil (ISO VG 68) must be replaced every 3,000 working hours. Comes with a standard 12-month CBM Machineries warranty covering main hydraulic pumps and structural components."
+    }
+  ],
+  "reviews": [
+    {
+      "id": "G3M17Ld3Nkl1g6m1QxXl",
+      "comment": "Yeivwhs",
+      "approved": false,
+      "name": "Anij",
+      "rating": 3,
+      "createdAt": {
+        "seconds": 1790591645,
+        "nanoseconds": 505000000
+      }
+    },
+    {
+      "id": "zi7rzqYCdTQWe5xtE87E",
+      "comment": "shitty site btw.....",
+      "approved": true,
+      "name": "sifat",
+      "rating": 1,
+      "createdAt": {
+        "seconds": 1790532497,
+        "nanoseconds": 510000000
+      }
+    }
+  ],
+  "showcase": [
+    {
+      "id": "B75RC0x4GfbEV6WgJbeC",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620613/lfb3r2o3a9vbscbqjtxc.png",
+      "createdAt": {
+        "seconds": 1790620624,
+        "nanoseconds": 419000000
+      }
+    },
+    {
+      "id": "LGxBxhiPd6z5YlFt6Bhx",
+      "createdAt": {
+        "seconds": 1790620624,
+        "nanoseconds": 273000000
+      },
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620612/awjrtmgd7az5yy4zwrag.png"
+    },
+    {
+      "id": "S8Nmm74rDJd0TDpmM23L",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620612/wvcldizicnvrdkhyrap8.png",
+      "createdAt": {
+        "seconds": 1790620623,
+        "nanoseconds": 856000000
+      }
+    },
+    {
+      "id": "lepkYDutBVLzEuPdqfy2",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620622/s4zlgihuts0lackmemdq.png",
+      "createdAt": {
+        "seconds": 1790620624,
+        "nanoseconds": 57000000
+      }
+    },
+    {
+      "id": "sA4eUZzUyj8NAMFuIGhB",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620611/nypxvxib8adygccufbmh.png",
+      "createdAt": {
+        "seconds": 1790620623,
+        "nanoseconds": 951000000
+      }
+    },
+    {
+      "id": "szBLc7MHPNQdzYOHAVVn",
+      "imageUrl": "https://res.cloudinary.com/w4tlz3yl/image/upload/v1790620619/ipjnauhghu7ibjxgqnqr.png",
+      "createdAt": {
+        "seconds": 1790620624,
+        "nanoseconds": 173000000
+      }
+    }
+  ],
+  "footer_pages": [
+    {
+      "id": "terms-conditions",
+      "createdAt": {
+        "seconds": 1790703700,
+        "nanoseconds": 122000000
+      },
+      "content": "## Terms & Conditions\n\n### 1. Quotations & Orders\n\nAll quotations are valid for 30 days from the date of issue unless stated otherwise. Orders are confirmed only after written acceptance and receipt of the agreed advance payment.\n\n### 2. Pricing\n\nPrices are quoted in Bangladeshi Taka (BDT) and exclude applicable taxes, duties, and shipping unless explicitly stated. CBM Machineries reserves the right to revise pricing in case of significant currency or supply chain fluctuations before an order is confirmed.\n\n### 3. Delivery\n\nDelivery timelines are estimates based on current stock and manufacturer lead times. While we strive to meet every committed date, delays caused by circumstances beyond our control are not grounds for order cancellation without prior agreement.\n\n### 4. Warranty\n\nAll machinery is covered by a 12-month service warranty against manufacturing defects. The warranty does not cover damage caused by misuse, unauthorised modification, or failure to follow the operating manual.\n\n### 5. Returns\n\nReturns are accepted only for defective equipment reported within 7 days of delivery. Custom-ordered or modified machinery is non-returnable.\n\n### 6. Liability\n\nCBM Machineries' liability is limited to the value of the machinery supplied. We are not liable for indirect or consequential losses arising from equipment failure.",
+      "showInFooter": true,
+      "slug": "terms-conditions",
+      "title": "Terms & Conditions",
+      "updatedAt": {
+        "seconds": 1790703700,
+        "nanoseconds": 122000000
+      }
+    }
+  ],
+  "site_info": {
+    "businessHours": "monday-sunday 9:00-12:00pm",
+    "facebookUrl": "https://www.facebook.com/cbm.com.bd/",
+    "clientsServed": 666,
+    "whatsappNumber": "+8801976773538",
+    "emailAddress": "patientnumber911@gmail.com",
+    "machinesSold": 666,
+    "youtubeUrl": "https://youtube.com/@cbmbd?si=LaJNAN_CxntgqBOe",
+    "address": "hell, under God,s home",
+    "hotlineNumber": "+8801976773538",
+    "updatedAt": {
+      "seconds": 1790698605,
+      "nanoseconds": 331000000
+    },
+    "linkedinUrl": "",
+    "yearsExperience": 66,
+    "instagramUrl": ""
+  },
+  "generatedAt": "2026-09-30T18:57:09.048Z"
 }

@@ -50,7 +50,7 @@ export function loadSnapshot() {
  * @param onData     callback (data, source) — source is 'cache' | 'network' | 'static' | 'failed'
  * @param timeoutMs  how long to wait for network before giving up
  */
-export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 4500) {
+export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 50) {
     const cached = loadFromCache(key);
     if (cached !== null && cached !== undefined) onData(cached, 'cache');
 
