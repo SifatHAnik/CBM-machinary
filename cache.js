@@ -51,11 +51,9 @@ export function loadSnapshot() {
  * @param timeoutMs  how long to wait for network before giving up
  */
 export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 4500) {
-    // 1. Show cache instantly (if we have any)
     const cached = loadFromCache(key);
     if (cached !== null && cached !== undefined) onData(cached, 'cache');
 
-    // 2. Race network vs timeout
     try {
         const data = await Promise.race([
             Promise.resolve().then(() => fetcher()),
@@ -64,23 +62,68 @@ export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 450
         if (data !== undefined && data !== null) {
             saveToCache(key, data);
             onData(data, 'network');
+            showStatusBadge('live');
             return data;
         }
-    } catch (err) {
-        // fall through
+    } catch (err) { /* fall through */ }
+
+    if (cached !== null && cached !== undefined) {
+        showStatusBadge('cached');
+        return cached;
     }
 
-    // 3. Network failed — cache already showing, nothing more to do
-    if (cached !== null && cached !== undefined) return cached;
-
-    // 4. No cache — try static snapshot
     const snap = await loadSnapshot();
     if (snap && snap[staticKey]) {
         onData(snap[staticKey], 'static');
+        showStatusBadge('snapshot');
         return snap[staticKey];
     }
 
-    // 5. Nothing worked
     onData(null, 'failed');
+    showStatusBadge('offline');
     return null;
+}
+
+let _badgeTimer = null;
+function showStatusBadge(state) {
+    const labels = {
+        live:     { text: '● Live',      color: '#25D366' },
+        cached:   { text: '● Cached',    color: '#d4a373' },
+        snapshot: { text: '● Snapshot',  color: '#e2136e' },
+        offline:  { text: '● Offline',   color: '#e2136e' }
+    };
+    const cfg = labels[state];
+    if (!cfg) return;
+
+    let badge = document.getElementById('cbm-status-badge');
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'cbm-status-badge';
+        badge.style.cssText = `
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            z-index: 9999;
+            background: rgba(14,17,17,0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        `;
+        document.body.appendChild(badge);
+    }
+    badge.textContent = cfg.text;
+    badge.style.color = cfg.color;
+    badge.style.opacity = '1';
+
+    clearTimeout(_badgeTimer);
+    // If live, hide after 3 seconds. If cached/snapshot/offline, keep visible.
+    if (state === 'live') {
+        _badgeTimer = setTimeout(() => { badge.style.opacity = '0'; }, 3000);
+    }
 }
