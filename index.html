@@ -45,7 +45,7 @@
                     </div>
 <li><a href="catalog.html" class="nav-link">All Products</a></li>
                     <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
+   
 <li style="display: flex; align-items: center;">
     <button id="nav-search-btn" class="search-nav-btn" aria-label="Search products">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -64,18 +64,28 @@
     </header>
 
     <!-- HERO SECTION (Full Screen Video) -->
-    <section class="hero-section" id="hero">
-        <video autoplay muted loop playsinline class="hero-video">
-            <source src="media/hero-bg.mp4" type="video/mp4">
-        </video>
-        
-        <div class="hero-overlay"></div>
+<section class="hero-section" id="hero">
+    <canvas id="pond-canvas"></canvas>
+    <div class="hero-overlay"></div>
 
-        <div class="hero-content">
-            <h1 class="hero-title">CBM MACHINERIES</h1>
-            <p class="hero-subtitle">High-Performance Industrial Solutions</p>
+    <div class="hero-content">
+        <div class="hero-eyebrow">Industrial Machinery</div>
+        <h1 class="hero-title">CBM <span>MACHINERIES</span></h1>
+        <div class="hero-subtitle-rotator" id="hero-rotator">
+            <div class="hero-rotator-item active">High-Performance Industrial Solutions</div>
+            <div class="hero-rotator-item">Hydraulic · CNC · Shearing Machines</div>
+            <div class="hero-rotator-item">Trusted by Manufacturers Across Bangladesh</div>
         </div>
-    </section>
+        <div class="hero-cta-row">
+            <a href="catalog.html" class="hero-btn hero-btn-primary">
+                <i class="fa-solid fa-industry"></i> Browse Catalog
+            </a>
+            <a href="#contact" class="hero-btn hero-btn-ghost">
+                <i class="fa-solid fa-headset"></i> Contact Us
+            </a>
+        </div>
+    </div>
+</section>
 
     <!-- CATEGORIES CONTAINER (New Arrivals & Dynamic Categories injected via JS) -->
     <main id="categories-container" style="padding: 2rem 0; background-color: #0e1111;">
@@ -214,6 +224,95 @@
         <div class="search-hint">Press <kbd>Esc</kbd> to close · <kbd>Ctrl</kbd>+<kbd>K</kbd> to open</div>
     </div>
 </div>
+
+<!-- CONTACT SECTION -->
+<section id="contact" class="contact-section">
+    <div class="contact-container">
+        <div class="contact-header">
+            <h2>Get In Touch</h2>
+            <p>Whether you need a quote, a spare part, or a technician — we're one message away.</p>
+        </div>
+
+        <div class="contact-grid">
+
+            <!-- Contact info column -->
+            <div class="contact-info-col">
+                <a href="#" class="contact-card" id="contact-hotline-card">
+                    <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                    <div class="contact-card-body">
+                        <div class="contact-card-label">Hotline</div>
+                        <div class="contact-card-value" id="contact-hotline">+880 1700-000000</div>
+                    </div>
+                </a>
+
+                <a href="#" class="contact-card" id="contact-whatsapp-card" target="_blank" rel="noopener">
+                    <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
+                    <div class="contact-card-body">
+                        <div class="contact-card-label">WhatsApp</div>
+                        <div class="contact-card-value" id="contact-whatsapp">+880 1700-000000</div>
+                    </div>
+                </a>
+
+                <a href="#" class="contact-card" id="contact-email-card">
+                    <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="contact-card-body">
+                        <div class="contact-card-label">Email</div>
+                        <div class="contact-card-value" id="contact-email">info@cbmmachineries.com</div>
+                    </div>
+                </a>
+
+                <a href="#" class="contact-card" id="contact-address-card" target="_blank" rel="noopener">
+                    <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="contact-card-body">
+                        <div class="contact-card-label">Visit Us</div>
+                        <div class="contact-card-value" id="contact-address" style="white-space: pre-line;">Dhaka, Bangladesh</div>
+                    </div>
+                </a>
+
+                <div class="contact-card contact-card-static">
+                    <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="contact-card-body">
+                        <div class="contact-card-label">Business Hours</div>
+                        <div class="contact-card-value" id="contact-hours">Sat – Thu · 9:00 AM – 7:00 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message form column -->
+            <div class="contact-form-col">
+                <h3>Send Us a Message</h3>
+                <p class="contact-form-note">We'll reply on WhatsApp within business hours.</p>
+
+                <form id="contact-form">
+                    <div class="contact-field">
+                        <label for="contact-name">Your Name / Company</label>
+                        <input type="text" id="contact-name" required placeholder="e.g. Apex Industrial Solutions">
+                    </div>
+
+                    <div class="contact-field">
+                        <label for="contact-phone">Your Phone Number</label>
+                        <input type="tel" id="contact-phone" required placeholder="01XXXXXXXXX">
+                    </div>
+
+                    <div class="contact-field">
+                        <label for="contact-subject">Subject</label>
+                        <input type="text" id="contact-subject" placeholder="e.g. Quote for hydraulic press">
+                    </div>
+
+                    <div class="contact-field">
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" rows="5" required placeholder="Tell us what you're looking for..."></textarea>
+                    </div>
+
+                    <button type="submit" class="contact-submit">
+                        <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
                                <!-- SITE FOOTER -->
 <footer class="site-footer">
     <div class="footer-inner">

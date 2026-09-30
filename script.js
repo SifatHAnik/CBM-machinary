@@ -977,6 +977,12 @@ function applySiteInfo(data) {
     setText('footer-email', data.emailAddress);
     setText('footer-address', data.address);
     setText('footer-hours', data.businessHours);
+        // Contact section
+    setText('contact-hotline', data.hotlineNumber);
+    setText('contact-whatsapp', data.whatsappNumber);
+    setText('contact-email', data.emailAddress);
+    setText('contact-address', data.address);
+    setText('contact-hours', data.businessHours);
 
     const setLink = (id, val) => {
         const el = document.getElementById(id);
@@ -1014,6 +1020,15 @@ function applySiteInfo(data) {
     if (fabWa && waNum) fabWa.href = `https://wa.me/${waNum}`;
     if (fabCall && callNum) fabCall.href = `tel:${callNum}`;
     if (fabEmail && data.emailAddress) fabEmail.href = `mailto:${data.emailAddress}`;
+        // Contact section links
+    const cHot = document.getElementById('contact-hotline-card');
+    const cWa = document.getElementById('contact-whatsapp-card');
+    const cMail = document.getElementById('contact-email-card');
+    const cAddr = document.getElementById('contact-address-card');
+    if (cHot && callNum) cHot.href = `tel:${callNum}`;
+    if (cWa && waNum) cWa.href = `https://wa.me/${waNum}`;
+    if (cMail && data.emailAddress) cMail.href = `mailto:${data.emailAddress}`;
+    if (cAddr && data.address) cAddr.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
 }
 
 function sanitizePhone(num) {
@@ -1169,3 +1184,250 @@ async function loadFooterPages() {
         console.error("Footer pages:", err);
     }
 }
+
+// ============================================================
+// HERO TAGLINE ROTATOR
+// ============================================================
+(function () {
+    const rotator = document.getElementById('hero-rotator');
+    if (!rotator) return;
+    const items = rotator.querySelectorAll('.hero-rotator-item');
+    if (items.length < 2) return;
+
+    let current = 0;
+    setInterval(() => {
+        const prev = items[current];
+        prev.classList.remove('active');
+        prev.classList.add('exit');
+        setTimeout(() => prev.classList.remove('exit'), 700);
+        current = (current + 1) % items.length;
+        items[current].classList.add('active');
+    }, 3800);
+})();
+
+// ============================================================
+// POND CANVAS (hero background)
+// ============================================================
+(function () {
+    const canvas = document.getElementById('pond-canvas');
+    const hero = document.getElementById('hero');
+    if (!canvas || !hero) return;
+    const ctx = canvas.getContext('2d');
+
+    let w = 0, h = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+
+    function resize() {
+        w = hero.clientWidth;
+        h = hero.clientHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COLORS = [
+        { r: 20,  g: 130, b: 95  },
+        { r: 80,  g: 200, b: 180 },
+        { r: 30,  g: 170, b: 130 },
+        { r: 100, g: 220, b: 200 }
+    ];
+
+    const isMobile = window.matchMedia('(hover: none)').matches;
+    const BLOB_COUNT = isMobile ? 9 : 14;
+
+    const blobs = [];
+    function makeBlob() {
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        return {
+            x: Math.random() * w,
+            y: Math.random() * h,
+            angle: Math.random() * Math.PI * 2,
+            speed: 0.18 + Math.random() * 0.35,
+            radius: 40 + Math.random() * 65,
+            color: color,
+            pulse: Math.random() * Math.PI * 2,
+            pulseSpeed: 0.006 + Math.random() * 0.010
+        };
+    }
+    for (let i = 0; i < BLOB_COUNT; i++) blobs.push(makeBlob());
+
+    const pointer = { x: w / 2, y: h / 2, tx: w / 2, ty: h / 2, active: false, lastMoveTime: 0 };
+
+    const fragments = [];
+    const FRAGMENT_COUNT = 4;
+    for (let i = 0; i < FRAGMENT_COUNT; i++) {
+        fragments.push({
+            baseAngle: (i / FRAGMENT_COUNT) * Math.PI * 2,
+            angleWobble: (Math.random() - 0.5) * 0.6,
+            distance: 70 + Math.random() * 80,
+            radiusScale: 0.40 + Math.random() * 0.28,
+            wobblePhase: Math.random() * Math.PI * 2,
+            wobbleSpeed: 0.006 + Math.random() * 0.012,
+            x: w / 2, y: h / 2
+        });
+    }
+    let spreadAmount = 1;
+    let spreadTarget = 1;
+
+    hero.addEventListener('mousemove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        pointer.tx = e.clientX - rect.left;
+        pointer.ty = e.clientY - rect.top;
+        pointer.active = true;
+        pointer.lastMoveTime = performance.now();
+    });
+    hero.addEventListener('mouseleave', () => { pointer.active = false; });
+    hero.addEventListener('touchmove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        const t = e.touches[0];
+        pointer.tx = t.clientX - rect.left;
+        pointer.ty = t.clientY - rect.top;
+        pointer.active = true;
+        pointer.lastMoveTime = performance.now();
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+        if (isMobile) pointer.lastMoveTime = performance.now();
+    }, { passive: true });
+
+    let wanderPhase = Math.random() * 1000;
+
+    function drawBlob(b) {
+        b.pulse += b.pulseSpeed;
+        const r = b.radius * (1 + Math.sin(b.pulse) * 0.2);
+        const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, r);
+        grad.addColorStop(0,    `rgba(${b.color.r},${b.color.g},${b.color.b},0.32)`);
+        grad.addColorStop(0.3,  `rgba(${b.color.r},${b.color.g},${b.color.b},0.16)`);
+        grad.addColorStop(0.65, `rgba(${b.color.r},${b.color.g},${b.color.b},0.04)`);
+        grad.addColorStop(1,    `rgba(${b.color.r},${b.color.g},${b.color.b},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function moveBlob(b) {
+        b.angle += (Math.random() - 0.5) * 0.06;
+        b.x += Math.cos(b.angle) * b.speed;
+        b.y += Math.sin(b.angle) * b.speed;
+        if (b.x < -b.radius) { b.x = -b.radius; b.angle = Math.PI - b.angle; }
+        if (b.x > w + b.radius) { b.x = w + b.radius; b.angle = Math.PI - b.angle; }
+        if (b.y < -b.radius) { b.y = -b.radius; b.angle = -b.angle; }
+        if (b.y > h + b.radius) { b.y = h + b.radius; b.angle = -b.angle; }
+    }
+
+    function drawSingleGlow(cx, cy, radius, alphaScale) {
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        grad.addColorStop(0,   `rgba(200, 235, 225, ${0.55 * alphaScale})`);
+        grad.addColorStop(0.25,`rgba(120, 220, 200, ${0.22 * alphaScale})`);
+        grad.addColorStop(0.6, `rgba(20, 130, 95, ${0.07 * alphaScale})`);
+        grad.addColorStop(1,   'rgba(20, 130, 95, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function drawPointerGlow() {
+        pointer.x += (pointer.tx - pointer.x) * 0.08;
+        pointer.y += (pointer.ty - pointer.y) * 0.08;
+
+        const idle = performance.now() - pointer.lastMoveTime > 2000;
+
+        if ((!pointer.active || idle) && isMobile) {
+            wanderPhase += 0.005;
+            pointer.tx = w / 2 + Math.cos(wanderPhase) * w * 0.28;
+            pointer.ty = h / 2 + Math.sin(wanderPhase * 1.3) * h * 0.22;
+            pointer.active = true;
+        }
+
+        if (!pointer.active) return;
+
+        if (!isMobile) {
+            drawSingleGlow(pointer.x, pointer.y, 160, 1);
+            return;
+        }
+
+        spreadTarget = idle ? 1 : 0;
+        spreadAmount += (spreadTarget - spreadAmount) * 0.035;
+
+        drawSingleGlow(pointer.x, pointer.y, 100, 0.35);
+
+        for (let i = 0; i < fragments.length; i++) {
+            const f = fragments[i];
+            f.wobblePhase += f.wobbleSpeed;
+            const angle = f.baseAngle + f.angleWobble + Math.sin(f.wobblePhase) * 0.25;
+            const dist = f.distance * spreadAmount;
+            const targetX = pointer.x + Math.cos(angle) * dist;
+            const targetY = pointer.y + Math.sin(angle) * dist;
+            f.x += (targetX - f.x) * 0.14;
+            f.y += (targetY - f.y) * 0.14;
+            const r = (90 * f.radiusScale) * (1 + spreadAmount * 0.35);
+            const alphaScale = 0.85 + spreadAmount * 0.35;
+            drawSingleGlow(f.x, f.y, r, alphaScale);
+        }
+    }
+
+    function render() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.globalCompositeOperation = 'lighter';
+
+        for (let i = 0; i < blobs.length; i++) {
+            moveBlob(blobs[i]);
+            drawBlob(blobs[i]);
+        }
+        drawPointerGlow();
+
+        requestAnimationFrame(render);
+    }
+
+    render();
+})();
+
+
+// ============================================================
+// CONTACT FORM -> WHATSAPP
+// ============================================================
+(function () {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = (document.getElementById('contact-name').value || '').trim();
+        const phone = (document.getElementById('contact-phone').value || '').trim();
+        const subject = (document.getElementById('contact-subject').value || '').trim();
+        const message = (document.getElementById('contact-message').value || '').trim();
+
+        if (!name || !phone || !message) return;
+
+        // Fetch WhatsApp number from Firestore
+        let waNum = '8801700000000';
+        try {
+            const snap = await getDoc(doc(db, "site_stats", "global"));
+            if (snap.exists() && snap.data().whatsappNumber) {
+                let n = String(snap.data().whatsappNumber).replace(/[^0-9]/g, '');
+                if (n.startsWith('0')) n = '880' + n.substring(1);
+                if (!n.startsWith('880') && n.length === 10) n = '880' + n;
+                waNum = n;
+            }
+        } catch (err) {
+            console.warn("Contact form: could not fetch WhatsApp number, using fallback.", err);
+        }
+
+        const composed =
+            `*New enquiry from CBM Website*\n\n` +
+            `*Name:* ${name}\n` +
+            `*Phone:* ${phone}\n` +
+            (subject ? `*Subject:* ${subject}\n` : '') +
+            `\n*Message:*\n${message}`;
+
+        window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(composed)}`, '_blank');
+    });
+})();
