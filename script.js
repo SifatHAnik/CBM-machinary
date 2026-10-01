@@ -493,10 +493,10 @@ section.innerHTML = `
 
         safeFetch(
             `products-${categorySlug}`,
-            async () => {
-                const q = query(collection(db, "products"), where("category", "==", categorySlug));
-                const snap = await getDocs(q);
-                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+               async () => {
+                const res = await fetch(`/api/products?category=${encodeURIComponent(categorySlug)}`);
+                if (!res.ok) throw new Error('API failed: ' + res.status);
+                return await res.json();
             },
             'products',
             (allProducts) => {
