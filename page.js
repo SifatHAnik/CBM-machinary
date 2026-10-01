@@ -23,10 +23,11 @@ async function loadPage(slug) {
 
     await safeFetch(
         `page-${slug}`,
-        async () => {
-            const snap = await getDoc(doc(db, "footer_pages", slug));
-            return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-        },
+async () => {
+    const res = await fetch(`/api/pages?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'footer_pages',
         (data) => {
             let page = data;
@@ -100,10 +101,11 @@ function renderContent(raw) {
 async function initFooterInfo() {
     await safeFetch(
         'site_info',
-        async () => {
-            const snap = await getDoc(doc(db, "site_stats", "global"));
-            return snap.exists() ? snap.data() : null;
-        },
+async () => {
+    const res = await fetch('/api/stats');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'site_info',
         (data) => {
             if (!data) return;
@@ -150,10 +152,11 @@ async function loadFooterPages() {
 
     await safeFetch(
         'footer_pages',
-        async () => {
-            const snap = await getDocs(collection(db, "footer_pages"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/pages');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'footer_pages',
         (pages) => {
             if (!pages) return;

@@ -100,10 +100,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     function loadDynamicCategories() {
         safeFetch(
             'categories',
-            async () => {
-                const snap = await getDocs(collection(db, "categories"));
-                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            },
+async () => {
+    const res = await fetch('/api/categories');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
             'categories',
             (cats) => {
                 if (!cats) return;
@@ -302,10 +303,11 @@ function loadShowcaseImages() {
 
     safeFetch(
         'showcase',
-        async () => {
-            const snap = await getDocs(collection(db, "showcase"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/showcase');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'showcase',
         (images) => {
             track.innerHTML = '';
@@ -787,11 +789,11 @@ function initReviewsSection() {
     if (reviewsGrid) {
         safeFetch(
             'reviews',
-            async () => {
-                const qReviews = query(collection(db, "reviews"), where("approved", "==", true));
-                const snap = await getDocs(qReviews);
-                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            },
+async () => {
+    const res = await fetch('/api/reviews');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
             'reviews',
             (reviews) => {
                 reviewsGrid.innerHTML = '';
@@ -918,10 +920,11 @@ function animateCounter(elementId, targetValue, suffix = "+") {
 async function initStats() {
     await safeFetch(
         'site_info',
-        async () => {
-            const docSnap = await getDoc(doc(db, "site_stats", "global"));
-            return docSnap.exists() ? docSnap.data() : null;
-        },
+async () => {
+    const res = await fetch('/api/stats');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'site_info',
         (data) => {
             if (!data) return;
@@ -1135,10 +1138,11 @@ async function loadFooterPages() {
 
     await safeFetch(
         'footer_pages',
-        async () => {
-            const snap = await getDocs(collection(db, "footer_pages"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/pages');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'footer_pages',
         (pages) => {
             if (!pages) return;

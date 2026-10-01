@@ -32,10 +32,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadCategories() {
     await safeFetch(
         'categories',
-        async () => {
-            const snap = await getDocs(collection(db, "categories"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/categories');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'categories',
         (cats) => {
             allCategories = cats || [];
@@ -81,10 +82,11 @@ async function loadProducts() {
 
     await safeFetch(
         'all_products',
-        async () => {
-            const snap = await getDocs(collection(db, "products"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/products');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'products',
         (prods) => {
             allProducts = prods || [];
@@ -237,10 +239,11 @@ function updatePriceLabels() {
 async function initFooterInfo() {
     await safeFetch(
         'site_info',
-        async () => {
-            const snap = await getDoc(doc(db, "site_stats", "global"));
-            return snap.exists() ? snap.data() : null;
-        },
+async () => {
+    const res = await fetch('/api/stats');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'site_info',
         (data) => {
             if (!data) return;
@@ -312,23 +315,27 @@ function escapeHtml(str) {
 async function loadFooterPages() {
     const listEl = document.getElementById('footer-pages-list');
     if (!listEl) return;
-    try {
-        const snap = await getDocs(collection(db, "footer_pages"));
-        const pages = [];
-        snap.forEach(d => {
-            const data = d.data();
-            if (data.showInFooter !== false) pages.push({ id: d.id, ...data });
-        });
-        pages.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
 
-        if (pages.length === 0) {
-            listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
-            return;
+    await safeFetch(
+        'footer_pages',
+        async () => {
+            const res = await fetch('/api/pages');
+            if (!res.ok) throw new Error('API failed: ' + res.status);
+            return await res.json();
+        },
+        'footer_pages',
+        (pages) => {
+            if (!pages) return;
+            const visible = pages.filter(p => p.showInFooter !== false);
+            visible.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+
+            if (visible.length === 0) {
+                listEl.innerHTML = `<li style="color:#666; font-size:0.85rem;">No pages yet</li>`;
+                return;
+            }
+            listEl.innerHTML = visible.map(p =>
+                `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
+            ).join('');
         }
-        listEl.innerHTML = pages.map(p =>
-            `<li><a href="page.html?slug=${encodeURIComponent(p.slug || p.id)}">${escapeHtml(p.title || 'Untitled')}</a></li>`
-        ).join('');
-    } catch (err) {
-        console.error("Footer pages:", err);
-    }
+    );
 }

@@ -14,8 +14,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await safeFetch(
         'site_info',
         async () => {
-            const snap = await getDoc(doc(db, "site_stats", "global"));
-            return snap.exists() ? snap.data() : null;
+            const res = await fetch('/api/stats');
+            if (!res.ok) throw new Error('API failed: ' + res.status);
+            return await res.json();
         },
         'site_info',
         (data) => {
@@ -51,10 +52,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         await safeFetch(
             `product-${productId}`,
-            async () => {
-                const docSnap = await getDoc(doc(db, "products", productId));
-                return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-            },
+async () => {
+    const res = await fetch(`/api/products?id=${encodeURIComponent(productId)}`);
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
             'products',
             (data) => {
                 // Network returns one object; snapshot returns the full array
@@ -229,10 +231,11 @@ async function loadFooterPages() {
 
     await safeFetch(
         'footer_pages',
-        async () => {
-            const snap = await getDocs(collection(db, "footer_pages"));
-            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        },
+async () => {
+    const res = await fetch('/api/pages');
+    if (!res.ok) throw new Error('API failed: ' + res.status);
+    return await res.json();
+},
         'footer_pages',
         (pages) => {
             if (!pages) return;
