@@ -369,7 +369,7 @@
 </div>
 
 <button id="save-info-btn" class="btn-industrial">Save Contact Information</button>
-<p id="info-status" class="status-msg"></p></p>
+<p id="info-status" class="status-msg"></p>
 
                         <hr class="divider">
 
@@ -387,8 +387,10 @@
                         <p id="showcase-status" class="status-msg"></p>
 
                         <div id="showcase-thumbnails" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:0.6rem; margin-top:1.2rem;"></div>
-        </div>
-<hr class="divider">
+
+
+
+                        <hr class="divider">
 <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.5rem;">Static Fallback Snapshot</div>
 <p style="color:#8a9090; font-size:0.8rem; margin:0 0 1rem 0; line-height:1.5;">
     Downloads every product, category, review, page and setting as <code style="color:#d4a373;">snapshot.json</code>.
@@ -396,6 +398,10 @@
 </p>
 <button id="export-snapshot-btn" class="btn-industrial">📦 Download Snapshot</button>
 <p id="snapshot-status" class="status-msg"></p>
+
+
+        </div>
+
         <!-- SECTION 4: LEAD ANALYTICS & RECOVERY -->
         <div id="section-leads-mgmt" class="hidden">
             <div class="admin-header" style="font-size: 1rem; border: none; margin-bottom: 0.8rem; justify-content: space-between;">
@@ -481,7 +487,22 @@
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
-    import { collection, addDoc, doc, setDoc, getDoc,getDocs, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+ import { collection, doc, getDoc, getDocs, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    
+    async function authedFetch(url, options = {}) {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Not logged in');
+    const token = await user.getIdToken();
+    return fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+            ...(options.headers || {})
+        }
+    });
+}
 
     // Cloudinary Configuration
     const CLOUD_NAME = "w4tlz3yl";
@@ -704,7 +725,13 @@ async function loadLeadAnalytics() {
                 btn.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
                     try {
-                        await updateDoc(doc(db, "reviews", id), { approved: true });
+                        const res = await authedFetch(`/api/reviews?id=${encodeURIComponent(id)}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ approved: true })
+                        });
+                        if (!res.ok) throw new Error('API ' + res.status);
+
+
                         reviewMgmtStatus.innerText = "Review approved and live on website!";
                     } catch (err) {
                         reviewMgmtStatus.innerText = "Error approving review: " + err.message;
@@ -717,7 +744,11 @@ async function loadLeadAnalytics() {
                 btn.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
                     try {
-                        await updateDoc(doc(db, "reviews", id), { approved: false });
+                                             const res = await authedFetch(`/api/reviews?id=${encodeURIComponent(id)}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ approved: false })
+                        });
+                        if (!res.ok) throw new Error('API ' + res.status);
                         reviewMgmtStatus.innerText = "Review moved back to pending list.";
                     } catch (err) {
                         reviewMgmtStatus.innerText = "Error unpublishing review: " + err.message;
@@ -731,7 +762,9 @@ async function loadLeadAnalytics() {
                     const id = e.target.getAttribute('data-id');
                     if (confirm("Permanently delete this customer review?")) {
                         try {
-                            await deleteDoc(doc(db, "reviews", id));
+                                                    const res = await authedFetch(`/api/reviews?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                            if (!res.ok) throw new Error('API ' + res.status);
+                            
                             reviewMgmtStatus.innerText = "Review deleted permanently.";
                         } catch (err) {
                             reviewMgmtStatus.innerText = "Error deleting review: " + err.message;
@@ -770,46 +803,52 @@ async function loadCurrentStats() {
 }
 
     // Save Stats to Firestore
-   saveStatsBtn.addEventListener('click', async () => {
-    try {
-        await setDoc(doc(db, "site_stats", "global"), {
-            machinesSold: Number(statMachines.value),
-            clientsServed: Number(statClients.value),
-            yearsExperience: Number(statYears.value),
-            updatedAt: serverTimestamp()
-        }, { merge: true });
-        statsStatus.innerText = "Stats updated successfully!";
-    } catch (err) {
-        statsStatus.innerText = "Error saving stats: " + err.message;
-    }
-});
-
-const saveInfoBtn = document.getElementById('save-info-btn');
-if (saveInfoBtn) {
-    saveInfoBtn.addEventListener('click', async () => {
-        const infoStatus = document.getElementById('info-status');
+    saveStatsBtn.addEventListener('click', async () => {
         try {
-            const g = (id) => (document.getElementById(id)?.value || '').trim();
-            await setDoc(doc(db, "site_stats", "global"), {
-                hotlineNumber: g('info-hotline'),
-                whatsappNumber: g('info-whatsapp'),
-                emailAddress: g('info-email'),
-                address: g('info-address'),
-                businessHours: g('info-hours'),
-                facebookUrl: g('info-facebook'),
-                youtubeUrl: g('info-youtube'),
-                linkedinUrl: g('info-linkedin'),
-                instagramUrl: g('info-instagram'),
-                updatedAt: serverTimestamp()
-            }, { merge: true });
-            infoStatus.style.color = '#25D366';
-            infoStatus.innerText = "Contact information saved!";
+            const res = await authedFetch('/api/stats', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    machinesSold: Number(statMachines.value),
+                    clientsServed: Number(statClients.value),
+                    yearsExperience: Number(statYears.value)
+                })
+            });
+            if (!res.ok) throw new Error('API ' + res.status);
+            statsStatus.innerText = "Stats updated successfully!";
         } catch (err) {
-            infoStatus.style.color = '#f5c6cb';
-            infoStatus.innerText = "Error: " + err.message;
+            statsStatus.innerText = "Error saving stats: " + err.message;
         }
     });
-}
+
+const saveInfoBtn = document.getElementById('save-info-btn');
+    if (saveInfoBtn) {
+        saveInfoBtn.addEventListener('click', async () => {
+            const infoStatus = document.getElementById('info-status');
+            try {
+                const g = (id) => (document.getElementById(id)?.value || '').trim();
+                const res = await authedFetch('/api/stats', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        hotlineNumber: g('info-hotline'),
+                        whatsappNumber: g('info-whatsapp'),
+                        emailAddress: g('info-email'),
+                        address: g('info-address'),
+                        businessHours: g('info-hours'),
+                        facebookUrl: g('info-facebook'),
+                        youtubeUrl: g('info-youtube'),
+                        linkedinUrl: g('info-linkedin'),
+                        instagramUrl: g('info-instagram')
+                    })
+                });
+                if (!res.ok) throw new Error('API ' + res.status);
+                infoStatus.style.color = '#25D366';
+                infoStatus.innerText = "Contact information saved!";
+            } catch (err) {
+                infoStatus.style.color = '#f5c6cb';
+                infoStatus.innerText = "Error: " + err.message;
+            }
+        });
+    }
 
     // Realtime Listener for Live Products & Deletion
     function listenToProducts() {
@@ -860,7 +899,8 @@ if (saveInfoBtn) {
                     const idToDelete = e.target.getAttribute('data-id');
                     if (confirm("Are you sure you want to permanently delete this product?")) {
                         try {
-                            await deleteDoc(doc(db, "products", idToDelete));
+                            const res = await authedFetch(`/api/products?id=${encodeURIComponent(idToDelete)}`, { method: 'DELETE' });
+                            if (!res.ok) throw new Error('API ' + res.status);
                             prodStatus.innerText = "Product deleted successfully!";
                         } catch (err) {
                             prodStatus.innerText = "Error deleting product: " + err.message;
@@ -966,16 +1006,16 @@ if (saveInfoBtn) {
 
             prodStatus.innerText = "Image uploaded! Saving product to database...";
 
-           await addDoc(collection(db, "products"), {
-    title: title,
-    price: Number(price),
-    shortDescription: shortDesc,
-    longDescription: longDesc,
-    category: category,
-    imageUrl: imageUrl,
-    youtubeUrl: youtubeUrl,
-    createdAt: serverTimestamp()
-});
+            const res = await authedFetch('/api/products', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title, price: Number(price),
+                    shortDescription: shortDesc,
+                    longDescription: longDesc,
+                    category, imageUrl, youtubeUrl
+                })
+            });
+            if (!res.ok) throw new Error('API ' + res.status + ': ' + await res.text());
 
             prodStatus.innerText = "Success: Product successfully created and live!";
 
@@ -996,12 +1036,13 @@ if (saveInfoBtn) {
         const catName = document.getElementById('new-cat-name').value.trim();
         if (!catName) return;
 
-        const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+         const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         try {
-            await setDoc(doc(db, "categories", catSlug), {
-                name: catName,
-                createdAt: serverTimestamp()
+            const res = await authedFetch('/api/categories', {
+                method: 'POST',
+                body: JSON.stringify({ id: catSlug, name: catName })
             });
+            if (!res.ok) throw new Error('API ' + res.status);
             document.getElementById('new-cat-name').value = '';
             prodStatus.innerText = "Category added successfully!";
         } catch (err) {
@@ -1015,8 +1056,9 @@ if (saveInfoBtn) {
         if (!selectedCat) return;
 
         try {
-            await deleteDoc(doc(db, "categories", selectedCat));
-            prodStatus.innerText = "Category deleted successfully!";
+            const res = await authedFetch(`/api/categories?id=${encodeURIComponent(selectedCat)}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('API ' + res.status);
+                        prodStatus.innerText = "Category deleted successfully!";
         } catch (err) {
             prodStatus.innerText = "Error deleting category: " + err.message;
         }
@@ -1046,17 +1088,12 @@ if (uploadShowcaseBtn) {
                 [...files].map(f => uploadImageToCloudinary(f))
             );
 
-            statusEl.innerText = "Clearing previous slider...";
-            const existing = await getDocs(collection(db, "showcase"));
-            await Promise.all(existing.docs.map(d => deleteDoc(d.ref)));
-
             statusEl.innerText = "Saving new slider...";
-            for (const url of urls) {
-                await addDoc(collection(db, "showcase"), {
-                    imageUrl: url,
-                    createdAt: serverTimestamp()
-                });
-            }
+            const res = await authedFetch('/api/showcase', {
+                method: 'POST',
+                body: JSON.stringify({ images: urls })
+            });
+            if (!res.ok) throw new Error('API ' + res.status);
 
             statusEl.innerText = `Success! ${urls.length} image(s) are now live on the storefront.`;
             fileInput.value = '';
@@ -1138,7 +1175,10 @@ function listenToPages() {
                 const id = e.target.getAttribute('data-id');
                 if (!confirm("Delete this page permanently?")) return;
                 try {
-                    await deleteDoc(doc(db, "footer_pages", id));
+                    const res = await authedFetch(`/api/pages?slug=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('API ' + res.status);
+
+
                     document.getElementById('page-status').innerText = "Page deleted.";
                 } catch (err) {
                     document.getElementById('page-status').innerText = "Error: " + err.message;
@@ -1195,20 +1235,18 @@ if (savePageBtn) {
 
         try {
             statusEl.innerText = editingPageId ? "Updating..." : "Creating...";
-            const payload = {
-                title, slug, content, showInFooter,
-                updatedAt: serverTimestamp()
-            };
-            if (editingPageId) {
-                await updateDoc(doc(db, "footer_pages", editingPageId), payload);
-                statusEl.innerText = "Page updated!";
-            } else {
-                await setDoc(doc(db, "footer_pages", slug), {
-                    ...payload,
-                    createdAt: serverTimestamp()
-                });
-                statusEl.innerText = "Page created!";
-            }
+            const res = await authedFetch('/api/pages', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title, slug, content, showInFooter,
+                    isNew: !editingPageId
+                })
+            });
+            if (!res.ok) throw new Error('API ' + res.status);
+            statusEl.innerText = editingPageId ? "Page updated!" : "Page created!";
+
+
+
             // Reset form
             editingPageId = null;
             document.getElementById('page-editing-id').value = '';
