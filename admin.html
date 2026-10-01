@@ -490,11 +490,11 @@
  import { collection, doc, getDoc, getDocs, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     
     
-    async function authedFetch(url, options = {}) {
+async function authedFetch(url, options = {}) {
     const user = auth.currentUser;
     if (!user) throw new Error('Not logged in');
     const token = await user.getIdToken();
-    return fetch(url, {
+    const res = await fetch(url, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -502,6 +502,23 @@
             ...(options.headers || {})
         }
     });
+
+    // If this was a successful write (POST/PUT/DELETE), clear the storefront cache
+    // so the next page load fetches fresh data from the API.
+    const method = (options.method || 'GET').toUpperCase();
+    if (res.ok && method !== 'GET') {
+        clearStoreCache();
+    }
+
+    return res;
+}
+
+function clearStoreCache() {
+    try {
+        Object.keys(localStorage)
+            .filter(k => k.startsWith('cbm_cache_'))
+            .forEach(k => localStorage.removeItem(k));
+    } catch (e) { /* ignore */ }
 }
 
     // Cloudinary Configuration
