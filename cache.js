@@ -50,7 +50,7 @@ export function loadSnapshot() {
  * @param onData     callback (data, source) — source is 'cache' | 'network' | 'static' | 'failed'
  * @param timeoutMs  how long to wait for network before giving up
  */
-export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 4500) {
+export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 1500) {
     const cached = loadFromCache(key);
     if (cached !== null && cached !== undefined) onData(cached, 'cache');
 
@@ -60,6 +60,14 @@ export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 450
             new Promise((_, reject) => setTimeout(() => reject(new Error('network-timeout')), timeoutMs))
         ]);
         if (data !== undefined && data !== null) {
+            // Poison guard: don't overwrite good cache with an empty array
+            const isEmptyArray = Array.isArray(data) && data.length === 0;
+            const cacheHasContent = Array.isArray(cached) && cached.length > 0;
+            if (isEmptyArray && cacheHasContent) {
+                showStatusBadge('cached');
+                return cached;
+            }
+
             saveToCache(key, data);
             onData(data, 'network');
             showStatusBadge('live');

@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (data.bkashNumber) {
                 BKASH_ACCOUNT_NUMBER = data.bkashNumber;
             }
+            applyFooterInfo(data);
         }
     );
 
@@ -347,6 +348,49 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function applyFooterInfo(data) {
+    const setText = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+    setText('footer-hotline', data.hotlineNumber);
+    setText('footer-whatsapp', data.whatsappNumber);
+    setText('footer-email', data.emailAddress);
+    setText('footer-address', data.address);
+    setText('footer-hours', data.businessHours);
+
+    const setLink = (id, val) => { const el = document.getElementById(id); if (el && val) el.href = val; };
+    setLink('footer-facebook', data.facebookUrl);
+    setLink('footer-youtube', data.youtubeUrl);
+    setLink('footer-linkedin', data.linkedinUrl);
+    setLink('footer-instagram', data.instagramUrl);
+
+    const waNum = sanitizePhone(data.whatsappNumber);
+    const callNum = data.hotlineNumber ? String(data.hotlineNumber).replace(/[^0-9+]/g, '') : '';
+
+    if (waNum) {
+        const a = document.getElementById('footer-whatsapp-link'); if (a) a.href = `https://wa.me/${waNum}`;
+        const b = document.getElementById('fab-whatsapp'); if (b) b.href = `https://wa.me/${waNum}`;
+    }
+    if (callNum) {
+        const a = document.getElementById('footer-hotline-link'); if (a) a.href = `tel:${callNum}`;
+        const b = document.getElementById('fab-call'); if (b) b.href = `tel:${callNum}`;
+    }
+    if (data.emailAddress) {
+        const a = document.getElementById('footer-email-link'); if (a) a.href = `mailto:${data.emailAddress}`;
+        const b = document.getElementById('fab-email'); if (b) b.href = `mailto:${data.emailAddress}`;
+    }
+    if (data.address) {
+        const a = document.getElementById('footer-address-link');
+        if (a) a.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
+    }
+}
+
+function sanitizePhone(num) {
+    if (!num) return '';
+    let n = String(num).replace(/[^0-9]/g, '');
+    if (n.startsWith('0')) n = '880' + n.substring(1);
+    if (!n.startsWith('880') && n.length === 10) n = '880' + n;
+    return n;
 }
 
 // --- FLOATING ACTION BUTTON ---
