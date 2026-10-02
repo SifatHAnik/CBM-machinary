@@ -305,33 +305,12 @@ box-shadow:
     loadShowcaseImages();
   }
 
-  let showcaseGoTo = null;
-  let showcaseStartAuto = null;
-
   function loadShowcaseImages() {
     const track = document.getElementById("showcase-track");
     const card = document.getElementById("showcase-card");
     const prevBtn = document.getElementById("showcase-prev");
     const nextBtn = document.getElementById("showcase-next");
     if (!track || !card) return;
-
-    // Bind arrow handlers ONCE
-    if (prevBtn && !prevBtn.dataset.bound) {
-      prevBtn.dataset.bound = "1";
-      prevBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (showcaseGoTo) showcaseGoTo(-1);
-        if (showcaseStartAuto) showcaseStartAuto();
-      });
-    }
-    if (nextBtn && !nextBtn.dataset.bound) {
-      nextBtn.dataset.bound = "1";
-      nextBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (showcaseGoTo) showcaseGoTo(1);
-        if (showcaseStartAuto) showcaseStartAuto();
-      });
-    }
 
     safeFetch(
       "showcase",
@@ -345,8 +324,8 @@ box-shadow:
         track.innerHTML = "";
         if (!images || images.length === 0) {
           track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
-          showcaseGoTo = null;
-          showcaseStartAuto = null;
+          if (prevBtn) prevBtn.onclick = null;
+          if (nextBtn) nextBtn.onclick = null;
           return;
         }
 
@@ -358,12 +337,11 @@ box-shadow:
         });
 
         const total = images.length;
-        if (total === 0) return;
         let current = 0;
         let autoTimer = null;
         let isInteracting = false;
 
-        showcaseGoTo = (delta) => {
+        const goTo = (delta) => {
           current = (current + delta + total) % total;
           track.classList.remove("no-transition");
           track.style.transform = `translateX(-${current * 100}%)`;
@@ -373,13 +351,28 @@ box-shadow:
           if (autoTimer) clearInterval(autoTimer);
           autoTimer = null;
         };
-        showcaseStartAuto = () => {
+        const startAuto = () => {
           stopAuto();
           if (total <= 1) return;
           autoTimer = setInterval(() => {
-            if (!isInteracting && showcaseGoTo) showcaseGoTo(1);
+            if (!isInteracting) goTo(1);
           }, 5000);
         };
+
+        if (prevBtn) {
+          prevBtn.onclick = (e) => {
+            e.stopPropagation();
+            goTo(-1);
+            startAuto();
+          };
+        }
+        if (nextBtn) {
+          nextBtn.onclick = (e) => {
+            e.stopPropagation();
+            goTo(1);
+            startAuto();
+          };
+        }
 
         const pauseFloat = () => {
           const w = card.closest(".showcase-float-wrap");
@@ -428,14 +421,14 @@ box-shadow:
           card.classList.remove("swiping");
           track.classList.remove("no-transition");
           card.style.transform = "";
-          if (delta > threshold) showcaseGoTo(-1);
-          else if (delta < -threshold) showcaseGoTo(1);
+          if (delta > threshold) goTo(-1);
+          else if (delta < -threshold) goTo(1);
           else track.style.transform = `translateX(-${current * 100}%)`;
           setTimeout(resumeFloat, 700);
           setTimeout(() => {
             isInteracting = false;
           }, 800);
-          showcaseStartAuto();
+          startAuto();
         };
 
         card.addEventListener("pointerdown", onPointerDown);
@@ -445,7 +438,7 @@ box-shadow:
         card.addEventListener("dragstart", (e) => e.preventDefault());
 
         track.style.transform = "translateX(0)";
-        showcaseStartAuto();
+        startAuto();
       },
     );
   }
