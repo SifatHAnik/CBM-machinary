@@ -1103,10 +1103,16 @@ function sanitizePhone(num) {
 
     async function preloadProducts() {
         if (allProducts) return;
+        // Try cache first, then API
+        const cached = loadFromCache('all_products');
+        if (cached && Array.isArray(cached)) {
+            allProducts = cached;
+            return;
+        }
         try {
-            const snap = await getDocs(collection(db, "products"));
-            allProducts = [];
-            snap.forEach(d => allProducts.push({ id: d.id, ...d.data() }));
+            const res = await fetch('/api/products');
+            if (!res.ok) throw new Error('API ' + res.status);
+            allProducts = await res.json();
         } catch (err) {
             console.error("Search preload failed:", err);
             allProducts = [];
@@ -1424,18 +1430,26 @@ async () => {
 
         if (!name || !phone || !message) return;
 
-        // Fetch WhatsApp number from Firestore
+        // Fetch WhatsApp number — cache first, then API, then fallback
         let waNum = '8801700000000';
-        try {
-            const snap = await getDoc(doc(db, "site_stats", "global"));
-            if (snap.exists() && snap.data().whatsappNumber) {
-                let n = String(snap.data().whatsappNumber).replace(/[^0-9]/g, '');
-                if (n.startsWith('0')) n = '880' + n.substring(1);
-                if (!n.startsWith('880') && n.length === 10) n = '880' + n;
-                waNum = n;
+        const cachedInfo = loadFromCache('site_info');
+        let waSource = cachedInfo?.whatsappNumber;
+        if (!waSource) {
+            try {
+                const res = await fetch('/api/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    waSource = data.whatsappNumber;
+                }
+            } catch (err) {
+                console.warn("Contact form: WhatsApp fetch failed, using fallback.", err);
             }
-        } catch (err) {
-            console.warn("Contact form: could not fetch WhatsApp number, using fallback.", err);
+        }
+        if (waSource) {
+            let n = String(waSource).replace(/[^0-9]/g, '');
+            if (n.startsWith('0')) n = '880' + n.substring(1);
+            if (!n.startsWith('880') && n.length === 10) n = '880' + n;
+            waNum = n;
         }
 
         const composed =

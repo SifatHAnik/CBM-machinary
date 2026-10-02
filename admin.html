@@ -211,6 +211,20 @@
     overflow: hidden;
     color: #ccc;
     line-height: 1.4;
+    cursor: pointer;
+    position: relative;
+}
+.lead-clamp.expanded {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+    overflow: visible;
+}
+.lead-clamp:not(.expanded)::after {
+    content: ' ⋯ tap to expand';
+    color: #8a9090;
+    font-size: 0.7rem;
+    font-style: italic;
 }
 .lead-username {
     color: #fff;
@@ -773,10 +787,10 @@ async function loadLeadAnalytics() {
                     </div>
                 </td>
                 <td data-label="Views">
-                    <div class="lead-clamp">${escapeHtml(views)}</div>
+                    <div class="lead-clamp" data-expandable>${escapeHtml(views)}</div>
                 </td>
                 <td data-label="Cart">
-                    <div class="lead-clamp">${escapeHtml(cart)}</div>
+                    <div class="lead-clamp" data-expandable>${escapeHtml(cart)}</div>
                 </td>
                 <td data-label="Last Active">
                     <span style="color:#a0aab0; font-size:0.8rem;">${formattedTime}</span>
@@ -793,6 +807,10 @@ async function loadLeadAnalytics() {
                 </td>
             `;
             tbody.appendChild(tr);
+                    // Click-to-expand for truncated cells
+        tbody.querySelectorAll('.lead-clamp[data-expandable]').forEach(el => {
+            el.addEventListener('click', () => el.classList.toggle('expanded'));
+        });
         });
     } catch (err) {
         console.error("Lead load error:", err);
