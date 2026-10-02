@@ -206,6 +206,7 @@
 .lead-clamp {
     display: -webkit-box;
     -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     color: #ccc;
@@ -603,8 +604,7 @@
     <script type="module">
     import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
- import { collection, doc, getDoc, getDocs, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
+import { collection, doc, getDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";    
     
 async function authedFetch(url, options = {}) {
     const user = auth.currentUser;
@@ -778,7 +778,12 @@ async function loadLeadAnalytics() {
                 </td>
                 <td data-label="Action">
                     ${!isGuest
-                        ? `<a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>`
+                        ? `
+                            <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                                <a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto;">WhatsApp</a>
+                                <a href="tel:${String(data.phone).replace(/[^0-9+]/g, '')}" class="btn-industrial" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto; background:#0b4f37; border-color:#d4a373;">Call</a>
+                            </div>
+                        `
                         : '<span style="color:#777; font-size:0.8rem;">Guest User</span>'}
                 </td>
             `;
