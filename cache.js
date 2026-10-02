@@ -43,15 +43,25 @@ export function isCacheFresh(key) {
  * @param onData     callback (data, source) — source is 'cache' | 'network' | 'static' | 'failed'
  * @param timeoutMs  how long to wait for network before giving up
  */
-export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 1500) {
+export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 3500) {
     const cached = loadFromCache(key);
     if (cached !== null && cached !== undefined) onData(cached, 'cache');
 
+    let data = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            data = await Promise.race([
+                Promise.resolve().then(() => fetcher()),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('network-timeout')), timeoutMs))
+            ]);
+            if (data !== undefined && data !== null) break;
+        } catch (err) {
+            if (attempt === 1) { data = null; break; }
+            await new Promise(r => setTimeout(r, 400));
+        }
+    }
+
     try {
-        const data = await Promise.race([
-            Promise.resolve().then(() => fetcher()),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('network-timeout')), timeoutMs))
-        ]);
         if (data !== undefined && data !== null) {
             // Poison guard: don't overwrite good cache with an empty array
             const isEmptyArray = Array.isArray(data) && data.length === 0;

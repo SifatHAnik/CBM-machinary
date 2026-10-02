@@ -651,18 +651,24 @@ function initCart() {
                 return;
             }
 
-            let bkashAcc = "01700000000"; // Fallback account
-            try {
-                const statsSnap = await getDoc(doc(db, "site_stats", "global"));
-                if (statsSnap.exists() && statsSnap.data().bkashNumber) {
-                    bkashAcc = statsSnap.data().bkashNumber;
+            let bkashAcc = "01700000000"; // Fallback
+            // Prefer cached site info first
+            const cached = loadFromCache('site_info');
+            if (cached && cached.bkashNumber) {
+                bkashAcc = cached.bkashNumber;
+            } else {
+                try {
+                    const res = await fetch('/api/stats');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.bkashNumber) bkashAcc = data.bkashNumber;
+                    }
+                } catch (e) {
+                    console.error("bKash info fetch failed:", e);
                 }
-            } catch (e) {
-                console.error("Error fetching bKash info:", e);
             }
 
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
             const modalAccount = document.getElementById('bkash-modal-account');
             const modalAmount = document.getElementById('bkash-modal-amount');
 

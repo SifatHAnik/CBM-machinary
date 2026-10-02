@@ -474,6 +474,10 @@
     <label>Business Hours</label>
     <input type="text" id="info-hours" placeholder="Sat – Thu · 9:00 AM – 7:00 PM">
 </div>
+<div class="form-group">
+    <label>bKash Merchant Number</label>
+    <input type="text" id="info-bkash" placeholder="01700000000">
+</div>
 
 <div class="admin-header" style="font-size: 0.9rem; border: none; margin: 1.2rem 0 0.6rem 0;">Social Media Links</div>
 
@@ -939,6 +943,7 @@ async function loadCurrentStats() {
             setVal('info-email', data.emailAddress);
             setVal('info-address', data.address);
             setVal('info-hours', data.businessHours);
+            setVal('info-bkash', data.bkashNumber);
             setVal('info-facebook', data.facebookUrl);
             setVal('info-youtube', data.youtubeUrl);
             setVal('info-linkedin', data.linkedinUrl);
@@ -981,6 +986,7 @@ const saveInfoBtn = document.getElementById('save-info-btn');
                         emailAddress: g('info-email'),
                         address: g('info-address'),
                         businessHours: g('info-hours'),
+                        bkashNumber: g('info-bkash'),
                         facebookUrl: g('info-facebook'),
                         youtubeUrl: g('info-youtube'),
                         linkedinUrl: g('info-linkedin'),
