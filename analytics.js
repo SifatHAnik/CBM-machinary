@@ -19,7 +19,15 @@ function persistLocal() {
 let syncTimer = null;
 function scheduleSync() {
     clearTimeout(syncTimer);
-    syncTimer = setTimeout(pushToBackend, 600);
+    syncTimer = setTimeout(pushToBackend, 250);
+}
+
+function flushPendingSync() {
+    if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+        pushToBackend();
+    }
 }
 
 async function pushToBackend() {
@@ -108,3 +116,10 @@ function maybeShowModal() {
 
     document.getElementById('skipLeadBtn').addEventListener('click', dismiss);
 }
+
+// Flush pending lead sync when the page is about to be hidden/unloaded
+window.addEventListener('pagehide', flushPendingSync);
+window.addEventListener('beforeunload', flushPendingSync);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushPendingSync();
+});
