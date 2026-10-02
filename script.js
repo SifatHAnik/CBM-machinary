@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 }
          .showcase-float-wrap {
     width: 100%;
-    max-width: 700px;
+    max-width: 770px;
     animation: showcaseFloat 9s ease-in-out infinite;
     transform-style: preserve-3d;
     will-change: transform;
