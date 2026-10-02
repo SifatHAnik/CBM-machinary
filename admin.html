@@ -300,6 +300,7 @@
             </div>
             <button type="submit" class="btn-industrial">Log In</button>
             <p id="auth-status" class="status-msg"></p>
+            <button type="button" id="forgot-password-btn" style="background:none;border:none;color:#8a9090;font-size:0.8rem;margin-top:0.8rem;cursor:pointer;text-decoration:underline;width:100%;font-family:inherit;">Forgot password?</button>
         </form>
     </div>
 
@@ -602,7 +603,7 @@
 
 
     <script type="module">
-    import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "./firebase-config.js";
+import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "./firebase-config.js";
     import { db } from "./firebase-config.js";
 import { collection, doc, getDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";    
     
@@ -812,12 +813,18 @@ async function loadLeadAnalytics() {
     }
 
     // Realtime Listener for Customer Reviews
-    function listenToReviews() {
-        if (!adminReviewsList) return;
+let reviewsUnsubscribe = null;
+function listenToReviews() {
+    if (!adminReviewsList) return;
 
-        const qRev = query(collection(db, "reviews"), where("approved", "==", currentReviewFilter));
+    if (reviewsUnsubscribe) {
+        reviewsUnsubscribe();
+        reviewsUnsubscribe = null;
+    }
 
-        onSnapshot(qRev, (snapshot) => {
+    const qRev = query(collection(db, "reviews"), where("approved", "==", currentReviewFilter));
+
+    reviewsUnsubscribe = onSnapshot(qRev, (snapshot) => {
             adminReviewsList.innerHTML = '';
 
             if (snapshot.empty) {
@@ -1103,6 +1110,31 @@ const saveInfoBtn = document.getElementById('save-info-btn');
         }
     });
 
+        const forgotBtn = document.getElementById('forgot-password-btn');
+    if (forgotBtn) {
+        forgotBtn.addEventListener('click', async () => {
+            const emailInput = document.getElementById('login-email');
+            const email = emailInput.value.trim();
+            const statusEl = document.getElementById('auth-status');
+
+            if (!email) {
+                statusEl.style.color = '#e2136e';
+                statusEl.innerText = "Enter your admin email above first, then click Forgot password.";
+                emailInput.focus();
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                statusEl.style.color = '#25D366';
+                statusEl.innerText = "Reset email sent to " + email + ". Check your inbox (and spam).";
+            } catch (err) {
+                statusEl.style.color = '#e2136e';
+                statusEl.innerText = "Error: " + err.message;
+            }
+        });
+    }
+
     logoutBtn.addEventListener('click', () => signOut(auth));
 
     // Upload Direct File to Cloudinary
@@ -1277,8 +1309,13 @@ function slugify(str) {
         .replace(/-+/g, '-');
 }
 
+let pagesUnsubscribe = null;
 function listenToPages() {
-    onSnapshot(collection(db, "footer_pages"), (snapshot) => {
+    if (pagesUnsubscribe) {
+        pagesUnsubscribe();
+        pagesUnsubscribe = null;
+    }
+    pagesUnsubscribe = onSnapshot(collection(db, "footer_pages"), (snapshot) => {
         const listEl = document.getElementById('pages-list');
         const countEl = document.getElementById('page-count-badge');
         if (!listEl) return;
