@@ -15,6 +15,10 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+
 // ========================================================
 // 2. STATE VARIABLES
 // ========================================================
@@ -296,25 +300,51 @@ box-shadow:
     loadShowcaseImages();
 }
 
+let showcaseGoTo = null;
+let showcaseStartAuto = null;
+
 function loadShowcaseImages() {
     const track = document.getElementById('showcase-track');
     const card = document.getElementById('showcase-card');
+    const prevBtn = document.getElementById('showcase-prev');
+    const nextBtn = document.getElementById('showcase-next');
     if (!track || !card) return;
+
+    // Bind arrow handlers ONCE
+    if (prevBtn && !prevBtn.dataset.bound) {
+        prevBtn.dataset.bound = '1';
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (showcaseGoTo) showcaseGoTo(-1);
+            if (showcaseStartAuto) showcaseStartAuto();
+        });
+    }
+    if (nextBtn && !nextBtn.dataset.bound) {
+        nextBtn.dataset.bound = '1';
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (showcaseGoTo) showcaseGoTo(1);
+            if (showcaseStartAuto) showcaseStartAuto();
+        });
+    }
 
     safeFetch(
         'showcase',
-async () => {
-    const res = await fetch('/api/showcase');
-    if (!res.ok) throw new Error('API failed: ' + res.status);
-    return await res.json();
-},
+        async () => {
+            const res = await fetch('/api/showcase');
+            if (!res.ok) throw new Error('API failed: ' + res.status);
+            return await res.json();
+        },
         'showcase',
         (images) => {
             track.innerHTML = '';
             if (!images || images.length === 0) {
                 track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
+                showcaseGoTo = null;
+                showcaseStartAuto = null;
                 return;
             }
+
             images.forEach(img => {
                 const slide = document.createElement('div');
                 slide.className = 'showcase-slide';
@@ -324,46 +354,44 @@ async () => {
 
             const total = images.length;
             if (total === 0) return;
-            let current = 0, autoTimer = null, isInteracting = false, dragging = false, startX = 0, currentX = 0;
+            let current = 0;
+            let autoTimer = null;
+            let isInteracting = false;
 
-            const goTo = (idx, instant = false) => {
-                current = (idx + total) % total;
-                if (instant) {
-                    track.classList.add('no-transition');
-                    track.style.transform = `translateX(-${current * 100}%)`;
-                    void track.offsetWidth;
-                    track.classList.remove('no-transition');
-                } else {
-                    track.classList.remove('no-transition');
-                    track.style.transform = `translateX(-${current * 100}%)`;
-                }
+            showcaseGoTo = (delta) => {
+                current = (current + delta + total) % total;
+                track.classList.remove('no-transition');
+                track.style.transform = `translateX(-${current * 100}%)`;
             };
-            const startAuto = () => {
+
+            const stopAuto = () => { if (autoTimer) clearInterval(autoTimer); autoTimer = null; };
+            showcaseStartAuto = () => {
                 stopAuto();
                 if (total <= 1) return;
-                autoTimer = setInterval(() => { if (!isInteracting) goTo(current + 1); }, 5000);
+                autoTimer = setInterval(() => {
+                    if (!isInteracting && showcaseGoTo) showcaseGoTo(1);
+                }, 5000);
             };
-            const stopAuto = () => { if (autoTimer) clearInterval(autoTimer); autoTimer = null; };
-
-            const prevBtn = document.getElementById('showcase-prev');
-            const nextBtn = document.getElementById('showcase-next');
-            if (prevBtn) prevBtn.addEventListener('click', () => { goTo(current - 1); startAuto(); });
-            if (nextBtn) nextBtn.addEventListener('click', () => { goTo(current + 1); startAuto(); });
 
             const pauseFloat = () => { const w = card.closest('.showcase-float-wrap'); if (w) w.style.animationPlayState = 'paused'; };
             const resumeFloat = () => { const w = card.closest('.showcase-float-wrap'); if (w) w.style.animationPlayState = 'running'; };
+
+            let dragging = false, startX = 0, currentX = 0;
 
             const onPointerDown = (e) => {
                 if (e.target.closest('.showcase-arrow')) return;
                 if (total <= 1) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
-                dragging = true; isInteracting = true;
-                startX = e.clientX; currentX = startX;
+                dragging = true;
+                isInteracting = true;
+                startX = e.clientX;
+                currentX = startX;
                 try { card.setPointerCapture(e.pointerId); } catch (_) {}
                 card.classList.add('swiping');
                 track.classList.add('no-transition');
                 pauseFloat();
             };
+
             const onPointerMove = (e) => {
                 if (!dragging) return;
                 currentX = e.clientX;
@@ -373,6 +401,7 @@ async () => {
                 const tilt = Math.max(-12, Math.min(12, delta / 12));
                 card.style.transform = `perspective(900px) rotateY(${tilt}deg) rotateZ(${tilt * 0.15}deg)`;
             };
+
             const onPointerUp = () => {
                 if (!dragging) return;
                 dragging = false;
@@ -381,21 +410,22 @@ async () => {
                 card.classList.remove('swiping');
                 track.classList.remove('no-transition');
                 card.style.transform = '';
-                if (delta > threshold) goTo(current - 1);
-                else if (delta < -threshold) goTo(current + 1);
-                else goTo(current);
+                if (delta > threshold) showcaseGoTo(-1);
+                else if (delta < -threshold) showcaseGoTo(1);
+                else track.style.transform = `translateX(-${current * 100}%)`;
                 setTimeout(resumeFloat, 700);
                 setTimeout(() => { isInteracting = false; }, 800);
-                startAuto();
+                showcaseStartAuto();
             };
+
             card.addEventListener('pointerdown', onPointerDown);
             card.addEventListener('pointermove', onPointerMove);
             card.addEventListener('pointerup', onPointerUp);
             card.addEventListener('pointercancel', onPointerUp);
             card.addEventListener('dragstart', e => e.preventDefault());
 
-            goTo(0, true);
-            startAuto();
+            track.style.transform = 'translateX(0)';
+            showcaseStartAuto();
         }
     );
 }
@@ -621,14 +651,20 @@ function initCart() {
                 return;
             }
 
-            let phone = "8801700000000"; // Fallback phone
-            try {
-                const statsSnap = await getDoc(doc(db, "site_stats", "global"));
-                if (statsSnap.exists() && statsSnap.data().whatsappNumber) {
-                    phone = statsSnap.data().whatsappNumber.replace(/[^0-9]/g, '');
+            let phone = "8801700000000"; // Fallback
+            const cached = loadFromCache('site_info');
+            if (cached && cached.whatsappNumber) {
+                phone = cached.whatsappNumber.replace(/[^0-9]/g, '');
+            } else {
+                try {
+                    const res = await fetch('/api/stats');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.whatsappNumber) phone = data.whatsappNumber.replace(/[^0-9]/g, '');
+                    }
+                } catch (e) {
+                    console.error("WhatsApp phone fetch failed:", e);
                 }
-            } catch (e) {
-                console.error("Error fetching WhatsApp phone:", e);
             }
 
             let message = "Hello CBM Machineries, I would like to order the following items:\n\n";

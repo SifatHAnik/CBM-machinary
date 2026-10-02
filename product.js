@@ -220,11 +220,19 @@ function updateCartUI() {
                     <button onclick="window.adjustCartQty('${item.id}', 1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">+</button>
                 </div>
             </div>
+            <button onclick="window.removeCartItem('${item.id}')" style="background: none; border: none; color: #e2136e; font-size: 1.1rem; cursor: pointer; align-self: flex-start; padding: 0 4px; line-height: 1;">&times;</button>
         </div>
     `).join('');
 }
 
 window.adjustCartQty = (id, delta) => updateQuantity(id, delta);
+window.removeCartItem = (id) => {
+    const index = cart.findIndex(item => item.id === id);
+    if (index > -1) {
+        cart.splice(index, 1);
+        saveAndUpdateCart();
+    }
+};
 
 async function loadFooterPages() {
     const listEl = document.getElementById('footer-pages-list');

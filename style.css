@@ -1557,3 +1557,53 @@ body {
     .contact-form-col { padding: 1.5rem; }
     .contact-header h2 { font-size: 1.5rem; }
 }
+
+/* ============================================
+   NAVBAR RIGHT GROUP (search + cart + hamburger)
+   ============================================ */
+.nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nav-right-group .search-nav-btn,
+.nav-right-group .cart-nav-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1.15rem;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.nav-right-group .search-nav-btn:hover,
+.nav-right-group .cart-nav-btn:hover {
+    color: #d4a373;
+}
+
+.nav-right-group .mobile-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 6px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .nav-right-group .mobile-toggle {
+        display: flex;
+    }
+    .nav-right-group {
+        margin-left: auto;
+    }
+}

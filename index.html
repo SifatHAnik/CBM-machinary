@@ -16,17 +16,23 @@
     <!-- NAVBAR HEADER -->
     <header class="navbar-header" id="main-navbar">
         <nav class="nav-container">
-            <!-- Brand Logo -->
             <a href="index.html" class="brand-logo" id="nav-brand">
                 <span class="logo-bold">CBM</span>
             </a>
 
-            <!-- Mobile Hamburger Toggle -->
-            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <div class="nav-right-group">
+                <button id="nav-search-btn" class="search-nav-btn" aria-label="Search products">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span id="cart-badge-count" class="cart-badge">0</span>
+                </button>
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
 
-            <!-- Navigation Links -->
             <div class="nav-menu-wrapper" id="nav-menu">
                 <button class="mobile-close" id="mobile-close" aria-label="Close menu">
                     <i class="fa-solid fa-xmark"></i>
@@ -34,30 +40,14 @@
 
                 <ul class="nav-menu">
                     <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="#about" class="nav-link">About Us</a></li>
-                    
-                    <!-- Dynamic Dropdown -->
+                    <li><a href="catalog.html" class="nav-link">All Products</a></li>
                     <div class="category-dropdown-wrapper">
                         <button id="category-dropdown-btn" class="nav-btn">
                             Product Categories
                         </button>
                         <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
                     </div>
-<li><a href="catalog.html" class="nav-link">All Products</a></li>
                     <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
-   
-<li style="display: flex; align-items: center;">
-    <button id="nav-search-btn" class="search-nav-btn" aria-label="Search products">
-        <i class="fa-solid fa-magnifying-glass"></i>
-    </button>
-</li>
-                    <!-- Cart Button with Badge -->
-                    <li style="display: flex; align-items: center;">
-                        <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <span id="cart-badge-count" class="cart-badge">0</span>
-                        </button>
-                    </li>
                 </ul>
             </div>
         </nav>
@@ -328,15 +318,15 @@
 </div>
         </div>
 
-        <div class="footer-col">
-            <h4>Explore</h4>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#about">About Us</a></li>
-                <li><a href="#reviews-section">Reviews</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
+<div class="footer-col">
+    <h4>Explore</h4>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="catalog.html">All Products</a></li>
+        <li><a href="index.html#reviews-section">Reviews</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+</div>
 <div class="footer-col">
     <h4>Information</h4>
     <ul id="footer-pages-list">
