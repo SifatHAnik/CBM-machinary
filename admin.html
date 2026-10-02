@@ -157,6 +157,130 @@
             color: #fff;
             border-color: #d4a373;
         }
+
+
+        /* ============================================
+   LEAD ANALYTICS TABLE
+   ============================================ */
+.lead-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1a2020;
+    color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+.lead-table thead tr {
+    background: #0b4f37;
+    color: #d4a373;
+    text-align: left;
+}
+.lead-table th {
+    padding: 0.9rem 1rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    border-bottom: 2px solid #0b4f37;
+    vertical-align: middle;
+}
+.lead-table td {
+    padding: 0.9rem 1rem;
+    font-size: 0.85rem;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(11, 79, 55, 0.35);
+    word-break: break-word;
+}
+.lead-table tbody tr:last-child td { border-bottom: none; }
+.lead-table tbody tr:hover { background: #1e2524; }
+
+/* Column widths */
+.lead-table .col-user  { width: 22%; }
+.lead-table .col-views { width: 30%; }
+.lead-table .col-cart  { width: 18%; }
+.lead-table .col-time  { width: 15%; }
+.lead-table .col-act   { width: 15%; }
+
+/* Long product lists — cap the height with ellipsis */
+.lead-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #ccc;
+    line-height: 1.4;
+}
+.lead-username {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.lead-userid {
+    color: #8a9090;
+    font-size: 0.7rem;
+    display: block;
+    word-break: break-all;
+}
+
+/* Mobile card layout */
+@media (max-width: 768px) {
+    .lead-table,
+    .lead-table thead,
+    .lead-table tbody,
+    .lead-table tr,
+    .lead-table td { display: block; width: 100%; }
+
+    .lead-table thead { display: none; }
+
+    .lead-table {
+        background: transparent;
+        border-radius: 0;
+        table-layout: auto;
+    }
+
+    .lead-table tbody tr {
+        background: #1a2020;
+        border: 1px solid #0b4f37;
+        border-radius: 8px;
+        margin-bottom: 0.9rem;
+        padding: 1rem;
+        display: block;
+    }
+
+    .lead-table tbody tr:hover { background: #1a2020; }
+
+    .lead-table td {
+        border: none;
+        padding: 0.55rem 0;
+        display: flex;
+        gap: 0.7rem;
+        align-items: flex-start;
+        font-size: 0.85rem;
+    }
+
+    .lead-table td::before {
+        content: attr(data-label);
+        color: #d4a373;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        flex: 0 0 80px;
+        padding-top: 2px;
+    }
+
+    .lead-table td:last-child { padding-top: 0.9rem; }
+
+    /* Button full width inside cards */
+    .lead-table .btn-industrial {
+        width: 100% !important;
+        padding: 0.7rem 1rem !important;
+        font-size: 0.75rem !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -401,18 +525,18 @@
     <button id="clear-leads-btn" class="btn-industrial btn-danger" style="width: auto; padding: 0.4rem 0.9rem; font-size: 0.75rem;">Clear All Logs</button>
 </div>
             <div id="lead-analytics-content">
-                <table border="1" cellpadding="10" style="width:100%; border-collapse:collapse; background:#1a2020; color:#fff; border-color:#0b4f37; border-radius:4px;">
+                <table class="lead-table">
                     <thead>
-                        <tr style="background:#0b4f37; color:#d4a373; text-align:left;">
-                            <th>User Phone / ID</th>
-                            <th>Stared / Viewed Products</th>
-                            <th>Cart Items</th>
-                            <th>Last Active</th>
-                            <th>Action</th>
+                        <tr>
+                            <th class="col-user">User</th>
+                            <th class="col-views">Viewed Products</th>
+                            <th class="col-cart">Cart</th>
+                            <th class="col-time">Last Active</th>
+                            <th class="col-act">Action</th>
                         </tr>
                     </thead>
                     <tbody id="leadTableBody">
-                        <tr><td colspan="5" style="text-align:center;">Select "Lead Analytics & Recovery" to fetch logs...</td></tr>
+                        <tr><td colspan="5" style="text-align:center; color:#d4a373; padding:1.5rem;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -608,7 +732,7 @@ async function loadLeadAnalytics() {
     }
 
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373;">Loading analytics logs...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#d4a373; padding:1.5rem;">Loading analytics logs...</td></tr>';
 
     try {
         const res = await authedFetch('/api/leads');
@@ -616,7 +740,7 @@ async function loadLeadAnalytics() {
         const docs = await res.json();
 
         if (!docs || docs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">No lead activity recorded yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888; padding:1.5rem;">No lead activity recorded yet.</td></tr>';
             return;
         }
 
@@ -636,17 +760,26 @@ async function loadLeadAnalytics() {
             if (data.lastActive) formattedTime = new Date(data.lastActive).toLocaleString();
 
             const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid #0b4f37';
             tr.innerHTML = `
-                <td style="padding:0.8rem;">
-                    <strong>${escapeHtml(data.phone || 'Guest')}</strong><br>
-                    <small style="color:#a0aab0;">${escapeHtml(data.userId || data.id || '')}</small>
+                <td data-label="User">
+                    <div>
+                        <span class="lead-username">${escapeHtml(data.phone || 'Guest User')}</span>
+                        <span class="lead-userid">${escapeHtml(data.userId || data.id || '')}</span>
+                    </div>
                 </td>
-                <td style="padding:0.8rem; color:#ccc;">${escapeHtml(views)}</td>
-                <td style="padding:0.8rem; color:#ccc;">${escapeHtml(cart)}</td>
-                <td style="padding:0.8rem; font-size:0.85rem; color:#a0aab0;">${formattedTime}</td>
-                <td style="padding:0.8rem;">
-                    ${!isGuest ? `<a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.75rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>` : '<span style="color:#777; font-size:0.85rem;">Guest User</span>'}
+                <td data-label="Views">
+                    <div class="lead-clamp">${escapeHtml(views)}</div>
+                </td>
+                <td data-label="Cart">
+                    <div class="lead-clamp">${escapeHtml(cart)}</div>
+                </td>
+                <td data-label="Last Active">
+                    <span style="color:#a0aab0; font-size:0.8rem;">${formattedTime}</span>
+                </td>
+                <td data-label="Action">
+                    ${!isGuest
+                        ? `<a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, '')}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto;">Contact WhatsApp</a>`
+                        : '<span style="color:#777; font-size:0.8rem;">Guest User</span>'}
                 </td>
             `;
             tbody.appendChild(tr);
