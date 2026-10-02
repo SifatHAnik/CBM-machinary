@@ -1,372 +1,662 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CBM Machineries</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="favicon.png">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="icon" type="image/png" href="favicon.png" />
+  </head>
+  <body>
     <!-- OVERLAY BACKDROP FOR MOBILE MENU -->
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <!-- NAVBAR HEADER -->
     <header class="navbar-header" id="main-navbar">
-        <nav class="nav-container">
-            <a href="index.html" class="brand-logo" id="nav-brand">
-                <span class="logo-bold">CBM</span>
-            </a>
+      <nav class="nav-container">
+        <a href="index.html" class="brand-logo" id="nav-brand">
+          <span class="logo-bold">CBM</span>
+        </a>
 
-            <div class="nav-right-group">
-                <button id="nav-search-btn" class="search-nav-btn" aria-label="Search products">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
-                <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span id="cart-badge-count" class="cart-badge">0</span>
-                </button>
-                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+        <div class="nav-right-group">
+          <button
+            id="nav-search-btn"
+            class="search-nav-btn"
+            aria-label="Search products"
+          >
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+          <button id="nav-cart-btn" class="cart-nav-btn" aria-label="Open Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cart-badge-count" class="cart-badge">0</span>
+          </button>
+          <button
+            class="mobile-toggle"
+            id="mobile-toggle"
+            aria-label="Toggle menu"
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+
+        <div class="nav-menu-wrapper" id="nav-menu">
+          <button
+            class="mobile-close"
+            id="mobile-close"
+            aria-label="Close menu"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link active">Home</a></li>
+            <li><a href="catalog.html" class="nav-link">All Products</a></li>
+            <div class="category-dropdown-wrapper">
+              <button id="category-dropdown-btn" class="nav-btn">
+                Product Categories
+              </button>
+              <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
             </div>
-
-            <div class="nav-menu-wrapper" id="nav-menu">
-                <button class="mobile-close" id="mobile-close" aria-label="Close menu">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="catalog.html" class="nav-link">All Products</a></li>
-                    <div class="category-dropdown-wrapper">
-                        <button id="category-dropdown-btn" class="nav-btn">
-                            Product Categories
-                        </button>
-                        <ul id="nav-category-dropdown" class="dropdown-menu hidden"></ul>
-                    </div>
-                    <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
-                </ul>
-            </div>
-        </nav>
+            <li><a href="#reviews-section" class="nav-link">Reviews</a></li>
+          </ul>
+        </div>
+      </nav>
     </header>
 
     <!-- HERO SECTION (Full Screen Video) -->
-<section class="hero-section" id="hero">
-    <canvas id="pond-canvas"></canvas>
-    <div class="hero-overlay"></div>
+    <section class="hero-section" id="hero">
+      <canvas id="pond-canvas"></canvas>
+      <div class="hero-overlay"></div>
 
-    <div class="hero-content">
+      <div class="hero-content">
         <div class="hero-eyebrow">Industrial Machinery</div>
         <h1 class="hero-title">CBM <span>MACHINERIES</span></h1>
         <div class="hero-subtitle-rotator" id="hero-rotator">
-            <div class="hero-rotator-item active">High-Performance Industrial Solutions</div>
-            <div class="hero-rotator-item">Hydraulic · CNC · Shearing Machines</div>
-            <div class="hero-rotator-item">Trusted by Manufacturers Across Bangladesh</div>
+          <div class="hero-rotator-item active">
+            High-Performance Industrial Solutions
+          </div>
+          <div class="hero-rotator-item">
+            Hydraulic · CNC · Shearing Machines
+          </div>
+          <div class="hero-rotator-item">
+            Trusted by Manufacturers Across Bangladesh
+          </div>
         </div>
         <div class="hero-cta-row">
-            <a href="catalog.html" class="hero-btn hero-btn-primary">
-                <i class="fa-solid fa-industry"></i> Browse Catalog
-            </a>
-            <a href="#contact" class="hero-btn hero-btn-ghost">
-                <i class="fa-solid fa-headset"></i> Contact Us
-            </a>
+          <a href="catalog.html" class="hero-btn hero-btn-primary">
+            <i class="fa-solid fa-industry"></i> Browse Catalog
+          </a>
+          <a href="#contact" class="hero-btn hero-btn-ghost">
+            <i class="fa-solid fa-headset"></i> Contact Us
+          </a>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
     <!-- CATEGORIES CONTAINER (New Arrivals & Dynamic Categories injected via JS) -->
-    <main id="categories-container" style="padding: 2rem 0; background-color: #0e1111;">
-        <!-- Dynamic Category sliders and impact stats render here -->
+    <main
+      id="categories-container"
+      style="padding: 2rem 0; background-color: #0e1111"
+    >
+      <!-- Dynamic Category sliders and impact stats render here -->
     </main>
 
     <!-- REMAINING DYNAMIC CATEGORIES CONTAINER -->
-    <section id="other-categories-container" style="padding: 2rem 0; background-color: #0e1111;">
-        <!-- Other Products & Custom Categories render here -->
+    <section
+      id="other-categories-container"
+      style="padding: 2rem 0; background-color: #0e1111"
+    >
+      <!-- Other Products & Custom Categories render here -->
     </section>
 
     <!-- CUSTOMER REVIEWS & OPINIONS SECTION -->
     <section id="reviews-section" class="reviews-section">
-        <div class="reviews-container">
-            <div class="reviews-header">
-                <h2>Client Opinions & Reviews</h2>
-                <p>Discover direct feedback from industry professionals relying on CBM Machineries.</p>
-            </div>
-
-            <!-- Glowing Cards Review Grid -->
-            <div id="reviews-grid" class="reviews-grid">
-                <p style="color: #8a9090; font-size: 0.9rem; grid-column: 1 / -1; text-align: center;">Loading opinions...</p>
-            </div>
-
-            <!-- Leave a Review Form -->
-            <div class="review-form-card">
-                <h3>Leave Your Opinion</h3>
-                <form id="review-form">
-                    <div class="form-group">
-                        <label for="review-name">Your Name / Organization</label>
-                        <input type="text" id="review-name" class="form-control" placeholder="e.g. Apex Industrial Solutions" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Rating</label>
-                        <div class="star-rating-select" id="star-rating-select">
-                            <i class="fa-solid fa-star" data-rating="1"></i>
-                            <i class="fa-solid fa-star" data-rating="2"></i>
-                            <i class="fa-solid fa-star" data-rating="3"></i>
-                            <i class="fa-solid fa-star" data-rating="4"></i>
-                            <i class="fa-solid fa-star" data-rating="5"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="review-comment">Your Review or Experience</label>
-                        <textarea id="review-comment" class="form-control" rows="4" placeholder="Share your experience working with CBM Machinery..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-action" style="background: var(--accent-gold); color: #0e1111; font-weight: 700;">
-                        Submit Review for Approval
-                    </button>
-                    <div id="review-form-msg" class="review-form-msg"></div>
-                </form>
-            </div>
+      <div class="reviews-container">
+        <div class="reviews-header">
+          <h2>Client Opinions & Reviews</h2>
+          <p>
+            Discover direct feedback from industry professionals relying on CBM
+            Machineries.
+          </p>
         </div>
+
+        <!-- Glowing Cards Review Grid -->
+        <div id="reviews-grid" class="reviews-grid">
+          <p
+            style="
+              color: #8a9090;
+              font-size: 0.9rem;
+              grid-column: 1 / -1;
+              text-align: center;
+            "
+          >
+            Loading opinions...
+          </p>
+        </div>
+
+        <!-- Leave a Review Form -->
+        <div class="review-form-card">
+          <h3>Leave Your Opinion</h3>
+          <form id="review-form">
+            <div class="form-group">
+              <label for="review-name">Your Name / Organization</label>
+              <input
+                type="text"
+                id="review-name"
+                class="form-control"
+                placeholder="e.g. Apex Industrial Solutions"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Rating</label>
+              <div class="star-rating-select" id="star-rating-select">
+                <i class="fa-solid fa-star" data-rating="1"></i>
+                <i class="fa-solid fa-star" data-rating="2"></i>
+                <i class="fa-solid fa-star" data-rating="3"></i>
+                <i class="fa-solid fa-star" data-rating="4"></i>
+                <i class="fa-solid fa-star" data-rating="5"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="review-comment">Your Review or Experience</label>
+              <textarea
+                id="review-comment"
+                class="form-control"
+                rows="4"
+                placeholder="Share your experience working with CBM Machinery..."
+                required
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="btn-action"
+              style="
+                background: var(--accent-gold);
+                color: #0e1111;
+                font-weight: 700;
+              "
+            >
+              Submit Review for Approval
+            </button>
+            <div id="review-form-msg" class="review-form-msg"></div>
+          </form>
+        </div>
+      </div>
     </section>
 
     <!-- SLIDE-OUT CART DRAWER & OVERLAY -->
     <div id="cart-overlay" class="cart-overlay"></div>
     <div id="cart-drawer" class="cart-drawer">
-        <div class="cart-header">
-            <h3 style="margin: 0; color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">Selected Machinery</h3>
-            <button id="close-cart-btn" style="background: none; border: none; color: #8a9090; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      <div class="cart-header">
+        <h3
+          style="
+            margin: 0;
+            color: #fff;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+        >
+          Selected Machinery
+        </h3>
+        <button
+          id="close-cart-btn"
+          style="
+            background: none;
+            border: none;
+            color: #8a9090;
+            font-size: 1.5rem;
+            cursor: pointer;
+          "
+        >
+          &times;
+        </button>
+      </div>
+      <div id="cart-items-container" class="cart-items-list"></div>
+      <div class="cart-footer">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            color: #fff;
+            margin-bottom: 1.2rem;
+            font-weight: bold;
+            font-size: 1rem;
+          "
+        >
+          <span>Total:</span>
+          <span id="cart-total-price">৳ 0</span>
         </div>
-        <div id="cart-items-container" class="cart-items-list"></div>
-        <div class="cart-footer">
-            <div style="display: flex; justify-content: space-between; color: #fff; margin-bottom: 1.2rem; font-weight: bold; font-size: 1rem;">
-                <span>Total:</span>
-                <span id="cart-total-price">৳ 0</span>
-            </div>
-            <button id="cart-whatsapp-btn" class="btn-action btn-whatsapp" style="margin-bottom: 0.75rem;">
-                <i class="fa-brands fa-whatsapp" style="margin-right: 8px;"></i> Order Cart via WhatsApp
-            </button>
-            <button id="cart-bkash-btn" class="btn-action btn-bkash">
-                Checkout Cart via bKash
-            </button>
-        </div>
+        <button
+          id="cart-whatsapp-btn"
+          class="btn-action btn-whatsapp"
+          style="margin-bottom: 0.75rem"
+        >
+          <i class="fa-brands fa-whatsapp" style="margin-right: 8px"></i> Order
+          Cart via WhatsApp
+        </button>
+        <button id="cart-bkash-btn" class="btn-action btn-bkash">
+          Checkout Cart via bKash
+        </button>
+      </div>
     </div>
 
     <!-- CUSTOM BKASH MODAL INSTRUCTIONS BOX -->
     <div id="bkash-modal-overlay" class="modal-overlay">
-        <div class="modal-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-                <h3 style="margin: 0; color: #e2136e; font-size: 1.2rem;">bKash Direct Payment</h3>
-                <button id="close-bkash-modal-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
-            <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem;">Follow the simple steps below to process your transaction directly.</p>
-
-            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                <div style="margin-bottom: 0.6rem; font-size: 0.9rem;">
-                    <span style="color: #8a9090;">bKash Account:</span> 
-                    <strong id="bkash-modal-account" style="color: #e2136e; font-size: 1.1rem; margin-left: 0.5rem;">01700000000</strong>
-                </div>
-                <div style="font-size: 0.9rem;">
-                    <span style="color: #8a9090;">Total Amount:</span> 
-                    <strong id="bkash-modal-amount" style="color: #d4a373; font-size: 1.1rem; margin-left: 0.5rem;">৳ 0</strong>
-                </div>
-            </div>
-
-            <div style="font-size: 0.85rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
-                1. Open your bKash Mobile App.<br>
-                2. Select <strong>Send Money</strong> or <strong>Merchant Pay</strong>.<br>
-                3. Send the total amount to the account listed above.<br>
-                4. Contact our support team on WhatsApp with your Transaction ID.
-            </div>
+      <div class="modal-box">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+          "
+        >
+          <h3 style="margin: 0; color: #e2136e; font-size: 1.2rem">
+            bKash Direct Payment
+          </h3>
+          <button
+            id="close-bkash-modal-btn"
+            style="
+              background: none;
+              border: none;
+              color: #fff;
+              font-size: 1.5rem;
+              cursor: pointer;
+            "
+          >
+            &times;
+          </button>
         </div>
+        <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem">
+          Follow the simple steps below to process your transaction directly.
+        </p>
+
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+          "
+        >
+          <div style="margin-bottom: 0.6rem; font-size: 0.9rem">
+            <span style="color: #8a9090">bKash Account:</span>
+            <strong
+              id="bkash-modal-account"
+              style="color: #e2136e; font-size: 1.1rem; margin-left: 0.5rem"
+              >01700000000</strong
+            >
+          </div>
+          <div style="font-size: 0.9rem">
+            <span style="color: #8a9090">Total Amount:</span>
+            <strong
+              id="bkash-modal-amount"
+              style="color: #d4a373; font-size: 1.1rem; margin-left: 0.5rem"
+              >৳ 0</strong
+            >
+          </div>
+        </div>
+
+        <div
+          style="
+            font-size: 0.85rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+          "
+        >
+          1. Open your bKash Mobile App.<br />
+          2. Select <strong>Send Money</strong> or
+          <strong>Merchant Pay</strong>.<br />
+          3. Send the total amount to the account listed above.<br />
+          4. Contact our support team on WhatsApp with your Transaction ID.
+        </div>
+      </div>
     </div>
     <!-- FLOATING CONTACT BUTTON -->
-<div class="fab-container" id="fab-container">
-    <div class="fab-menu">
-        <a id="fab-whatsapp" class="fab-item whatsapp" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i>
+    <div class="fab-container" id="fab-container">
+      <div class="fab-menu">
+        <a
+          id="fab-whatsapp"
+          class="fab-item whatsapp"
+          href="#"
+          target="_blank"
+          rel="noopener"
+          aria-label="WhatsApp"
+        >
+          <i class="fa-brands fa-whatsapp"></i>
         </a>
-        <a id="fab-call" class="fab-item call" href="#" aria-label="Call hotline">
-            <i class="fa-solid fa-phone"></i>
+        <a
+          id="fab-call"
+          class="fab-item call"
+          href="#"
+          aria-label="Call hotline"
+        >
+          <i class="fa-solid fa-phone"></i>
         </a>
-        <a id="fab-email" class="fab-item email" href="#" aria-label="Send email">
-            <i class="fa-solid fa-envelope"></i>
+        <a
+          id="fab-email"
+          class="fab-item email"
+          href="#"
+          aria-label="Send email"
+        >
+          <i class="fa-solid fa-envelope"></i>
         </a>
-    </div>
-    <button id="fab-toggle" class="fab-toggle" aria-label="Contact options">
+      </div>
+      <button id="fab-toggle" class="fab-toggle" aria-label="Contact options">
         <i class="fa-solid fa-headset"></i>
-    </button>
-</div>
-
-<!-- SEARCH OVERLAY -->
-<div class="search-overlay" id="search-overlay">
-    <div class="search-box-inner">
-        <div class="search-input-wrap">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="search-input" placeholder="Search machines, models, specs..." autocomplete="off">
-            <button class="search-close-x" id="search-close" aria-label="Close search">&times;</button>
-        </div>
-        <div class="search-results" id="search-results" style="display:none;"></div>
-        <div class="search-hint">Press <kbd>Esc</kbd> to close · <kbd>Ctrl</kbd>+<kbd>K</kbd> to open</div>
+      </button>
     </div>
-</div>
 
-<!-- CONTACT SECTION -->
-<section id="contact" class="contact-section">
-    <div class="contact-container">
+    <!-- SEARCH OVERLAY -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="search-box-inner">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search machines, models, specs..."
+            autocomplete="off"
+          />
+          <button
+            class="search-close-x"
+            id="search-close"
+            aria-label="Close search"
+          >
+            &times;
+          </button>
+        </div>
+        <div
+          class="search-results"
+          id="search-results"
+          style="display: none"
+        ></div>
+        <div class="search-hint">
+          Press <kbd>Esc</kbd> to close · <kbd>Ctrl</kbd>+<kbd>K</kbd> to open
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="contact-section">
+      <div class="contact-container">
         <div class="contact-header">
-            <h2>Get In Touch</h2>
-            <p>Whether you need a quote, a spare part, or a technician — we're one message away.</p>
+          <h2>Get In Touch</h2>
+          <p>
+            Whether you need a quote, a spare part, or a technician — we're one
+            message away.
+          </p>
         </div>
 
         <div class="contact-grid">
-
-            <!-- Contact info column -->
-            <div class="contact-info-col">
-                <a href="#" class="contact-card" id="contact-hotline-card">
-                    <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
-                    <div class="contact-card-body">
-                        <div class="contact-card-label">Hotline</div>
-                        <div class="contact-card-value" id="contact-hotline">+880 1700-000000</div>
-                    </div>
-                </a>
-
-                <a href="#" class="contact-card" id="contact-whatsapp-card" target="_blank" rel="noopener">
-                    <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                    <div class="contact-card-body">
-                        <div class="contact-card-label">WhatsApp</div>
-                        <div class="contact-card-value" id="contact-whatsapp">+880 1700-000000</div>
-                    </div>
-                </a>
-
-                <a href="#" class="contact-card" id="contact-email-card">
-                    <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
-                    <div class="contact-card-body">
-                        <div class="contact-card-label">Email</div>
-                        <div class="contact-card-value" id="contact-email">info@cbmmachineries.com</div>
-                    </div>
-                </a>
-
-                <a href="#" class="contact-card" id="contact-address-card" target="_blank" rel="noopener">
-                    <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
-                    <div class="contact-card-body">
-                        <div class="contact-card-label">Visit Us</div>
-                        <div class="contact-card-value" id="contact-address" style="white-space: pre-line;">Dhaka, Bangladesh</div>
-                    </div>
-                </a>
-
-                <div class="contact-card contact-card-static">
-                    <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
-                    <div class="contact-card-body">
-                        <div class="contact-card-label">Business Hours</div>
-                        <div class="contact-card-value" id="contact-hours">Sat – Thu · 9:00 AM – 7:00 PM</div>
-                    </div>
+          <!-- Contact info column -->
+          <div class="contact-info-col">
+            <a href="#" class="contact-card" id="contact-hotline-card">
+              <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+              <div class="contact-card-body">
+                <div class="contact-card-label">Hotline</div>
+                <div class="contact-card-value" id="contact-hotline">
+                  +880 1700-000000
                 </div>
+              </div>
+            </a>
+
+            <a
+              href="#"
+              class="contact-card"
+              id="contact-whatsapp-card"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="contact-icon">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+              <div class="contact-card-body">
+                <div class="contact-card-label">WhatsApp</div>
+                <div class="contact-card-value" id="contact-whatsapp">
+                  +880 1700-000000
+                </div>
+              </div>
+            </a>
+
+            <a href="#" class="contact-card" id="contact-email-card">
+              <div class="contact-icon">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div class="contact-card-body">
+                <div class="contact-card-label">Email</div>
+                <div class="contact-card-value" id="contact-email">
+                  info@cbmmachineries.com
+                </div>
+              </div>
+            </a>
+
+            <a
+              href="#"
+              class="contact-card"
+              id="contact-address-card"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="contact-icon">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div class="contact-card-body">
+                <div class="contact-card-label">Visit Us</div>
+                <div
+                  class="contact-card-value"
+                  id="contact-address"
+                  style="white-space: pre-line"
+                >
+                  Dhaka, Bangladesh
+                </div>
+              </div>
+            </a>
+
+            <div class="contact-card contact-card-static">
+              <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="contact-card-body">
+                <div class="contact-card-label">Business Hours</div>
+                <div class="contact-card-value" id="contact-hours">
+                  Sat – Thu · 9:00 AM – 7:00 PM
+                </div>
+              </div>
             </div>
+          </div>
 
-            <!-- Message form column -->
-            <div class="contact-form-col">
-                <h3>Send Us a Message</h3>
-                <p class="contact-form-note">We'll reply on WhatsApp within business hours.</p>
+          <!-- Message form column -->
+          <div class="contact-form-col">
+            <h3>Send Us a Message</h3>
+            <p class="contact-form-note">
+              We'll reply on WhatsApp within business hours.
+            </p>
 
-                <form id="contact-form">
-                    <div class="contact-field">
-                        <label for="contact-name">Your Name / Company</label>
-                        <input type="text" id="contact-name" required placeholder="e.g. Apex Industrial Solutions">
-                    </div>
+            <form id="contact-form">
+              <div class="contact-field">
+                <label for="contact-name">Your Name / Company</label>
+                <input
+                  type="text"
+                  id="contact-name"
+                  required
+                  placeholder="e.g. Apex Industrial Solutions"
+                />
+              </div>
 
-                    <div class="contact-field">
-                        <label for="contact-phone">Your Phone Number</label>
-                        <input type="tel" id="contact-phone" required placeholder="01XXXXXXXXX">
-                    </div>
+              <div class="contact-field">
+                <label for="contact-phone">Your Phone Number</label>
+                <input
+                  type="tel"
+                  id="contact-phone"
+                  required
+                  placeholder="01XXXXXXXXX"
+                />
+              </div>
 
-                    <div class="contact-field">
-                        <label for="contact-subject">Subject</label>
-                        <input type="text" id="contact-subject" placeholder="e.g. Quote for hydraulic press">
-                    </div>
+              <div class="contact-field">
+                <label for="contact-subject">Subject</label>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  placeholder="e.g. Quote for hydraulic press"
+                />
+              </div>
 
-                    <div class="contact-field">
-                        <label for="contact-message">Message</label>
-                        <textarea id="contact-message" rows="5" required placeholder="Tell us what you're looking for..."></textarea>
-                    </div>
+              <div class="contact-field">
+                <label for="contact-message">Message</label>
+                <textarea
+                  id="contact-message"
+                  rows="5"
+                  required
+                  placeholder="Tell us what you're looking for..."
+                ></textarea>
+              </div>
 
-                    <button type="submit" class="contact-submit">
-                        <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
-                    </button>
-                </form>
-            </div>
-
+              <button type="submit" class="contact-submit">
+                <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
+              </button>
+            </form>
+          </div>
         </div>
-    </div>
-</section>
-                               <!-- SITE FOOTER -->
-<footer class="site-footer">
-    <div class="footer-inner">
-
+      </div>
+    </section>
+    <!-- SITE FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-inner">
         <div class="footer-brand">
-            <h3>CBM <span>MACHINERIES</span></h3>
-            <p>High-performance industrial machinery solutions built for precision, durability, and the long haul.</p>
-         <div class="footer-socials">
-    <a id="footer-facebook" href="#" aria-label="Facebook" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
-    <a id="footer-youtube" href="#" aria-label="YouTube" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
-    <a id="footer-linkedin" href="#" aria-label="LinkedIn" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i></a>
-    <a id="footer-instagram" href="#" aria-label="Instagram" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
-</div>
+          <h3>CBM <span>MACHINERIES</span></h3>
+          <p>
+            High-performance industrial machinery solutions built for precision,
+            durability, and the long haul.
+          </p>
+          <div class="footer-socials">
+            <a
+              id="footer-facebook"
+              href="#"
+              aria-label="Facebook"
+              target="_blank"
+              rel="noopener"
+              ><i class="fa-brands fa-facebook-f"></i
+            ></a>
+            <a
+              id="footer-youtube"
+              href="#"
+              aria-label="YouTube"
+              target="_blank"
+              rel="noopener"
+              ><i class="fa-brands fa-youtube"></i
+            ></a>
+            <a
+              id="footer-linkedin"
+              href="#"
+              aria-label="LinkedIn"
+              target="_blank"
+              rel="noopener"
+              ><i class="fa-brands fa-linkedin-in"></i
+            ></a>
+            <a
+              id="footer-instagram"
+              href="#"
+              aria-label="Instagram"
+              target="_blank"
+              rel="noopener"
+              ><i class="fa-brands fa-instagram"></i
+            ></a>
+          </div>
         </div>
 
-<div class="footer-col">
-    <h4>Explore</h4>
-    <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="catalog.html">All Products</a></li>
-        <li><a href="index.html#reviews-section">Reviews</a></li>
-        <li><a href="index.html#contact">Contact</a></li>
-    </ul>
-</div>
-<div class="footer-col">
-    <h4>Information</h4>
-    <ul id="footer-pages-list">
-        <li style="color:#666; font-size:0.85rem;">Loading...</li>
-    </ul>
-</div>
-<div class="footer-col">
-    <h4>Contact</h4>
-    <ul>
-        <li><i class="fa-solid fa-phone"></i><a id="footer-hotline-link" href="#"><span id="footer-hotline">+880 1700-000000</span></a></li>
-        <li><i class="fa-brands fa-whatsapp"></i><a id="footer-whatsapp-link" href="#" target="_blank" rel="noopener"><span id="footer-whatsapp">+880 1700-000000</span></a></li>
-        <li><i class="fa-solid fa-envelope"></i><a id="footer-email-link" href="#"><span id="footer-email">info@cbmmachineries.com</span></a></li>
-    </ul>
-</div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="catalog.html">All Products</a></li>
+            <li><a href="index.html#reviews-section">Reviews</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Information</h4>
+          <ul id="footer-pages-list">
+            <li style="color: #666; font-size: 0.85rem">Loading...</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li>
+              <i class="fa-solid fa-phone"></i
+              ><a id="footer-hotline-link" href="#"
+                ><span id="footer-hotline">+880 1700-000000</span></a
+              >
+            </li>
+            <li>
+              <i class="fa-brands fa-whatsapp"></i
+              ><a
+                id="footer-whatsapp-link"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                ><span id="footer-whatsapp">+880 1700-000000</span></a
+              >
+            </li>
+            <li>
+              <i class="fa-solid fa-envelope"></i
+              ><a id="footer-email-link" href="#"
+                ><span id="footer-email">info@cbmmachineries.com</span></a
+              >
+            </li>
+          </ul>
+        </div>
 
-<div class="footer-col">
-    <h4>Visit Us</h4>
-    <ul>
-<li>
-    <i class="fa-solid fa-location-dot"></i>
-    <a id="footer-address-link" href="#" target="_blank" rel="noopener"><span id="footer-address" style="white-space: pre-line;">CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh</span></a>
-</li>
-        <li><i class="fa-solid fa-clock"></i><span id="footer-hours">Sat – Thu · 9:00 AM – 7:00 PM</span></li>
-    </ul>
-</div>
+        <div class="footer-col">
+          <h4>Visit Us</h4>
+          <ul>
+            <li>
+              <i class="fa-solid fa-location-dot"></i>
+              <a
+                id="footer-address-link"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                ><span id="footer-address" style="white-space: pre-line"
+                  >CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka
+                  1207, Bangladesh</span
+                ></a
+              >
+            </li>
+            <li>
+              <i class="fa-solid fa-clock"></i
+              ><span id="footer-hours">Sat – Thu · 9:00 AM – 7:00 PM</span>
+            </li>
+          </ul>
+        </div>
+      </div>
 
-    </div>
-
-    <div class="footer-bottom">
-        <span>© <span id="footer-year"></span> CBM Machineries. All rights reserved.</span>
+      <div class="footer-bottom">
+        <span
+          >© <span id="footer-year"></span> CBM Machineries. All rights
+          reserved.</span
+        >
         <span class="footer-tag">Engineered for Industry</span>
-    </div>
+      </div>
 
-    <script>
-        document.getElementById('footer-year').textContent = new Date().getFullYear();
-    </script>
-</footer>
-
+      <script>
+        document.getElementById("footer-year").textContent =
+          new Date().getFullYear();
+      </script>
+    </footer>
 
     <script type="module" src="analytics.js"></script>
     <script type="module" src="script.js"></script>
-</body>
+  </body>
 </html>
