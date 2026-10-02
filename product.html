@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - CBM Machineries</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
         /* Cart Overlay Blur */
         .cart-overlay {
             position: fixed;
@@ -261,10 +262,10 @@
             <h3>CBM <span>MACHINERIES</span></h3>
             <p>High-performance industrial machinery solutions built for precision, durability, and the long haul.</p>
             <div class="footer-socials">
-                <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-                <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a id="footer-facebook" href="#" aria-label="Facebook" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
+                <a id="footer-youtube" href="#" aria-label="YouTube" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
+                <a id="footer-linkedin" href="#" aria-label="LinkedIn" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a id="footer-instagram" href="#" aria-label="Instagram" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
             </div>
         </div>
 
@@ -272,32 +273,36 @@
             <h4>Explore</h4>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li><a href="#about">About Us</a></li>
-                <li><a href="#reviews-section">Reviews</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="index.html#about">About Us</a></li>
+                <li><a href="index.html#reviews-section">Reviews</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
             </ul>
         </div>
+
         <div class="footer-col">
-    <h4>Information</h4>
-    <ul id="footer-pages-list">
-        <li style="color:#666; font-size:0.85rem;">Loading...</li>
-    </ul>
-</div>
+            <h4>Information</h4>
+            <ul id="footer-pages-list">
+                <li style="color:#666; font-size:0.85rem;">Loading...</li>
+            </ul>
+        </div>
 
         <div class="footer-col">
             <h4>Contact</h4>
             <ul>
-                <li><i class="fa-solid fa-phone"></i><span id="footer-hotline">+880 1700-000000</span></li>
-                <li><i class="fa-brands fa-whatsapp"></i><span id="footer-whatsapp">+880 1700-000000</span></li>
-                <li><i class="fa-solid fa-envelope"></i><span>info@cbmmachineries.com</span></li>
+                <li><i class="fa-solid fa-phone"></i><a id="footer-hotline-link" href="#"><span id="footer-hotline">+880 1700-000000</span></a></li>
+                <li><i class="fa-brands fa-whatsapp"></i><a id="footer-whatsapp-link" href="#" target="_blank" rel="noopener"><span id="footer-whatsapp">+880 1700-000000</span></a></li>
+                <li><i class="fa-solid fa-envelope"></i><a id="footer-email-link" href="#"><span id="footer-email">info@cbmmachineries.com</span></a></li>
             </ul>
         </div>
 
         <div class="footer-col">
             <h4>Visit Us</h4>
             <ul>
-                <li><i class="fa-solid fa-location-dot"></i><span>CBM Machineries HQ<br>Plot 12, Industrial Zone<br>Dhaka 1207, Bangladesh</span></li>
-                <li><i class="fa-solid fa-clock"></i><span>Sat – Thu · 9:00 AM – 7:00 PM</span></li>
+                <li>
+                    <i class="fa-solid fa-location-dot"></i>
+                    <a id="footer-address-link" href="#" target="_blank" rel="noopener"><span id="footer-address" style="white-space: pre-line;">CBM Machineries HQ&#10;Plot 12, Industrial Zone&#10;Dhaka 1207, Bangladesh</span></a>
+                </li>
+                <li><i class="fa-solid fa-clock"></i><span id="footer-hours">Sat – Thu · 9:00 AM – 7:00 PM</span></li>
             </ul>
         </div>
 

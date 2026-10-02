@@ -31,14 +31,7 @@ export function isCacheFresh(key) {
     } catch (e) { return false; }
 }
 
-let _snapPromise = null;
-export function loadSnapshot() {
-    if (_snapPromise) return _snapPromise;
-    _snapPromise = fetch('/static/snapshot.json')
-        .then(r => (r.ok ? r.json() : null))
-        .catch(() => null);
-    return _snapPromise;
-}
+
 
 /**
  * The main workhorse. Shows cache immediately, tries network with a
@@ -80,12 +73,8 @@ export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 150
         return cached;
     }
 
-    const snap = await loadSnapshot();
-    if (snap && snap[staticKey]) {
-        onData(snap[staticKey], 'static');
-        showStatusBadge('snapshot');
-        return snap[staticKey];
-    }
+    // 4. No cache, no network — nothing we can do
+    // (backend + edge cache should prevent this case in practice)
 
     onData(null, 'failed');
     showStatusBadge('offline');
@@ -95,10 +84,9 @@ export async function safeFetch(key, fetcher, staticKey, onData, timeoutMs = 150
 let _badgeTimer = null;
 function showStatusBadge(state) {
     const labels = {
-        live:     { text: '● Live',      color: '#25D366' },
-        cached:   { text: '● Cached',    color: '#d4a373' },
-        snapshot: { text: '● Snapshot',  color: '#e2136e' },
-        offline:  { text: '● Offline',   color: '#e2136e' }
+        live:    { text: '●',     color: '#25D366' },
+        cached:  { text: '●',   color: '#d4a373' },
+        offline: { text: '●',  color: '#e2136e' }
     };
     const cfg = labels[state];
     if (!cfg) return;
