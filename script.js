@@ -294,8 +294,6 @@ box-shadow:
             <div class="showcase-float-wrap">
                 <div class="showcase-card" id="showcase-card">
                     <div class="showcase-track" id="showcase-track"></div>
-                    <button class="showcase-arrow showcase-arrow-prev" id="showcase-prev" aria-label="Previous image">‹</button>
-                    <button class="showcase-arrow showcase-arrow-next" id="showcase-next" aria-label="Next image">›</button>
                 </div>
             </div>
         </div>
@@ -308,8 +306,6 @@ box-shadow:
   function loadShowcaseImages() {
     const track = document.getElementById("showcase-track");
     const card = document.getElementById("showcase-card");
-    const prevBtn = document.getElementById("showcase-prev");
-    const nextBtn = document.getElementById("showcase-next");
     if (!track || !card) return;
 
     safeFetch(
@@ -324,8 +320,7 @@ box-shadow:
         track.innerHTML = "";
         if (!images || images.length === 0) {
           track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
-          if (prevBtn) prevBtn.onclick = null;
-          if (nextBtn) nextBtn.onclick = null;
+
           return;
         }
 
@@ -359,20 +354,7 @@ box-shadow:
           }, 5000);
         };
 
-        if (prevBtn) {
-          prevBtn.onclick = (e) => {
-            e.stopPropagation();
-            goTo(-1);
-            startAuto();
-          };
-        }
-        if (nextBtn) {
-          nextBtn.onclick = (e) => {
-            e.stopPropagation();
-            goTo(1);
-            startAuto();
-          };
-        }
+
 
         const pauseFloat = () => {
           const w = card.closest(".showcase-float-wrap");
