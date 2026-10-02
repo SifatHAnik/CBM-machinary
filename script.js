@@ -578,9 +578,11 @@ box-shadow:
         products.forEach((product) => {
           const productId = product.id;
           const card = document.createElement("div");
+          const isNarrow = window.innerWidth < 640;
+          const cardWidth = isNarrow ? "190px" : "280px";
           card.style.cssText = `
-                        min-width: 280px;
-                        max-width: 280px;
+                        min-width: ${cardWidth};
+                        max-width: ${cardWidth};
                         background: #161b1b;
                         border: 1px solid rgba(212, 163, 115, 0.2);
                         border-radius: 12px;
@@ -601,16 +603,16 @@ box-shadow:
                     </div>`;
 
           card.innerHTML = `
-                        <div style="width: 100%; height: 200px; overflow: hidden; background: #000; position: relative;">
+                        <div style="width: 100%; height: ${isNarrow ? "130px" : "200px"}; overflow: hidden; background: #000; position: relative;">
                             ${imgHtml}
                             ${phHtml}
                         </div>
-                        <div style="padding: 1.2rem; background: #161b1b;">
-                            <h3 style="color: #fff; font-size: 1.1rem; margin: 0 0 0.5rem 0; font-weight: 600;">${escapeHtml(product.title || "")}</h3>
-                            <p style="color: #a0a0a0; font-size: 0.85rem; margin: 0 0 0.8rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <div style="padding: ${isNarrow ? "0.7rem" : "1.2rem"}; background: #161b1b;">
+                            <h3 style="color: #fff; font-size: ${isNarrow ? "0.85rem" : "1.1rem"}; margin: 0 0 0.4rem 0; font-weight: 600;">${escapeHtml(product.title || "")}</h3>
+                            <p style="color: #a0a0a0; font-size: ${isNarrow ? "0.75rem" : "0.85rem"}; margin: 0 0 0.6rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 ${escapeHtml(product.shortDescription || "")}
                             </p>
-                            <div style="color: #d4a373; font-weight: bold; font-size: 1.1rem;">
+                            <div style="color: #d4a373; font-weight: bold; font-size: ${isNarrow ? "0.9rem" : "1.1rem"};">
                                 ৳ ${Number(product.price || 0).toLocaleString()}
                             </div>
                         </div>

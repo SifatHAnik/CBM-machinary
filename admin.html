@@ -236,7 +236,7 @@
         width: 22%;
       }
       .lead-table .col-views {
-        width: 30%;
+        width: 27%;
       }
       .lead-table .col-cart {
         width: 18%;
@@ -245,7 +245,7 @@
         width: 15%;
       }
       .lead-table .col-act {
-        width: 15%;
+        width: 18%;
       }
 
       /* Long product lists — cap the height with ellipsis */
@@ -1146,8 +1146,8 @@
                       !isGuest
                         ? `
                             <div style="display:flex; flex-direction:column; gap:0.4rem;">
-                                <a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, "")}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto;">WhatsApp</a>
-                                <a href="tel:${String(data.phone).replace(/[^0-9+]/g, "")}" class="btn-industrial" style="padding:0.4rem 0.8rem; font-size:0.72rem; text-decoration:none; display:inline-block; width:auto; background:#0b4f37; border-color:#d4a373;">Call</a>
+                                <a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, "")}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.6rem; font-size:0.68rem; text-decoration:none; display:inline-block; width:auto; white-space:nowrap;">WhatsApp</a>
+                                <a href="tel:${String(data.phone).replace(/[^0-9+]/g, "")}" class="btn-industrial" style="padding:0.4rem 0.6rem; font-size:0.68rem; text-decoration:none; display:inline-block; width:auto; white-space:nowrap; background:#0b4f37; border-color:#d4a373;">Call</a>
                             </div>
                         `
                         : '<span style="color:#777; font-size:0.8rem;">Guest User</span>'
