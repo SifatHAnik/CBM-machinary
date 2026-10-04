@@ -481,7 +481,16 @@
           </select>
         </div>
 
-        <button id="add-product-btn" class="btn-industrial">Add Product</button>
+        <div class="inline-group">
+          <button id="add-product-btn" class="btn-industrial">Add Product</button>
+          <button
+            id="cancel-prod-edit-btn"
+            class="btn-industrial btn-danger"
+            style="display: none; width: 40%"
+          >
+            Cancel Edit
+          </button>
+        </div>
 
         <hr class="divider" />
 
@@ -1030,6 +1039,7 @@
       const adminReviewsList = document.getElementById("admin-reviews-list");
       const reviewMgmtStatus = document.getElementById("review-mgmt-status");
       let currentReviewFilter = false; // false = pending, true = approved
+            let editingProdId = null;
 
       // Toggle Sections via Dropdown
       sectionSelector.addEventListener("change", (e) => {
@@ -1453,12 +1463,39 @@
                             <div style="color: #d4a373; font-size: 0.8rem;">৳ ${Number(prod.price || 0).toLocaleString()} | Category: ${prod.category}</div>
                         </div>
                     </div>
-                    <button class="btn-industrial btn-danger delete-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Delete</button>
+                                        <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
+                        <button class="btn-industrial edit-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Edit</button>
+                        <button class="btn-industrial btn-danger delete-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Delete</button>
+                    </div>
                 `;
 
             liveProductsList.appendChild(itemCard);
           });
+          document.querySelectorAll(".edit-prod-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+              const id = e.target.getAttribute("data-id");
+              try {
+                const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`);
+                if (!res.ok) throw new Error("API " + res.status);
+                const prod = await res.json();
 
+                editingProdId = id;
+                document.getElementById("prod-title").value = prod.title || "";
+                document.getElementById("prod-price").value = prod.price || "";
+                document.getElementById("prod-short-desc").value = prod.shortDescription || "";
+                document.getElementById("prod-long-desc").value = prod.longDescription || "";
+                document.getElementById("prod-youtube").value = prod.youtubeUrl || "";
+                document.getElementById("prod-category-select").value = prod.category || "new-arrivals";
+
+                document.getElementById("add-product-btn").textContent = "Update Product";
+                document.getElementById("cancel-prod-edit-btn").style.display = "inline-block";
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                prodStatus.innerText = "Editing: " + prod.title;
+              } catch (err) {
+                prodStatus.innerText = "Error loading product: " + err.message;
+              }
+            });
+          });
           document.querySelectorAll(".delete-prod-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
               const idToDelete = e.target.getAttribute("data-id");
@@ -1639,17 +1676,56 @@ logoutBtn.addEventListener("click", () => {
       addProductBtn.addEventListener("click", async () => {
         const title = document.getElementById("prod-title").value.trim();
         const price = document.getElementById("prod-price").value.trim();
-        const shortDesc = document
-          .getElementById("prod-short-desc")
-          .value.trim();
+        const shortDesc = document.getElementById("prod-short-desc").value.trim();
         const longDesc = document.getElementById("prod-long-desc").value;
         const category = document.getElementById("prod-category-select").value;
         const youtubeUrl = document.getElementById("prod-youtube").value.trim();
         const fileInput = document.getElementById("prod-file");
 
-        if (!title || !price || !fileInput.files[0]) {
-          prodStatus.innerText =
-            "Error: Please fill in Title, Price, and select an Image file.";
+        if (!title || !price) {
+          prodStatus.innerText = "Error: Title and Price are required.";
+          return;
+        }
+
+        // Edit mode
+        if (editingProdId) {
+          try {
+            prodStatus.innerText = "Updating product...";
+            const payload = {
+              title,
+              price: Number(price),
+              shortDescription: shortDesc,
+              longDescription: longDesc,
+              category,
+              youtubeUrl,
+            };
+
+            // Only upload a new image if the user selected one
+            if (fileInput.files[0]) {
+              prodStatus.innerText = "Uploading new image...";
+              payload.imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+            }
+
+            const res = await authedFetch(
+              `/api/products?id=${encodeURIComponent(editingProdId)}`,
+              {
+                method: "PUT",
+                body: JSON.stringify(payload),
+              },
+            );
+            if (!res.ok) throw new Error("API " + res.status);
+
+            prodStatus.innerText = "Product updated successfully!";
+            resetProductForm();
+          } catch (err) {
+            prodStatus.innerText = "Update error: " + err.message;
+          }
+          return;
+        }
+
+        // New product mode
+        if (!fileInput.files[0]) {
+          prodStatus.innerText = "Error: Please select an image file.";
           return;
         }
 
@@ -1657,9 +1733,7 @@ logoutBtn.addEventListener("click", () => {
 
         try {
           const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
-
-          prodStatus.innerText =
-            "Image uploaded! Saving product to database...";
+          prodStatus.innerText = "Image uploaded! Saving product...";
 
           const res = await authedFetch("/api/products", {
             method: "POST",
@@ -1673,22 +1747,34 @@ logoutBtn.addEventListener("click", () => {
               youtubeUrl,
             }),
           });
-          if (!res.ok)
-            throw new Error("API " + res.status + ": " + (await res.text()));
+          if (!res.ok) throw new Error("API " + res.status);
 
-          prodStatus.innerText =
-            "Success: Product successfully created and live!";
-
-          document.getElementById("prod-title").value = "";
-          document.getElementById("prod-price").value = "";
-          document.getElementById("prod-short-desc").value = "";
-          document.getElementById("prod-long-desc").value = "";
-          document.getElementById("prod-youtube").value = "";
-          fileInput.value = "";
+          prodStatus.innerText = "Success: Product created!";
+          resetProductForm();
         } catch (err) {
           prodStatus.innerText = "Deployment Error: " + err.message;
         }
       });
+
+      function resetProductForm() {
+        editingProdId = null;
+        document.getElementById("prod-title").value = "";
+        document.getElementById("prod-price").value = "";
+        document.getElementById("prod-short-desc").value = "";
+        document.getElementById("prod-long-desc").value = "";
+        document.getElementById("prod-youtube").value = "";
+        document.getElementById("prod-file").value = "";
+        document.getElementById("add-product-btn").textContent = "Add Product";
+        document.getElementById("cancel-prod-edit-btn").style.display = "none";
+      }
+
+      const cancelProdEditBtn = document.getElementById("cancel-prod-edit-btn");
+      if (cancelProdEditBtn) {
+        cancelProdEditBtn.addEventListener("click", () => {
+          resetProductForm();
+          prodStatus.innerText = "Edit cancelled.";
+        });
+      }
 
       // Add Custom Category Handler
       addCatBtn.addEventListener("click", async () => {
