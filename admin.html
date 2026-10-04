@@ -369,7 +369,7 @@
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" id="login-password" required />
+          <input type="password" id="login-password" required autocomplete="off" />
         </div>
         <button type="submit" class="btn-industrial">Log In</button>
         <p id="auth-status" class="status-msg"></p>
@@ -918,11 +918,12 @@
         </div>
         <div class="form-group">
           <label>New Password</label>
-          <input
-            type="password"
-            id="new-account-pass"
-            placeholder="Enter new password"
-          />
+        <input
+          type="password"
+          id="new-account-pass"
+          placeholder="Enter new password"
+          autocomplete="new-password"
+        />
         </div>
         <button id="change-pass-btn" class="btn-industrial">
           Update Password
@@ -1143,19 +1144,20 @@
                     <span style="color:#a0aab0; font-size:0.8rem;">${formattedTime}</span>
                 </td>
                 <td data-label="Action">
-                    ${
-                      !isGuest
-                        ? `
-                            <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        ${!isGuest
+                            ? `
                                 <a href="https://wa.me/${String(data.phone).replace(/[^0-9]/g, "")}" target="_blank" class="btn-industrial btn-success" style="padding:0.4rem 0.6rem; font-size:0.68rem; text-decoration:none; display:inline-block; width:auto; white-space:nowrap;">WhatsApp</a>
                                 <a href="tel:${String(data.phone).replace(/[^0-9+]/g, "")}" class="btn-industrial" style="padding:0.4rem 0.6rem; font-size:0.68rem; text-decoration:none; display:inline-block; width:auto; white-space:nowrap; background:#0b4f37; border-color:#d4a373;">Call</a>
-                            </div>
-                        `
-                        : '<span style="color:#777; font-size:0.8rem;">Guest User</span>'
-                    }
+                            `
+                            : '<span style="color:#777; font-size:0.8rem;">Guest User</span>'
+                        }
+                        <button class="btn-industrial btn-danger delete-lead-btn" data-id="${data.id}" style="padding:0.4rem 0.6rem; font-size:0.68rem; width:auto; white-space:nowrap;">Delete</button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
+
             // Click-to-expand for truncated cells
             tbody
               .querySelectorAll(".lead-clamp[data-expandable]")
@@ -1170,6 +1172,22 @@
           tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error loading leads: ${err.message}</td></tr>`;
         }
       }
+              tbody.querySelectorAll(".delete-lead-btn").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (!confirm("Delete this lead log?")) return;
+            try {
+              const res = await authedFetch(
+                `/api/leads?id=${encodeURIComponent(id)}`,
+                { method: "DELETE" },
+              );
+              if (!res.ok) throw new Error("API " + res.status);
+              e.target.closest("tr").remove();
+            } catch (err) {
+              alert("Delete failed: " + err.message);
+            }
+          });
+        });
       // Review Moderation Filter Buttons
       if (filterReviewPending && filterReviewApproved) {
         filterReviewPending.addEventListener("click", () => {
@@ -1547,7 +1565,14 @@
         });
       }
 
-      logoutBtn.addEventListener("click", () => signOut(auth));
+logoutBtn.addEventListener("click", () => {
+  // Clear form fields before signing out
+  const loginPass = document.getElementById("login-password");
+  const newPass = document.getElementById("new-account-pass");
+  if (loginPass) loginPass.value = "";
+  if (newPass) newPass.value = "";
+  signOut(auth);
+});
             const changePassBtn = document.getElementById("change-pass-btn");
       if (changePassBtn) {
         changePassBtn.addEventListener("click", async () => {

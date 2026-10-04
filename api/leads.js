@@ -60,6 +60,14 @@ export default async (req) => {
       const auth = await verifyAdmin(req);
       if (!auth.ok) return json({ error: auth.error }, 401);
 
+      const url2 = new URL(req.url);
+      const id = url2.searchParams.get('id');
+
+      if (id) {
+        await db.collection('analytics_leads').doc(id).delete();
+        return json({ ok: true });
+      }
+
       const snap = await db.collection('analytics_leads').get();
       const batch = db.batch();
       snap.docs.forEach((d) => batch.delete(d.ref));
