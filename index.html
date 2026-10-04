@@ -28,6 +28,13 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
     <link rel="icon" type="image/png" href="favicon.png" />
   </head>
   <body>
@@ -139,11 +146,8 @@
     <section id="reviews-section" class="reviews-section">
       <div class="reviews-container">
         <div class="reviews-header">
-          <h2>Client Opinions & Reviews</h2>
-          <p>
-            Discover direct feedback from industry professionals relying on CBM
-            Machineries.
-          </p>
+          <h2 class="bn-heading">গ্রাহকদের মতামত ও রিভিউ</h2>
+
         </div>
 
         <!-- Glowing Cards Review Grid -->
@@ -162,21 +166,21 @@
 
         <!-- Leave a Review Form -->
         <div class="review-form-card">
-          <h3>Leave Your Opinion</h3>
+          <h3 class="bn-heading">আপনার মতামত দিন</h3>
           <form id="review-form">
             <div class="form-group">
-              <label for="review-name">Your Name / Organization</label>
+              <label for="review-name" class="bn-body">আপনার নাম / প্রতিষ্ঠান</label>
               <input
                 type="text"
                 id="review-name"
-                class="form-control"
-                placeholder="e.g. Apex Industrial Solutions"
+                class="form-control bn-body"
+                placeholder="যেমন: এপেক্স ইন্ডাস্ট্রিয়াল সলিউশনস"
                 required
               />
             </div>
 
             <div class="form-group">
-              <label>Rating</label>
+              <label class="bn-body">রেটিং</label>
               <div class="star-rating-select" id="star-rating-select">
                 <i class="fa-solid fa-star" data-rating="1"></i>
                 <i class="fa-solid fa-star" data-rating="2"></i>
@@ -187,26 +191,26 @@
             </div>
 
             <div class="form-group">
-              <label for="review-comment">Your Review or Experience</label>
+              <label for="review-comment" class="bn-body">আপনার মতামত বা অভিজ্ঞতা</label>
               <textarea
                 id="review-comment"
-                class="form-control"
+                class="form-control bn-body"
                 rows="4"
-                placeholder="Share your experience working with CBM Machinery..."
+                placeholder="CBM Machineries-এর সাথে আপনার অভিজ্ঞতা শেয়ার করুন..."
                 required
               ></textarea>
             </div>
 
             <button
               type="submit"
-              class="btn-action"
+              class="btn-action bn-body"
               style="
                 background: var(--accent-gold);
                 color: #0e1111;
                 font-weight: 700;
               "
             >
-              Submit Review for Approval
+              সাবমিট করুন
             </button>
             <div id="review-form-msg" class="review-form-msg"></div>
           </form>
@@ -282,8 +286,8 @@
             margin-bottom: 1.2rem;
           "
         >
-          <h3 style="margin: 0; color: #e2136e; font-size: 1.2rem">
-            bKash Direct Payment
+          <h3 class="bn-heading" style="margin: 0; color: #e2136e; font-size: 1.2rem">
+            bKash সরাসরি পেমেন্ট
           </h3>
           <button
             id="close-bkash-modal-btn"
@@ -298,8 +302,8 @@
             &times;
           </button>
         </div>
-        <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem">
-          Follow the simple steps below to process your transaction directly.
+        <p class="bn-body" style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem">
+          সরাসরি লেনদেন করতে নিচের সহজ ধাপগুলো অনুসরণ করুন।
         </p>
 
         <div
@@ -312,7 +316,7 @@
           "
         >
           <div style="margin-bottom: 0.6rem; font-size: 0.9rem">
-            <span style="color: #8a9090">bKash Account:</span>
+            <span class="bn-body" style="color: #8a9090">bKash অ্যাকাউন্ট:</span>
             <strong
               id="bkash-modal-account"
               style="color: #e2136e; font-size: 1.1rem; margin-left: 0.5rem"
@@ -320,7 +324,7 @@
             >
           </div>
           <div style="font-size: 0.9rem">
-            <span style="color: #8a9090">Total Amount:</span>
+            <span class="bn-body" style="color: #8a9090">মোট পরিমাণ:</span>
             <strong
               id="bkash-modal-amount"
               style="color: #d4a373; font-size: 1.1rem; margin-left: 0.5rem"
@@ -330,18 +334,18 @@
         </div>
 
         <div
+          class="bn-body"
           style="
             font-size: 0.85rem;
             color: #ccc;
-            line-height: 1.6;
+            line-height: 1.7;
             margin-bottom: 1.5rem;
           "
         >
-          1. Open your bKash Mobile App.<br />
-          2. Select <strong>Send Money</strong> or
-          <strong>Merchant Pay</strong>.<br />
-          3. Send the total amount to the account listed above.<br />
-          4. Contact our support team on WhatsApp with your Transaction ID.
+          ১. আপনার bKash মোবাইল অ্যাপ খুলুন।<br />
+          ২. <strong>Send Money</strong> অথবা <strong>Merchant Pay</strong> নির্বাচন করুন।<br />
+          ৩. উপরে দেখানো অ্যাকাউন্টে সম্পূর্ণ পরিমাণ পাঠান।<br />
+          ৪. WhatsApp-এ আমাদের সাথে যোগাযোগ করুন এবং আপনার ট্রানজেকশন আইডি দিন।
         </div>
       </div>
     </div>
@@ -414,11 +418,8 @@
     <section id="contact" class="contact-section">
       <div class="contact-container">
         <div class="contact-header">
-          <h2>Get In Touch</h2>
-          <p>
-            Whether you need a quote, a spare part, or a technician — we're one
-            message away.
-          </p>
+          <h2 class="bn-heading">যোগাযোগ করুন</h2>
+
         </div>
 
         <div class="contact-grid">

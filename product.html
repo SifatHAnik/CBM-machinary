@@ -9,6 +9,12 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
     <style>
       /* Cart Overlay Blur */
       .cart-overlay {
@@ -565,11 +571,11 @@
     <!-- Custom bKash Modal -->
     <div id="bkash-modal-overlay" class="modal-overlay">
       <div class="modal-box">
-        <h3 style="margin: 0 0 0.5rem 0; color: #e2136e; font-size: 1.2rem">
-          bKash Direct Payment Instructions
-        </h3>
-        <p style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem">
-          Follow the simple steps below to process your transaction directly.
+          <h3 class="bn-heading" style="margin: 0; color: #e2136e; font-size: 1.2rem">
+            bKash সরাসরি পেমেন্ট
+          </h3>
+        <p class="bn-body" style="color: #a0a5a5; font-size: 0.85rem; margin-bottom: 1.5rem">
+          সরাসরি লেনদেন করতে নিচের সহজ ধাপগুলো অনুসরণ করুন।
         </p>
 
         <div
@@ -582,14 +588,14 @@
           "
         >
           <div style="margin-bottom: 0.6rem; font-size: 0.9rem">
-            <span style="color: #8a9090">bKash Account:</span>
+            <span class="bn-body" style="color: #8a9090">bKash অ্যাকাউন্ট:</span>
             <strong
               id="bkash-modal-account"
               style="color: #fff; margin-left: 0.5rem"
             ></strong>
           </div>
           <div style="font-size: 0.9rem">
-            <span style="color: #8a9090">Total Amount:</span>
+            <span class="bn-body" style="color: #8a9090">মোট পরিমাণ:</span>
             <strong
               id="bkash-modal-amount"
               style="color: #d4a373; margin-left: 0.5rem"
@@ -598,18 +604,18 @@
         </div>
 
         <div
+          class="bn-body"
           style="
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             color: #ccc;
-            line-height: 1.6;
+            line-height: 1.7;
             margin-bottom: 1.5rem;
           "
         >
-          1. Open your bKash Mobile App.<br />
-          2. Select <strong>Send Money</strong> or
-          <strong>Merchant Pay</strong>.<br />
-          3. Send the total amount to the account listed above.<br />
-          4. Contact our support team with your transaction reference.
+          ১. আপনার bKash মোবাইল অ্যাপ খুলুন।<br />
+          ২. <strong>Send Money</strong> অথবা <strong>Merchant Pay</strong> নির্বাচন করুন।<br />
+          ৩. উপরে দেখানো অ্যাকাউন্টে সম্পূর্ণ পরিমাণ পাঠান।<br />
+          ৪. WhatsApp-এ আমাদের সাথে যোগাযোগ করুন এবং আপনার ট্রানজেকশন আইডি দিন।
         </div>
 
         <button id="close-bkash-modal-btn" class="btn-action btn-add-cart">

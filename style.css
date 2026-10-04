@@ -1768,3 +1768,15 @@ body {
     margin-left: auto;
   }
 }
+/* ============================================
+   BENGALI TEXT SUPPORT
+   ============================================ */
+.bn-heading {
+  font-family: 'Anek Bangla', 'Segoe UI', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.bn-body {
+  font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+  font-weight: 400;
+}
