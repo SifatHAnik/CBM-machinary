@@ -351,6 +351,130 @@
           font-size: 0.75rem !important;
         }
       }
+
+            /* Product admin list cards */
+      .prod-admin-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        background: #1a2020;
+        border: 1px solid #0b4f37;
+        border-radius: 6px;
+        padding: 0.8rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .prod-admin-info {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .prod-admin-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+
+      .prod-admin-text {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .prod-admin-title {
+        font-weight: bold;
+        color: #fff;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+
+      .prod-admin-meta {
+        color: #d4a373;
+        font-size: 0.78rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .prod-admin-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-shrink: 0;
+      }
+
+      .prod-admin-actions .btn-industrial {
+        width: auto;
+        padding: 0.4rem 0.7rem;
+        font-size: 0.72rem;
+      }
+
+      /* Stack actions under info on narrow screens */
+      @media (max-width: 640px) {
+        .prod-admin-item {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .prod-admin-actions {
+          width: 100%;
+        }
+        .prod-admin-actions .btn-industrial {
+          flex: 1;
+          width: auto;
+          padding: 0.55rem 0.7rem;
+        }
+      }
+
+            .prod-admin-controls {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .prod-search-input {
+        flex: 1;
+        min-width: 180px;
+        padding: 0.6rem 0.9rem;
+        background: #1a2020;
+        border: 1px solid #0b4f37;
+        color: #fff;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: inherit;
+      }
+      .prod-filter-select {
+        padding: 0.6rem 0.9rem;
+        background: #1a2020;
+        border: 1px solid #0b4f37;
+        color: #fff;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .prod-admin-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .prod-admin-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.8rem;
+        margin-top: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -554,16 +678,26 @@
           >
         </div>
 
-        <div
-          id="live-products-list"
-          style="
-            margin-top: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-          "
-        >
+        <div class="prod-admin-controls">
+          <input
+            type="text"
+            id="prod-search"
+            placeholder="Search by title..."
+            class="prod-search-input"
+          />
+          <select id="prod-filter-cat" class="prod-filter-select">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+
+        <div id="live-products-list" class="prod-admin-list">
           <!-- Live product cards render here dynamically -->
+        </div>
+
+        <div class="prod-admin-pagination">
+          <button id="prod-prev-btn" class="btn-industrial" style="width:auto; padding:0.4rem 0.9rem; font-size:0.75rem;">← Prev</button>
+          <span id="prod-page-info" style="color:#a0aab0; font-size:0.8rem;">Page 1 of 1</span>
+          <button id="prod-next-btn" class="btn-industrial" style="width:auto; padding:0.4rem 0.9rem; font-size:0.75rem;">Next →</button>
         </div>
       </div>
 
@@ -1426,59 +1560,92 @@
       }
 
       // Realtime Listener for Live Products & Deletion
+      let allAdminProducts = [];
+      let adminProdPage = 1;
+      const ADMIN_PROD_PER_PAGE = 20;
+
       function listenToProducts() {
         onSnapshot(collection(db, "products"), (snapshot) => {
-          liveProductsList.innerHTML = "";
-
-          if (productCountBadge) {
-            productCountBadge.textContent = `Total: ${snapshot.size}`;
-          }
-
-          if (snapshot.empty) {
-            liveProductsList.innerHTML = `<p style="color: #888; font-size: 0.85rem; text-align: center;">No live products found in database.</p>`;
-            return;
-          }
-
+          allAdminProducts = [];
           snapshot.forEach((docSnap) => {
-            const prod = docSnap.data();
-            const prodId = docSnap.id;
+            allAdminProducts.push({ id: docSnap.id, ...docSnap.data() });
+          });
 
+          // Populate category filter (once)
+          const filterSel = document.getElementById("prod-filter-cat");
+          if (filterSel) {
+            const cats = [...new Set(allAdminProducts.map((p) => p.category).filter(Boolean))].sort();
+            const current = filterSel.value;
+            filterSel.innerHTML =
+              '<option value="">All Categories</option>' +
+              cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+            filterSel.value = current;
+          }
+
+          adminProdPage = 1;
+          renderAdminProductList();
+        });
+      }
+
+      function renderAdminProductList() {
+        const listEl = document.getElementById("live-products-list");
+        const countBadge = document.getElementById("product-count-badge");
+        const searchVal = (document.getElementById("prod-search")?.value || "").toLowerCase().trim();
+        const catVal = document.getElementById("prod-filter-cat")?.value || "";
+
+        let filtered = allAdminProducts.filter((p) => {
+          if (catVal && p.category !== catVal) return false;
+          if (searchVal && !(p.title || "").toLowerCase().includes(searchVal)) return false;
+          return true;
+        });
+
+        filtered.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+
+        const total = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(total / ADMIN_PROD_PER_PAGE));
+        if (adminProdPage > totalPages) adminProdPage = totalPages;
+
+        const start = (adminProdPage - 1) * ADMIN_PROD_PER_PAGE;
+        const pageItems = filtered.slice(start, start + ADMIN_PROD_PER_PAGE);
+
+        if (countBadge) {
+          countBadge.textContent = `Total: ${allAdminProducts.length}${total !== allAdminProducts.length ? ` (${total} shown)` : ""}`;
+        }
+
+        if (listEl) listEl.innerHTML = "";
+
+        if (pageItems.length === 0) {
+          if (listEl) {
+            listEl.innerHTML = `<p style="color: #888; font-size: 0.85rem; text-align: center; padding: 1rem;">No products match your filter.</p>`;
+          }
+        } else {
+          pageItems.forEach((prod) => {
             const itemCard = document.createElement("div");
-            itemCard.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    background: #1a2020;
-                    border: 1px solid #0b4f37;
-                    border-radius: 4px;
-                    padding: 0.8rem;
-                    margin-bottom: 0.5rem;
-                `;
-
+            itemCard.className = "prod-admin-item";
             itemCard.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 0.8rem;">
-                        <img src="${prod.imageUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                        <div>
-                            <div style="font-weight: bold; color: #fff; font-size: 0.9rem;">${escapeHtml(prod.title || "")}</div>
-                            <div style="color: #d4a373; font-size: 0.8rem;">৳ ${Number(prod.price || 0).toLocaleString()} | Category: ${prod.category}</div>
+                    <div class="prod-admin-info">
+                        <img src="${prod.imageUrl || ""}" class="prod-admin-thumb">
+                        <div class="prod-admin-text">
+                            <div class="prod-admin-title">${escapeHtml(prod.title || "")}</div>
+                            <div class="prod-admin-meta">৳ ${Number(prod.price || 0).toLocaleString()} · ${escapeHtml(prod.category || "")}</div>
                         </div>
                     </div>
-                                        <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
-                        <button class="btn-industrial edit-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Edit</button>
-                        <button class="btn-industrial btn-danger delete-prod-btn" data-id="${prodId}" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Delete</button>
+                    <div class="prod-admin-actions">
+                        <button class="btn-industrial edit-prod-btn" data-id="${prod.id}">Edit</button>
+                        <button class="btn-industrial btn-danger delete-prod-btn" data-id="${prod.id}">Delete</button>
                     </div>
                 `;
-
-            liveProductsList.appendChild(itemCard);
+            if (listEl) listEl.appendChild(itemCard);
           });
-          document.querySelectorAll(".edit-prod-btn").forEach((btn) => {
+
+          // Rebind edit buttons
+          listEl.querySelectorAll(".edit-prod-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
               const id = e.target.getAttribute("data-id");
               try {
                 const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`);
                 if (!res.ok) throw new Error("API " + res.status);
                 const prod = await res.json();
-
                 editingProdId = id;
                 document.getElementById("prod-title").value = prod.title || "";
                 document.getElementById("prod-price").value = prod.price || "";
@@ -1486,7 +1653,6 @@
                 document.getElementById("prod-long-desc").value = prod.longDescription || "";
                 document.getElementById("prod-youtube").value = prod.youtubeUrl || "";
                 document.getElementById("prod-category-select").value = prod.category || "new-arrivals";
-
                 document.getElementById("add-product-btn").textContent = "Update Product";
                 document.getElementById("cancel-prod-edit-btn").style.display = "inline-block";
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1496,30 +1662,66 @@
               }
             });
           });
-          document.querySelectorAll(".delete-prod-btn").forEach((btn) => {
+
+          // Rebind delete buttons
+          listEl.querySelectorAll(".delete-prod-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
               const idToDelete = e.target.getAttribute("data-id");
-              if (
-                confirm(
-                  "Are you sure you want to permanently delete this product?",
-                )
-              ) {
+              if (confirm("Permanently delete this product?")) {
                 try {
-                  const res = await authedFetch(
-                    `/api/products?id=${encodeURIComponent(idToDelete)}`,
-                    { method: "DELETE" },
-                  );
+                  const res = await authedFetch(`/api/products?id=${encodeURIComponent(idToDelete)}`, { method: "DELETE" });
                   if (!res.ok) throw new Error("API " + res.status);
                   prodStatus.innerText = "Product deleted successfully!";
                 } catch (err) {
-                  prodStatus.innerText =
-                    "Error deleting product: " + err.message;
+                  prodStatus.innerText = "Error deleting product: " + err.message;
                 }
               }
             });
           });
-        });
+        }
+
+        // Update pagination display
+        const infoEl = document.getElementById("prod-page-info");
+        if (infoEl) infoEl.textContent = `Page ${adminProdPage} of ${totalPages}`;
+        const prevBtn = document.getElementById("prod-prev-btn");
+        const nextBtn = document.getElementById("prod-next-btn");
+        if (prevBtn) prevBtn.disabled = adminProdPage <= 1;
+        if (nextBtn) nextBtn.disabled = adminProdPage >= totalPages;
       }
+
+      // Wire the search/filter/pagination controls (once)
+      document.addEventListener("DOMContentLoaded", () => {
+        const searchEl = document.getElementById("prod-search");
+        if (searchEl) {
+          searchEl.addEventListener("input", () => {
+            adminProdPage = 1;
+            renderAdminProductList();
+          });
+        }
+        const filterEl = document.getElementById("prod-filter-cat");
+        if (filterEl) {
+          filterEl.addEventListener("change", () => {
+            adminProdPage = 1;
+            renderAdminProductList();
+          });
+        }
+        const prevBtn = document.getElementById("prod-prev-btn");
+        if (prevBtn) {
+          prevBtn.addEventListener("click", () => {
+            if (adminProdPage > 1) {
+              adminProdPage--;
+              renderAdminProductList();
+            }
+          });
+        }
+        const nextBtn = document.getElementById("prod-next-btn");
+        if (nextBtn) {
+          nextBtn.addEventListener("click", () => {
+            adminProdPage++;
+            renderAdminProductList();
+          });
+        }
+      });
 
       // Realtime Category Sync
       function listenToCategories() {
