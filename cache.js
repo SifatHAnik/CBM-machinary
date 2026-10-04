@@ -55,29 +55,21 @@ export async function safeFetch(
   fetcher,
   staticKey,
   onData,
-  timeoutMs = 3500,
+  timeoutMs = 2000,
 ) {
   const cached = loadFromCache(key);
   if (cached !== null && cached !== undefined) onData(cached, "cache");
 
-  let data = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+    let data = null;
     try {
-      data = await Promise.race([
-        Promise.resolve().then(() => fetcher()),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("network-timeout")), timeoutMs),
-        ),
-      ]);
-      if (data !== undefined && data !== null) break;
+        data = await Promise.race([
+            Promise.resolve().then(() => fetcher()),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('network-timeout')), timeoutMs))
+        ]);
     } catch (err) {
-      if (attempt === 1) {
+        // Single attempt — cache fallback handles the rest
         data = null;
-        break;
-      }
-      await new Promise((r) => setTimeout(r, 400));
     }
-  }
 
   try {
     if (data !== undefined && data !== null) {
