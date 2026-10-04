@@ -935,6 +935,7 @@
       import {
         auth,
         signInWithEmailAndPassword,
+        updatePassword,
         signOut,
         onAuthStateChanged,
         sendPasswordResetEmail,
@@ -1547,6 +1548,42 @@
       }
 
       logoutBtn.addEventListener("click", () => signOut(auth));
+            const changePassBtn = document.getElementById("change-pass-btn");
+      if (changePassBtn) {
+        changePassBtn.addEventListener("click", async () => {
+          const passInput = document.getElementById("new-account-pass");
+          const statusEl = document.getElementById("account-status");
+          const newPass = passInput.value.trim();
+
+          if (!newPass || newPass.length < 6) {
+            statusEl.style.color = "#e2136e";
+            statusEl.innerText = "Password must be at least 6 characters.";
+            return;
+          }
+
+          const user = auth.currentUser;
+          if (!user) {
+            statusEl.style.color = "#e2136e";
+            statusEl.innerText = "Not logged in.";
+            return;
+          }
+
+          try {
+            await updatePassword(user, newPass);
+            statusEl.style.color = "#25D366";
+            statusEl.innerText = "Password updated successfully.";
+            passInput.value = "";
+          } catch (err) {
+            statusEl.style.color = "#e2136e";
+            if (err.code === "auth/requires-recent-login") {
+              statusEl.innerText =
+                "Please log out and log back in, then try again.";
+            } else {
+              statusEl.innerText = "Error: " + err.message;
+            }
+          }
+        });
+      }
 
       // Upload Direct File to Cloudinary
       async function uploadImageToCloudinary(file) {

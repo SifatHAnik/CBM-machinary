@@ -135,10 +135,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         if (hasNewArrivals) renderCategorySection(hasNewArrivals);
-        renderStatsSectionBlock();
-        renderShowcaseBlock();
         middleCategories.forEach((cat) => renderCategorySection(cat));
         if (hasOtherProducts) renderCategorySection(hasOtherProducts);
+        renderStatsSectionBlock();
+        renderShowcaseBlock();
 
         observeStatsSection();
       },
