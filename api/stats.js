@@ -1,32 +1,51 @@
 import { db } from './_firebase.js';
-import { verifyAdmin, cors } from './_auth.js';
+import { verifyAdmin } from './_auth.js';
 
-export default async function handler(req, res) {
-    cors(res);
-    if (req.method === 'OPTIONS') return res.status(200).end();
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-    try {
-        if (req.method === 'GET') {
-            const doc = await db.collection('site_stats').doc('global').get();
-            res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=300');
-            return res.status(200).json(doc.exists ? doc.data() : {});
-        }
+const json = (data, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
 
-        if (req.method === 'PUT' || req.method === 'POST') {
-            const auth = await verifyAdmin(req);
-            if (!auth.ok) return res.status(401).json({ error: auth.error });
+export default async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: CORS_HEADERS });
+  }
 
-            const body = req.body || {};
-            await db.collection('site_stats').doc('global').set({
-                ...body,
-                updatedAt: new Date()
-            }, { merge: true });
-            return res.status(200).json({ ok: true });
-        }
-
-        return res.status(405).json({ error: 'Method not allowed' });
-    } catch (err) {
-        console.error('[/api/stats]', err);
-        return res.status(500).json({ error: err.message });
+  try {
+    if (req.method === 'GET') {
+      const doc = await db.collection('site_stats').doc('global').get();
+      return new Response(JSON.stringify(doc.exists ? doc.data() : {}), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS,
+          'Cache-Control': 's-maxage=30, stale-while-revalidate=300',
+        },
+      });
     }
-}
+
+    if (req.method === 'PUT' || req.method === 'POST') {
+      const auth = await verifyAdmin(req);
+      if (!auth.ok) return json({ error: auth.error }, 401);
+
+      const body = await req.json();
+      await db
+        .collection('site_stats')
+        .doc('global')
+        .set({ ...body, updatedAt: new Date() }, { merge: true });
+      return json({ ok: true });
+    }
+
+    return json({ error: 'Method not allowed' }, 405);
+  } catch (err) {
+    console.error('[/api/stats]', err);
+    return json({ error: err.message }, 500);
+  }
+};

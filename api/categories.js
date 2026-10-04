@@ -1,46 +1,66 @@
 import { db } from './_firebase.js';
-import { verifyAdmin, cors } from './_auth.js';
+import { verifyAdmin } from './_auth.js';
 
-export default async function handler(req, res) {
-    cors(res);
-    if (req.method === 'OPTIONS') return res.status(200).end();
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-    const { id } = req.query;
+const json = (data, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
 
-    try {
-        if (req.method === 'GET') {
-            const snap = await db.collection('categories').get();
-            const categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=300');
-            return res.status(200).json(categories);
-        }
+export default async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: CORS_HEADERS });
+  }
 
-        if (req.method === 'POST') {
-            const auth = await verifyAdmin(req);
-            if (!auth.ok) return res.status(401).json({ error: auth.error });
+  const url = new URL(req.url);
+  const id = url.searchParams.get('id');
 
-            const body = req.body || {};
-            if (!body.id && !body.name) return res.status(400).json({ error: 'Missing id or name' });
-            const slug = body.id || String(body.name).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            await db.collection('categories').doc(slug).set({
-                name: body.name || slug,
-                createdAt: new Date()
-            });
-            return res.status(201).json({ id: slug });
-        }
-
-        if (req.method === 'DELETE') {
-            const auth = await verifyAdmin(req);
-            if (!auth.ok) return res.status(401).json({ error: auth.error });
-
-            if (!id) return res.status(400).json({ error: 'Missing id' });
-            await db.collection('categories').doc(id).delete();
-            return res.status(200).json({ ok: true });
-        }
-
-        return res.status(405).json({ error: 'Method not allowed' });
-    } catch (err) {
-        console.error('[/api/categories]', err);
-        return res.status(500).json({ error: err.message });
+  try {
+    if (req.method === 'GET') {
+      const snap = await db.collection('categories').get();
+      const categories = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      return new Response(JSON.stringify(categories), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS,
+          'Cache-Control': 's-maxage=30, stale-while-revalidate=300',
+        },
+      });
     }
-}
+
+    if (req.method === 'POST') {
+      const auth = await verifyAdmin(req);
+      if (!auth.ok) return json({ error: auth.error }, 401);
+
+      const body = await req.json();
+      if (!body.id && !body.name) return json({ error: 'Missing id or name' }, 400);
+      const slug =
+        body.id || String(body.name).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      await db.collection('categories').doc(slug).set({
+        name: body.name || slug,
+        createdAt: new Date(),
+      });
+      return json({ id: slug }, 201);
+    }
+
+    if (req.method === 'DELETE') {
+      const auth = await verifyAdmin(req);
+      if (!auth.ok) return json({ error: auth.error }, 401);
+      if (!id) return json({ error: 'Missing id' }, 400);
+      await db.collection('categories').doc(id).delete();
+      return json({ ok: true });
+    }
+
+    return json({ error: 'Method not allowed' }, 405);
+  } catch (err) {
+    console.error('[/api/categories]', err);
+    return json({ error: err.message }, 500);
+  }
+};
