@@ -871,7 +871,9 @@ function initReviewsSection() {
                         </p>`;
           return;
         }
-        reviews.forEach((data) => {
+
+        const VISIBLE_LIMIT = 6;
+        const buildCard = (data) => {
           const starsCount = Number(data.rating) || 5;
           let starsHtml = "";
           for (let i = 1; i <= 5; i++) {
@@ -887,8 +889,31 @@ function initReviewsSection() {
                         <div class="card-comment">"${escapeHtml(data.comment || "")}"</div>
                         <div class="card-author">${escapeHtml(data.name || "Anonymous Client")}</div>
                     `;
-          reviewsGrid.appendChild(card);
+          return card;
+        };
+
+        const showAll = reviews.length <= VISIBLE_LIMIT;
+
+        // Show latest 6 (reviews array order is whatever Firestore returns —
+        // if you want strictly newest, we can sort by createdAt later)
+        reviews.slice(0, VISIBLE_LIMIT).forEach((data) => {
+          reviewsGrid.appendChild(buildCard(data));
         });
+
+        if (!showAll) {
+          const btnWrap = document.createElement("div");
+          btnWrap.style.cssText = "grid-column: 1 / -1; text-align: center; margin-top: 1rem;";
+          const btn = document.createElement("button");
+          btn.className = "btn-action";
+          btn.style.cssText = "background: rgba(11,79,55,0.25); border: 1px solid rgba(212,163,115,0.35); color: #d4a373; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;";
+          btn.textContent = `Show all ${reviews.length} reviews`;
+          btn.addEventListener("click", () => {
+            reviewsGrid.innerHTML = "";
+            reviews.forEach((d) => reviewsGrid.appendChild(buildCard(d)));
+          });
+          btnWrap.appendChild(btn);
+          reviewsGrid.appendChild(btnWrap);
+        }
       },
     );
   }
