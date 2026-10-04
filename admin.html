@@ -1167,11 +1167,7 @@
                 );
               });
           });
-        } catch (err) {
-          console.error("Lead load error:", err);
-          tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error loading leads: ${err.message}</td></tr>`;
-        }
-      }
+
               tbody.querySelectorAll(".delete-lead-btn").forEach((btn) => {
           btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
@@ -1188,6 +1184,13 @@
             }
           });
         });
+        
+        } catch (err) {
+          console.error("Lead load error:", err);
+          tbody.innerHTML = `<tr><td colspan="5" style="color:#f5c6cb; text-align:center;">Error loading leads: ${err.message}</td></tr>`;
+        }
+      }
+
       // Review Moderation Filter Buttons
       if (filterReviewPending && filterReviewApproved) {
         filterReviewPending.addEventListener("click", () => {
