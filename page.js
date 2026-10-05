@@ -29,9 +29,9 @@ async function loadPage(slug) {
   await safeFetch(
     `page-${slug}`,
     async () => {
-      const res = await fetch(`/api/pages?slug=${encodeURIComponent(slug)}`);
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDoc(doc(db, "footer_pages", slug));
+      if (!snap.exists()) return null;
+      return { id: snap.id, ...snap.data() };
     },
     "footer_pages",
     (data) => {
@@ -57,15 +57,6 @@ function showError(msg) {
     `<p class="page-error">${escapeHtml(msg)}</p>`;
 }
 
-/**
- * Tiny markdown-ish renderer.
- * Rules:
- *   ## Heading       -> h2
- *   ### Subheading   -> h3
- *   - item           -> bullet list item
- *   **bold**         -> <strong>
- *   blank line       -> paragraph break
- */
 function renderContent(raw) {
   const lines = String(raw).replace(/\r\n/g, "\n").split("\n");
   let html = "";
@@ -84,14 +75,11 @@ function renderContent(raw) {
   };
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
+    const trimmed = lines[i].trim();
     if (trimmed === "") {
       closeList();
       continue;
     }
-
     if (trimmed.startsWith("### ")) {
       closeList();
       html += `<h3>${inline(trimmed.slice(4))}</h3>`;
@@ -109,7 +97,6 @@ function renderContent(raw) {
       html += `<p>${inline(trimmed)}</p>`;
     }
   }
-
   closeList();
   return html;
 }
@@ -118,14 +105,12 @@ async function initFooterInfo() {
   await safeFetch(
     "site_info",
     async () => {
-      const res = await fetch("/api/stats");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDoc(doc(db, "site_stats", "global"));
+      return snap.exists() ? snap.data() : null;
     },
     "site_info",
     (data) => {
       if (!data) return;
-
       const setText = (id, val) => {
         const el = document.getElementById(id);
         if (el && val) el.textContent = val;
@@ -184,9 +169,8 @@ async function loadFooterPages() {
   await safeFetch(
     "footer_pages",
     async () => {
-      const res = await fetch("/api/pages");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "footer_pages"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "footer_pages",
     (pages) => {

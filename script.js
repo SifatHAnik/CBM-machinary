@@ -1,13 +1,9 @@
-// ========================================================
-// 1. IMPORTS (ALL MUST BE AT THE TOP OF THE MODULE)
-// ========================================================
 import { db } from "./firebase-config.js";
-import { safeFetch, saveToCache, loadFromCache } from "./cache.js";
+import { safeFetch, loadFromCache } from "./cache.js";
 import {
   collection,
   query,
   where,
-  onSnapshot,
   doc,
   getDoc,
   getDocs,
@@ -19,21 +15,13 @@ if ("scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
-// ========================================================
-// 2. STATE VARIABLES
-// ========================================================
 let targetStats = { machines: 0, clients: 0, years: 0 };
 let hasAnimated = false;
-let selectedRating = 5; // Default star rating for review submit
+let selectedRating = 5;
 
-// UNIFIED LOCAL STORAGE KEY: Uses 'cart' to sync across all pages
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// ========================================================
-// 3. MAIN INITIALIZATION
-// ========================================================
 document.addEventListener("DOMContentLoaded", async () => {
-  // DOM Elements
   const navbar = document.getElementById("main-navbar");
   const hero = document.getElementById("hero");
   const dropdownBtn = document.getElementById("category-dropdown-btn");
@@ -44,9 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const menuOverlay = document.getElementById("menu-overlay");
   const categoriesContainer = document.getElementById("categories-container");
 
-  // ----------------------------------------------------
-  // Mobile Drawer Functions
-  // ----------------------------------------------------
   const openMenu = () => {
     if (navMenuWrapper) navMenuWrapper.classList.add("open");
     if (menuOverlay) menuOverlay.classList.add("active");
@@ -63,9 +48,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (mobileClose) mobileClose.addEventListener("click", closeMenu);
   if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
 
-  // ----------------------------------------------------
-  // Navbar Dropdown Toggle
-  // ----------------------------------------------------
   if (dropdownBtn && navCategoryDropdown) {
     dropdownBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -84,9 +66,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ----------------------------------------------------
-  // Navbar Scroll Observer
-  // ----------------------------------------------------
   if (navbar && hero) {
     const heroObserver = new IntersectionObserver(
       (entries) => {
@@ -100,20 +79,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
       { threshold: 0.2 },
     );
-
     heroObserver.observe(hero);
   }
 
-  // ----------------------------------------------------
-  // Real-time Category Loader & Dropdown Sync
-  // ----------------------------------------------------
   function loadDynamicCategories() {
     safeFetch(
       "categories",
       async () => {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("API failed: " + res.status);
-        return await res.json();
+        const snap = await getDocs(collection(db, "categories"));
+        return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       },
       "categories",
       (cats) => {
@@ -152,133 +126,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       const style = document.createElement("style");
       style.id = "showcase-styles";
       style.textContent = `
-            #showcase-section {
-                background: #0e1111;
-                padding: 3rem 0 5rem;
-                margin: 0;
-                overflow: hidden;
+            #showcase-section { background: #0e1111; padding: 3rem 0 5rem; margin: 0; overflow: hidden; }
+            .showcase-stage { padding: 3rem 2rem; display: flex; justify-content: center; align-items: center; perspective: 900px; }
+            .showcase-float-wrap { width: 100%; max-width: 770px; animation: showcaseFloat 9s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
+            @keyframes showcaseFloat {
+                0% { transform: translateY(0) translateZ(0) rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg); }
+                25% { transform: translateY(-10px) translateZ(20px) rotateX(2.5deg) rotateY(2deg) rotateZ(0.3deg); }
+                50% { transform: translateY(-18px) translateZ(35px) rotateX(-2deg) rotateY(4deg) rotateZ(0.5deg); }
+                75% { transform: translateY(-8px) translateZ(15px) rotateX(1.5deg) rotateY(-2deg) rotateZ(-0.3deg); }
+                100% { transform: translateY(0) translateZ(0) rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg); }
             }
-        .showcase-stage {
-    padding: 3rem 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    perspective: 900px;
-}
-         .showcase-float-wrap {
-    width: 100%;
-    max-width: 770px;
-    animation: showcaseFloat 9s ease-in-out infinite;
-    transform-style: preserve-3d;
-    will-change: transform;
-}
-@keyframes showcaseFloat {
-    0% {
-        transform: translateY(0) translateZ(0)
-                   rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg);
-    }
-    25% {
-        transform: translateY(-10px) translateZ(20px)
-                   rotateX(2.5deg) rotateY(2deg) rotateZ(0.3deg);
-    }
-    50% {
-        transform: translateY(-18px) translateZ(35px)
-                   rotateX(-2deg) rotateY(4deg) rotateZ(0.5deg);
-    }
-    75% {
-        transform: translateY(-8px) translateZ(15px)
-                   rotateX(1.5deg) rotateY(-2deg) rotateZ(-0.3deg);
-    }
-    100% {
-        transform: translateY(0) translateZ(0)
-                   rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg);
-    }
-}
-            .showcase-card {
-                position: relative;
-                width: 100%;
-                aspect-ratio: 4 / 3;
-                border-radius: 28px;
-                overflow: hidden;
-                background: #121616;
-               
-box-shadow:
-                0 30px 60px -20px rgba(11, 79, 55, 0.9),
-                0 20px 50px -15px rgba(212, 163, 115, 0.35),
-                0 0 80px -10px rgba(14, 98, 69, 0.4);
-                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-                cursor: grab;
-                user-select: none;
-                touch-action: pan-y;
-            }
+            .showcase-card { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 28px; overflow: hidden; background: #121616; box-shadow: 0 30px 60px -20px rgba(11, 79, 55, 0.9), 0 20px 50px -15px rgba(212, 163, 115, 0.35), 0 0 80px -10px rgba(14, 98, 69, 0.4); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); cursor: grab; user-select: none; touch-action: pan-y; }
             .showcase-card:active { cursor: grabbing; }
             .showcase-card.swiping { transition: none; }
-            .showcase-track {
-                display: flex;
-                width: 100%;
-                height: 100%;
-                transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-                will-change: transform;
-            }
+            .showcase-track { display: flex; width: 100%; height: 100%; transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
             .showcase-track.no-transition { transition: none; }
-                .showcase-slide {
-                    flex: 0 0 100%;
-                    width: 100%;
-                    min-width: 0;
-                    max-width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                    backface-visibility: hidden;
-                    -webkit-backface-visibility: hidden;
-                }
-            .showcase-slide img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: block;
-                pointer-events: none;
-                -webkit-user-drag: none;
-            }
-            .showcase-arrow {
-                position: absolute;
-                top: 50%;
-                transform: translateY(-50%);
-                width: 44px;
-                height: 44px;
-                border-radius: 50%;
-                background: rgba(11, 79, 55, 0.15);
-                border: 1px solid rgba(212, 163, 115, 0.18);
-                color: rgba(212, 163, 115, 0.45);
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                z-index: 5;
-                opacity: 0.35;
-                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                backdrop-filter: blur(6px);
-                -webkit-backdrop-filter: blur(6px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0 0 3px 0;
-            }
-            .showcase-arrow:hover {
-                opacity: 1;
-                background: rgba(11, 79, 55, 0.9);
-                border-color: #d4a373;
-                color: #d4a373;
-                box-shadow:
-                    0 0 28px rgba(212, 163, 115, 0.6),
-                    0 0 10px rgba(212, 163, 115, 0.4) inset;
-                transform: translateY(-50%) scale(1.1);
-            }
-            .showcase-arrow-prev { left: 16px; }
-            .showcase-arrow-next { right: 16px; }
-
-            @media (hover: none) and (pointer: coarse) {
-                .showcase-arrow { display: none; }
-            }
-                @media (max-width: 640px) {
+            .showcase-slide { flex: 0 0 100%; width: 100%; min-width: 0; max-width: 100%; height: 100%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+            .showcase-slide img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
+            @media (max-width: 640px) {
                 .showcase-stage { padding: 2rem 1.5rem; }
                 .showcase-float-wrap { max-width: 92%; }
                 #showcase-section { padding: 2rem 0 3.5rem; }
@@ -311,16 +176,14 @@ box-shadow:
     safeFetch(
       "showcase",
       async () => {
-        const res = await fetch("/api/showcase");
-        if (!res.ok) throw new Error("API failed: " + res.status);
-        return await res.json();
+        const snap = await getDocs(collection(db, "showcase"));
+        return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       },
       "showcase",
       (images) => {
         track.innerHTML = "";
         if (!images || images.length === 0) {
           track.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-style:italic;font-size:0.9rem;background:#121616;">Showcase coming soon</div>`;
-
           return;
         }
 
@@ -354,8 +217,6 @@ box-shadow:
           }, 5000);
         };
 
-
-
         const pauseFloat = () => {
           const w = card.closest(".showcase-float-wrap");
           if (w) w.style.animationPlayState = "paused";
@@ -370,7 +231,6 @@ box-shadow:
           currentX = 0;
 
         const onPointerDown = (e) => {
-          if (e.target.closest(".showcase-arrow")) return;
           if (total <= 1) return;
           if (e.pointerType === "mouse" && e.button !== 0) return;
           dragging = true;
@@ -425,7 +285,6 @@ box-shadow:
     );
   }
 
-  // Helper: Dynamically creates and places the Stats Section in sequence
   function renderStatsSectionBlock() {
     if (!categoriesContainer) return;
     hasAnimated = false;
@@ -454,7 +313,6 @@ box-shadow:
     categoriesContainer.appendChild(statsSection);
   }
 
-  // Helper: Observes stats element ONLY after it is rendered on screen
   function observeStatsSection() {
     const statsEl = document.getElementById("impact-stats-section");
     if (statsEl) {
@@ -463,11 +321,7 @@ box-shadow:
           entries.forEach((entry) => {
             if (entry.isIntersecting && !hasAnimated) {
               hasAnimated = true;
-              animateCounter(
-                "stat-machines-display",
-                targetStats.machines,
-                "+",
-              );
+              animateCounter("stat-machines-display", targetStats.machines, "+");
               animateCounter("stat-clients-display", targetStats.clients, "+");
               animateCounter("stat-years-display", targetStats.years, "%");
             }
@@ -475,12 +329,10 @@ box-shadow:
         },
         { threshold: 0.5 },
       );
-
       statsObserver.observe(statsEl);
     }
   }
 
-  // Category Sections & Dropdown Links Helper
   function renderCategorySection(cat) {
     if (!categoriesContainer) return;
 
@@ -491,10 +343,7 @@ box-shadow:
       a.textContent = cat.name;
       a.style.cssText = `display: block; padding: 0.6rem 1rem; color: #fff; text-decoration: none; transition: background 0.2s ease;`;
       a.addEventListener("mouseenter", () => (a.style.background = "#0b4f37"));
-      a.addEventListener(
-        "mouseleave",
-        () => (a.style.background = "transparent"),
-      );
+      a.addEventListener("mouseleave", () => (a.style.background = "transparent"));
       a.addEventListener("click", () => {
         navCategoryDropdown.classList.add("hidden");
         if (dropdownBtn) dropdownBtn.classList.remove("active");
@@ -523,7 +372,6 @@ box-shadow:
     loadProductsForCategory(cat.id);
   }
 
-  // Query Products per Category Slider
   function loadProductsForCategory(categorySlug) {
     const sliderEl = document.getElementById(`slider-${categorySlug}`);
     if (!sliderEl) return;
@@ -531,16 +379,16 @@ box-shadow:
     safeFetch(
       `products-${categorySlug}`,
       async () => {
-        const res = await fetch(
-          `/api/products?category=${encodeURIComponent(categorySlug)}`,
+        const q = query(
+          collection(db, "products"),
+          where("category", "==", categorySlug),
         );
-        if (!res.ok) throw new Error("API failed: " + res.status);
-        return await res.json();
+        const snap = await getDocs(q);
+        return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       },
       "products",
       (allProducts) => {
         sliderEl.innerHTML = "";
-        // allProducts may be the full list from snapshot — filter by category here
         const products = (allProducts || []).filter(
           (p) => p.category === categorySlug,
         );
@@ -612,7 +460,6 @@ box-shadow:
     );
   }
 
-  // Initializations
   await initStats();
   await loadFooterPages();
   initCart();
@@ -620,15 +467,11 @@ box-shadow:
   initReviewsSection();
 });
 
-// Sync cart dynamically when user navigates back to index.html
 window.addEventListener("pageshow", () => {
   cart = JSON.parse(localStorage.getItem("cart")) || [];
   updateCartUI();
 });
 
-// ========================================================
-// 4. CART & DRAWER FUNCTIONALITY
-// ========================================================
 function initCart() {
   const cartBtn = document.getElementById("nav-cart-btn");
   const closeCartBtn = document.getElementById("close-cart-btn");
@@ -668,18 +511,15 @@ function initCart() {
         return;
       }
 
-      let phone = "8801700000000"; // Fallback
+      let phone = "8801700000000";
       const cached = loadFromCache("site_info");
       if (cached && cached.whatsappNumber) {
         phone = cached.whatsappNumber.replace(/[^0-9]/g, "");
       } else {
         try {
-          const res = await fetch("/api/stats");
-          if (res.ok) {
-            const data = await res.json();
-            if (data.whatsappNumber)
-              phone = data.whatsappNumber.replace(/[^0-9]/g, "");
-          }
+          const snap = await getDoc(doc(db, "site_stats", "global"));
+          if (snap.exists() && snap.data().whatsappNumber)
+            phone = snap.data().whatsappNumber.replace(/[^0-9]/g, "");
         } catch (e) {
           console.error("WhatsApp phone fetch failed:", e);
         }
@@ -709,18 +549,15 @@ function initCart() {
         return;
       }
 
-      let bkashAcc = "01700000000"; // Fallback
-      // Prefer cached site info first
+      let bkashAcc = "01700000000";
       const cached = loadFromCache("site_info");
       if (cached && cached.bkashNumber) {
         bkashAcc = cached.bkashNumber;
       } else {
         try {
-          const res = await fetch("/api/stats");
-          if (res.ok) {
-            const data = await res.json();
-            if (data.bkashNumber) bkashAcc = data.bkashNumber;
-          }
+          const snap = await getDoc(doc(db, "site_stats", "global"));
+          if (snap.exists() && snap.data().bkashNumber)
+            bkashAcc = snap.data().bkashNumber;
         } catch (e) {
           console.error("bKash info fetch failed:", e);
         }
@@ -748,7 +585,6 @@ function updateCartUI() {
   const container = document.getElementById("cart-items-container");
   const totalEl = document.getElementById("cart-total-price");
 
-  // UNIFIED STORAGE SAVING: Using 'cart'
   localStorage.setItem("cart", JSON.stringify(cart));
 
   const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -790,7 +626,6 @@ function updateCartUI() {
 
   if (totalEl) totalEl.textContent = `৳ ${grandTotal.toLocaleString()}`;
 
-  // Event Delegation for Cart Item Actions
   container.querySelectorAll(".cart-qty-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const idx = parseInt(e.target.getAttribute("data-index"));
@@ -818,30 +653,22 @@ function updateCartUI() {
   });
 }
 
-// ========================================================
-// 5. CUSTOMER REVIEWS & OPINIONS SYSTEM
-// ========================================================
 function initReviewsSection() {
   const reviewsGrid = document.getElementById("reviews-grid");
   const reviewForm = document.getElementById("review-form");
   const formMsg = document.getElementById("review-form-msg");
   const starContainer = document.getElementById("star-rating-select");
 
-  // 1. Interactive Star Rating Picker
   if (starContainer) {
     const stars = starContainer.querySelectorAll(".fa-star");
     const updateStarUI = (val) => {
       stars.forEach((star) => {
         const r = parseInt(star.getAttribute("data-rating"));
-        if (r <= val) {
-          star.classList.add("active");
-        } else {
-          star.classList.remove("active");
-        }
+        if (r <= val) star.classList.add("active");
+        else star.classList.remove("active");
       });
     };
 
-    // Default setup: 5 stars active
     updateStarUI(5);
 
     stars.forEach((star) => {
@@ -852,14 +679,16 @@ function initReviewsSection() {
     });
   }
 
-  // 2. Fetch & Render Approved Reviews in Real-Time
   if (reviewsGrid) {
     safeFetch(
       "reviews",
       async () => {
-        const res = await fetch("/api/reviews");
-        if (!res.ok) throw new Error("API failed: " + res.status);
-        return await res.json();
+        const q = query(
+          collection(db, "reviews"),
+          where("approved", "==", true),
+        );
+        const snap = await getDocs(q);
+        return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       },
       "reviews",
       (reviews) => {
@@ -894,18 +723,18 @@ function initReviewsSection() {
 
         const showAll = reviews.length <= VISIBLE_LIMIT;
 
-        // Show latest 6 (reviews array order is whatever Firestore returns —
-        // if you want strictly newest, we can sort by createdAt later)
         reviews.slice(0, VISIBLE_LIMIT).forEach((data) => {
           reviewsGrid.appendChild(buildCard(data));
         });
 
         if (!showAll) {
           const btnWrap = document.createElement("div");
-          btnWrap.style.cssText = "grid-column: 1 / -1; text-align: center; margin-top: 1rem;";
+          btnWrap.style.cssText =
+            "grid-column: 1 / -1; text-align: center; margin-top: 1rem;";
           const btn = document.createElement("button");
           btn.className = "btn-action";
-          btn.style.cssText = "background: rgba(11,79,55,0.25); border: 1px solid rgba(212,163,115,0.35); color: #d4a373; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;";
+          btn.style.cssText =
+            "background: rgba(11,79,55,0.25); border: 1px solid rgba(212,163,115,0.35); color: #d4a373; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;";
           btn.textContent = `Show all ${reviews.length} reviews`;
           btn.addEventListener("click", () => {
             reviewsGrid.innerHTML = "";
@@ -918,7 +747,6 @@ function initReviewsSection() {
     );
   }
 
-  // 3. Review Submission Form Handler
   if (reviewForm) {
     reviewForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -948,7 +776,7 @@ function initReviewsSection() {
           name: nameVal,
           comment: commentVal,
           rating: selectedRating,
-          approved: false, // Moderation gate: requires admin approval
+          approved: false,
           createdAt: serverTimestamp(),
         });
 
@@ -976,9 +804,6 @@ function initReviewsSection() {
   }
 }
 
-// ========================================================
-// 6. HELPER FUNCTIONS & ANIMATION COUNTER
-// ========================================================
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -1017,9 +842,8 @@ async function initStats() {
   await safeFetch(
     "site_info",
     async () => {
-      const res = await fetch("/api/stats");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDoc(doc(db, "site_stats", "global"));
+      return snap.exists() ? snap.data() : null;
     },
     "site_info",
     (data) => {
@@ -1044,7 +868,6 @@ function applySiteInfo(data) {
   setText("footer-email", data.emailAddress);
   setText("footer-address", data.address);
   setText("footer-hours", data.businessHours);
-  // Contact section
   setText("contact-hotline", data.hotlineNumber);
   setText("contact-whatsapp", data.whatsappNumber);
   setText("contact-email", data.emailAddress);
@@ -1060,7 +883,6 @@ function applySiteInfo(data) {
   setLink("footer-linkedin", data.linkedinUrl);
   setLink("footer-instagram", data.instagramUrl);
 
-  // Clickable contact links
   const waNum = sanitizePhone(data.whatsappNumber);
   const callNum = data.hotlineNumber
     ? String(data.hotlineNumber).replace(/[^0-9+]/g, "")
@@ -1081,7 +903,6 @@ function applySiteInfo(data) {
     addrLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
   }
 
-  // FAB
   const fabWa = document.getElementById("fab-whatsapp");
   const fabCall = document.getElementById("fab-call");
   const fabEmail = document.getElementById("fab-email");
@@ -1089,7 +910,7 @@ function applySiteInfo(data) {
   if (fabCall && callNum) fabCall.href = `tel:${callNum}`;
   if (fabEmail && data.emailAddress)
     fabEmail.href = `mailto:${data.emailAddress}`;
-  // Contact section links
+
   const cHot = document.getElementById("contact-hotline-card");
   const cWa = document.getElementById("contact-whatsapp-card");
   const cMail = document.getElementById("contact-email-card");
@@ -1109,7 +930,6 @@ function sanitizePhone(num) {
   return n;
 }
 
-// --- FLOATING ACTION BUTTON ---
 (function () {
   const fab = document.getElementById("fab-container");
   const toggle = document.getElementById("fab-toggle");
@@ -1128,9 +948,7 @@ function sanitizePhone(num) {
     if (e.key === "Escape") fab.classList.remove("open");
   });
 })();
-// ============================================================
-// PRODUCT SEARCH
-// ============================================================
+
 (function () {
   const searchBtn = document.getElementById("nav-search-btn");
   const overlay = document.getElementById("search-overlay");
@@ -1159,16 +977,14 @@ function sanitizePhone(num) {
 
   async function preloadProducts() {
     if (allProducts) return;
-    // Try cache first, then API
     const cached = loadFromCache("all_products");
     if (cached && Array.isArray(cached)) {
       allProducts = cached;
       return;
     }
     try {
-      const res = await fetch("/api/products");
-      if (!res.ok) throw new Error("API " + res.status);
-      allProducts = await res.json();
+      const snap = await getDocs(collection(db, "products"));
+      allProducts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     } catch (err) {
       console.error("Search preload failed:", err);
       allProducts = [];
@@ -1252,9 +1068,8 @@ async function loadFooterPages() {
   await safeFetch(
     "footer_pages",
     async () => {
-      const res = await fetch("/api/pages");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "footer_pages"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "footer_pages",
     (pages) => {
@@ -1278,9 +1093,6 @@ async function loadFooterPages() {
   );
 }
 
-// ============================================================
-// HERO TAGLINE ROTATOR
-// ============================================================
 (function () {
   const rotator = document.getElementById("hero-rotator");
   if (!rotator) return;
@@ -1298,9 +1110,6 @@ async function loadFooterPages() {
   }, 3800);
 })();
 
-// ============================================================
-// POND CANVAS (hero background)
-// ============================================================
 (function () {
   const canvas = document.getElementById("pond-canvas");
   const hero = document.getElementById("hero");
@@ -1412,10 +1221,7 @@ async function loadFooterPages() {
     const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, r);
     grad.addColorStop(0, `rgba(${b.color.r},${b.color.g},${b.color.b},0.32)`);
     grad.addColorStop(0.3, `rgba(${b.color.r},${b.color.g},${b.color.b},0.16)`);
-    grad.addColorStop(
-      0.65,
-      `rgba(${b.color.r},${b.color.g},${b.color.b},0.04)`,
-    );
+    grad.addColorStop(0.65, `rgba(${b.color.r},${b.color.g},${b.color.b},0.04)`);
     grad.addColorStop(1, `rgba(${b.color.r},${b.color.g},${b.color.b},0)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -1517,9 +1323,6 @@ async function loadFooterPages() {
   render();
 })();
 
-// ============================================================
-// CONTACT FORM -> WHATSAPP
-// ============================================================
 (function () {
   const form = document.getElementById("contact-form");
   if (!form) return;
@@ -1538,22 +1341,15 @@ async function loadFooterPages() {
 
     if (!name || !phone || !message) return;
 
-    // Fetch WhatsApp number — cache first, then API, then fallback
     let waNum = "8801700000000";
     const cachedInfo = loadFromCache("site_info");
     let waSource = cachedInfo?.whatsappNumber;
     if (!waSource) {
       try {
-        const res = await fetch("/api/stats");
-        if (res.ok) {
-          const data = await res.json();
-          waSource = data.whatsappNumber;
-        }
+        const snap = await getDoc(doc(db, "site_stats", "global"));
+        if (snap.exists()) waSource = snap.data().whatsappNumber;
       } catch (err) {
-        console.warn(
-          "Contact form: WhatsApp fetch failed, using fallback.",
-          err,
-        );
+        console.warn("Contact form: WhatsApp fetch failed, using fallback.", err);
       }
     }
     if (waSource) {

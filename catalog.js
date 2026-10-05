@@ -7,18 +7,12 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ============================================================
-// STATE
-// ============================================================
 let allProducts = [];
 let allCategories = [];
 let activeCategorySlug = null;
 let priceFloor = 0;
 let priceCeiling = 0;
 
-// ============================================================
-// BOOT
-// ============================================================
 document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   activeCategorySlug = urlParams.get("category");
@@ -31,16 +25,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   initFab();
 });
 
-// ============================================================
-// DATA LOADING
-// ============================================================
 async function loadCategories() {
   await safeFetch(
     "categories",
     async () => {
-      const res = await fetch("/api/categories");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "categories"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "categories",
     (cats) => {
@@ -88,9 +78,8 @@ async function loadProducts() {
   await safeFetch(
     "all_products",
     async () => {
-      const res = await fetch("/api/products");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "products"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "products",
     (prods) => {
@@ -117,9 +106,6 @@ async function loadProducts() {
   );
 }
 
-// ============================================================
-// FILTER + RENDER
-// ============================================================
 function applyFilters() {
   const grid = document.getElementById("products-grid");
   const countEl = document.getElementById("results-count");
@@ -199,9 +185,6 @@ function applyFilters() {
     countEl.textContent = `${filtered.length} product${filtered.length === 1 ? "" : "s"} found`;
 }
 
-// ============================================================
-// UI BINDINGS
-// ============================================================
 function bindUI() {
   const minSlider = document.getElementById("price-min");
   const maxSlider = document.getElementById("price-max");
@@ -253,16 +236,12 @@ function updatePriceLabels() {
   document.getElementById("price-max-label").textContent = max.toLocaleString();
 }
 
-// ============================================================
-// FOOTER INFO + FAB
-// ============================================================
 async function initFooterInfo() {
   await safeFetch(
     "site_info",
     async () => {
-      const res = await fetch("/api/stats");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDoc(doc(db, "site_stats", "global"));
+      return snap.exists() ? snap.data() : null;
     },
     "site_info",
     (data) => {
@@ -334,9 +313,6 @@ function initFab() {
   });
 }
 
-// ============================================================
-// HELPERS
-// ============================================================
 function sanitizePhone(num) {
   if (!num) return "";
   let n = String(num).replace(/[^0-9]/g, "");
@@ -361,9 +337,8 @@ async function loadFooterPages() {
   await safeFetch(
     "footer_pages",
     async () => {
-      const res = await fetch("/api/pages");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "footer_pages"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "footer_pages",
     (pages) => {

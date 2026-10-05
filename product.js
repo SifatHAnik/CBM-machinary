@@ -7,7 +7,6 @@ import {
   collection,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Business Phone Numbers (fallbacks — overwritten by site_stats)
 let WHATSAPP_NUMBER = "8801700000000";
 let BKASH_ACCOUNT_NUMBER = "01700000000";
 
@@ -15,13 +14,11 @@ let currentProduct = null;
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Load site info (WhatsApp + bKash) via the cache/network/snapshot chain
   await safeFetch(
     "site_info",
     async () => {
-      const res = await fetch("/api/stats");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDoc(doc(db, "site_stats", "global"));
+      return snap.exists() ? snap.data() : null;
     },
     "site_info",
     (data) => {
@@ -36,13 +33,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   );
 
-  // 2. UI setup
   setupCartDrawerUI();
   loadFooterPages();
   setupBkashModal();
   updateCartUI();
 
-  // 3. Read the product id from URL
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get("id");
 
@@ -55,20 +50,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 4. Load product via cache/network/snapshot chain
   try {
     await safeFetch(
       `product-${productId}`,
       async () => {
-        const res = await fetch(
-          `/api/products?id=${encodeURIComponent(productId)}`,
-        );
-        if (!res.ok) throw new Error("API failed: " + res.status);
-        return await res.json();
+        const snap = await getDoc(doc(db, "products", productId));
+        return snap.exists() ? { id: snap.id, ...snap.data() } : null;
       },
       "products",
       (data) => {
-        // Network returns one object; snapshot returns the full array
         if (Array.isArray(data)) {
           currentProduct = data.find((p) => p.id === productId) || null;
         } else {
@@ -83,7 +73,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // ---- Populate DOM ----
     const imgEl = document.getElementById("product-img");
     const imgBox = imgEl.parentElement;
     const placeholderHtml = `<div class="img-placeholder" style="position:absolute;inset:0;">
@@ -125,7 +114,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentProduct.shortDescription ||
       "No detailed specifications available.";
 
-    // --- YouTube Video ---
     const videoSection = document.getElementById("product-video-section");
     const videoId = extractYouTubeId(currentProduct.youtubeUrl);
     if (videoId && videoSection) {
@@ -143,7 +131,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Single Product Direct WhatsApp Order
     const directWaBtn = document.getElementById("direct-whatsapp-btn");
     if (directWaBtn) {
       const waMsg = encodeURIComponent(
@@ -152,7 +139,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       directWaBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
     }
 
-    // Single Product Direct bKash Checkout
     const directBkashBtn = document.getElementById("direct-bkash-btn");
     if (directBkashBtn) {
       directBkashBtn.addEventListener("click", () =>
@@ -160,7 +146,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
     }
 
-    // Add To Cart Event
     const addToCartBtn = document.getElementById("add-to-cart-btn");
     if (addToCartBtn) {
       addToCartBtn.addEventListener("click", () => {
@@ -177,8 +162,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadingSpinner.innerHTML = `<p style="color: #ff6b6b;">Failed to load product details.</p>`;
   }
 });
-
-// --- CART MANAGEMENT ---
 
 function addToCart(product) {
   if (window.trackCartAdd) window.trackCartAdd(product.title, 1);
@@ -272,9 +255,8 @@ async function loadFooterPages() {
   await safeFetch(
     "footer_pages",
     async () => {
-      const res = await fetch("/api/pages");
-      if (!res.ok) throw new Error("API failed: " + res.status);
-      return await res.json();
+      const snap = await getDocs(collection(db, "footer_pages"));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "footer_pages",
     (pages) => {
@@ -296,8 +278,6 @@ async function loadFooterPages() {
     },
   );
 }
-
-// --- CART DRAWER CONTROLS ---
 
 function setupCartDrawerUI() {
   const navCartBtn = document.getElementById("nav-cart-btn");
@@ -352,8 +332,6 @@ function closeCart() {
   document.getElementById("cart-drawer")?.classList.remove("open");
   document.getElementById("cart-overlay")?.classList.remove("active");
 }
-
-// --- BKASH MODAL CONTROL ---
 
 function setupBkashModal() {
   const closeBtn = document.getElementById("close-bkash-modal-btn");
@@ -459,7 +437,6 @@ function sanitizePhone(num) {
   return n;
 }
 
-// --- FLOATING ACTION BUTTON ---
 (function () {
   const fab = document.getElementById("fab-container");
   const toggle = document.getElementById("fab-toggle");

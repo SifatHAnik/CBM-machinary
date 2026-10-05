@@ -1,6 +1,12 @@
 // ============================================================
-// LEAD TRACKING — goes through backend now
+// LEAD TRACKING — direct to Firestore (no backend)
 // ============================================================
+import { db } from "./firebase-config.js";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 window.userSession = window.userSession || {
   id:
@@ -17,7 +23,6 @@ function persistLocal() {
   localStorage.setItem("lead_cart", JSON.stringify(window.userSession.cart));
 }
 
-// Debounced sync
 let syncTimer = null;
 function scheduleSync() {
   clearTimeout(syncTimer);
@@ -34,27 +39,24 @@ function flushPendingSync() {
 
 async function pushToBackend() {
   try {
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: window.userSession.id,
+    const id = window.userSession.id;
+    await setDoc(
+      doc(db, "analytics_leads", id),
+      {
+        userId: id,
         phone: window.userSession.phone || "Guest User",
         productViews: window.userSession.views,
         cartItems: window.userSession.cart.map(
           (c) => `${c.title} (x${c.quantity})`,
         ),
-      }),
-    });
-    if (!res.ok) console.warn("Lead sync returned", res.status);
+        lastActive: serverTimestamp(),
+      },
+      { merge: true },
+    );
   } catch (err) {
     console.warn("Lead sync failed:", err);
   }
 }
-
-// ============================================================
-// PUBLIC API
-// ============================================================
 
 window.trackProductView = function (productTitle, opts = {}) {
   if (productTitle && !window.userSession.views.includes(productTitle)) {
@@ -74,9 +76,6 @@ window.trackCartAdd = function (productTitle, qty = 1) {
   scheduleSync();
 };
 
-// ============================================================
-// LEAD CAPTURE MODAL
-// ============================================================
 function maybeShowModal() {
   if (localStorage.getItem("lead_prompt_shown")) return;
   if (document.getElementById("leadModal")) return;
@@ -121,7 +120,6 @@ function maybeShowModal() {
   document.getElementById("skipLeadBtn").addEventListener("click", dismiss);
 }
 
-// Flush pending lead sync when the page is about to be hidden/unloaded
 window.addEventListener("pagehide", flushPendingSync);
 window.addEventListener("beforeunload", flushPendingSync);
 document.addEventListener("visibilitychange", () => {
