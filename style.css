@@ -1780,3 +1780,12 @@ body {
   font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
   font-weight: 400;
 }
+
+/* Hide category slider scrollbars */
+[id^="slider-"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[id^="slider-"]::-webkit-scrollbar {
+  display: none;
+}
