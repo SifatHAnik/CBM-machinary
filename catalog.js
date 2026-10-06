@@ -175,7 +175,7 @@ function applyFilters() {
                 <div class="product-tile-body">
                     <h3 class="product-tile-title">${escapeHtml(p.title || "Untitled")}</h3>
                     <p class="product-tile-desc">${escapeHtml(p.shortDescription || "")}</p>
-                    <div class="product-tile-price">৳ ${Number(p.price || 0).toLocaleString()}</div>
+                    <div class="product-tile-price">${p.price ? `৳ ${Number(p.price).toLocaleString()}` : "Price on request"}</div>
                 </div>
             </a>`;
     })

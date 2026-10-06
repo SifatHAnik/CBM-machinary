@@ -109,10 +109,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         if (hasNewArrivals) renderCategorySection(hasNewArrivals);
+        renderShowcaseBlock();
         middleCategories.forEach((cat) => renderCategorySection(cat));
         if (hasOtherProducts) renderCategorySection(hasOtherProducts);
         renderStatsSectionBlock();
-        renderShowcaseBlock();
 
         observeStatsSection();
       },
@@ -435,9 +435,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <p style="color: #a0a0a0; font-size: ${isNarrow ? "0.75rem" : "0.85rem"}; margin: 0 0 0.6rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 ${escapeHtml(product.shortDescription || "")}
                             </p>
-                            <div style="color: #d4a373; font-weight: bold; font-size: ${isNarrow ? "0.9rem" : "1.1rem"};">
-                                ৳ ${Number(product.price || 0).toLocaleString()}
-                            </div>
+<div style="color: #d4a373; font-weight: bold; font-size: ${isNarrow ? "0.9rem" : "1.1rem"};">
+    ${product.price ? `৳ ${Number(product.price).toLocaleString()}` : "Price on request"}
+</div>
                         </div>
                     `;
 
@@ -1032,7 +1032,7 @@ function sanitizePhone(num) {
                         <div class="search-result-title">${escapeHtml(p.title || "Untitled")}</div>
                         <div class="search-result-meta">${escapeHtml(p.shortDescription || p.category || "")}</div>
                     </div>
-                    <div class="search-result-price">৳ ${Number(p.price || 0).toLocaleString()}</div>
+             <div class="search-result-price">${p.price ? `৳ ${Number(p.price).toLocaleString()}` : "On request"}</div>
                 </a>`;
       })
       .join("");

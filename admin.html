@@ -1560,7 +1560,7 @@
                         <img src="${prod.imageUrl || ""}" class="prod-admin-thumb">
                         <div class="prod-admin-text">
                             <div class="prod-admin-title">${escapeHtml(prod.title || "")}</div>
-                            <div class="prod-admin-meta">৳ ${Number(prod.price || 0).toLocaleString()} · ${escapeHtml(prod.category || "")}</div>
+                            <div class="prod-admin-meta">${prod.price ? `৳ ${Number(prod.price).toLocaleString()}` : "Price on request"} · ${escapeHtml(prod.category || "")}</div>
                         </div>
                     </div>
                     <div class="prod-admin-actions">
@@ -1802,22 +1802,22 @@
         const youtubeUrl = document.getElementById("prod-youtube").value.trim();
         const fileInput = document.getElementById("prod-file");
 
-        if (!title || !price) {
-          prodStatus.innerText = "Error: Title and Price are required.";
+        if (!title) {
+          prodStatus.innerText = "Error: Title is required.";
           return;
         }
 
         if (editingProdId) {
           try {
             prodStatus.innerText = "Updating product...";
-            const payload = {
-              title,
-              price: Number(price),
-              shortDescription: shortDesc,
-              longDescription: longDesc,
-              category,
-              youtubeUrl,
-            };
+const payload = {
+  title,
+  price: price ? Number(price) : null,
+  shortDescription: shortDesc,
+  longDescription: longDesc,
+  category,
+  youtubeUrl,
+};
 
             if (fileInput.files[0]) {
               prodStatus.innerText = "Uploading new image...";
@@ -1845,16 +1845,16 @@
           const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
           prodStatus.innerText = "Image uploaded! Saving product...";
 
-          await addDoc(collection(db, "products"), {
-            title,
-            price: Number(price),
-            shortDescription: shortDesc,
-            longDescription: longDesc,
-            category,
-            imageUrl,
-            youtubeUrl,
-            createdAt: serverTimestamp(),
-          });
+await addDoc(collection(db, "products"), {
+  title,
+  price: price ? Number(price) : null,
+  shortDescription: shortDesc,
+  longDescription: longDesc,
+  category,
+  imageUrl,
+  youtubeUrl,
+  createdAt: serverTimestamp(),
+});
           clearStoreCache();
           prodStatus.innerText = "Success: Product created!";
           resetProductForm();

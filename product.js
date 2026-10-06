@@ -99,8 +99,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentProduct.title || "Untitled Product";
     document.getElementById("product-category").textContent =
       currentProduct.category || "Machinery";
-    document.getElementById("product-price").textContent =
-      `৳ ${Number(currentProduct.price || 0).toLocaleString()}`;
+document.getElementById("product-price").textContent =
+  currentProduct.price
+    ? `৳ ${Number(currentProduct.price).toLocaleString()}`
+    : "Price on request";
     document.getElementById("product-short-desc").textContent =
       currentProduct.shortDescription || "";
 
@@ -133,9 +135,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const directWaBtn = document.getElementById("direct-whatsapp-btn");
     if (directWaBtn) {
-      const waMsg = encodeURIComponent(
-        `Hello CBM Machineries, I want to order this machine:\n\n- Product: ${currentProduct.title}\n- ID: ${productId}\n- Price: ৳${Number(currentProduct.price || 0).toLocaleString()}`,
-      );
+const priceLine = currentProduct.price
+  ? `\n- Price: ৳${Number(currentProduct.price).toLocaleString()}`
+  : "";
+const waMsg = encodeURIComponent(
+  `Hello CBM Machineries, I want to order this machine:\n\n- Product: ${currentProduct.title}\n- ID: ${productId}${priceLine}`,
+);
       directWaBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
     }
 
@@ -170,13 +175,13 @@ function addToCart(product) {
   if (existingIndex > -1) {
     cart[existingIndex].quantity += 1;
   } else {
-    cart.push({
-      id: product.id,
-      title: product.title,
-      price: Number(product.price || 0),
-      imageUrl: product.imageUrl,
-      quantity: 1,
-    });
+cart.push({
+  id: product.id,
+  title: product.title,
+  price: product.price ? Number(product.price) : null,
+  imageUrl: product.imageUrl,
+  quantity: 1,
+});
   }
   saveAndUpdateCart();
 }
@@ -203,10 +208,10 @@ function updateCartUI() {
   const totalEl = document.getElementById("cart-total-price");
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
+const totalPrice = cart.reduce(
+  (acc, item) => acc + (item.price || 0) * item.quantity,
+  0,
+);
 
   if (badge) badge.textContent = totalItems;
   if (totalEl) totalEl.textContent = `৳ ${totalPrice.toLocaleString()}`;
@@ -225,7 +230,7 @@ function updateCartUI() {
             <img src="${item.imageUrl || ""}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">
             <div style="flex: 1;">
                 <div style="color: #fff; font-size: 0.85rem; font-weight: 600;">${item.title}</div>
-                <div style="color: #d4a373; font-size: 0.8rem; margin-top: 0.2rem;">৳ ${item.price.toLocaleString()}</div>
+                <div style="color: #d4a373; font-size: 0.8rem; margin-top: 0.2rem;">${item.price ? `৳ ${item.price.toLocaleString()}` : "Price on request"}</div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem;">
                     <button onclick="window.adjustCartQty('${item.id}', -1)" style="background: #1a2020; border: 1px solid #333; color: #fff; width: 22px; height: 22px; border-radius: 4px; cursor: pointer;">-</button>
                     <span style="font-size: 0.8rem; color: #fff;">${item.quantity}</span>
