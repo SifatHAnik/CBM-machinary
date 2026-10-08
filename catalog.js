@@ -2,6 +2,8 @@ import { db } from "./firebase-config.js";
 import { safeFetch } from "./cache.js";
 import {
   collection,
+  query,
+  where,
   getDocs,
   doc,
   getDoc,
@@ -76,13 +78,28 @@ async function loadProducts() {
   grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#666;">Loading products...</p>`;
 
   await safeFetch(
-    "all_products",
+    activeCategorySlug ? `cat_products_${activeCategorySlug}` : "all_products",
     async () => {
-      const snap = await getDocs(collection(db, "products"));
+      let q;
+      if (activeCategorySlug) {
+        q = query(
+          collection(db, "products"),
+          where("category", "==", activeCategorySlug)
+        );
+      } else {
+        q = collection(db, "products");
+      }
+      const snap = await getDocs(q);
       return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     },
     "products",
-    (prods) => {
+    (prods, source) => {
+      // Fetch failed — keep the "Loading products..." state and retry.
+      if (source === "failed" || prods === null) {
+        setTimeout(() => loadProducts(), 2500);
+        return;
+      }
+
       allProducts = prods || [];
 
       if (allProducts.length > 0) {

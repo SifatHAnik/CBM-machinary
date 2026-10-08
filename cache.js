@@ -55,10 +55,19 @@ export async function safeFetch(
   fetcher,
   staticKey,
   onData,
-  timeoutMs = 2000,
+  timeoutMs = 8000,
 ) {
   const cached = loadFromCache(key);
-  if (cached !== null && cached !== undefined) onData(cached, "cache");
+  const cacheIsFresh = isCacheFresh(key);
+
+  if (cached !== null && cached !== undefined) {
+    onData(cached, "cache");
+    // Cache is under 60 min old — skip network entirely. Zero reads.
+    if (cacheIsFresh) {
+      showStatusBadge("cached");
+      return cached;
+    }
+  }
 
     let data = null;
     try {

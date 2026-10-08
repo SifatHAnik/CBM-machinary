@@ -4,6 +4,7 @@ import {
   collection,
   query,
   where,
+  limit,
   doc,
   getDoc,
   getDocs,
@@ -128,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       style.textContent = `
             #showcase-section { background: #0e1111; padding: 3rem 0 5rem; margin: 0; overflow: hidden; }
             .showcase-stage { padding: 3rem 2rem; display: flex; justify-content: center; align-items: center; perspective: 900px; }
-            .showcase-float-wrap { width: 100%; max-width: 770px; animation: showcaseFloat 9s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
+.showcase-float-wrap { width: 100%; max-width: 650px; animation: showcaseFloat 9s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
             @keyframes showcaseFloat {
                 0% { transform: translateY(0) translateZ(0) rotateX(0deg) rotateY(-3deg) rotateZ(-0.4deg); }
                 25% { transform: translateY(-10px) translateZ(20px) rotateX(2.5deg) rotateY(2deg) rotateZ(0.3deg); }
@@ -364,7 +365,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         </a>
     </div>
     <div id="slider-${cat.id}" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-behavior: smooth;">
-        <p style="color: #666; font-size: 0.9rem;">Loading products...</p>
+        ${Array(4).fill('<div class="skeleton-card"></div>').join('')}
     </div>
 `;
 
@@ -382,12 +383,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         const q = query(
           collection(db, "products"),
           where("category", "==", categorySlug),
+          limit(8),
         );
         const snap = await getDocs(q);
         return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       },
       "products",
-      (allProducts) => {
+      (allProducts, source) => {
+        // Fetch failed — keep the skeleton and silently retry. Never show "empty" on a failure.
+        if (source === "failed" || allProducts === null) {
+          setTimeout(() => {
+            if (sliderEl.querySelector(".skeleton-card")) {
+              loadProductsForCategory(categorySlug);
+            }
+          }, 2500);
+          return;
+        }
+
         sliderEl.innerHTML = "";
         const products = (allProducts || []).filter(
           (p) => p.category === categorySlug,
@@ -460,11 +472,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
-  await initStats();
-  await loadFooterPages();
-  initCart();
+  // Priority: kick off product loading FIRST
   loadDynamicCategories();
-  initReviewsSection();
+  initCart();
+
+  // Defer non-critical loads so they don't compete with products on slow connections
+  setTimeout(() => {
+    initStats();
+    loadFooterPages();
+    initReviewsSection();
+  }, 800);
 });
 
 window.addEventListener("pageshow", () => {

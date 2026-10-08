@@ -1789,3 +1789,26 @@ body {
 [id^="slider-"]::-webkit-scrollbar {
   display: none;
 }
+
+/* Skeleton loading cards */
+.skeleton-card {
+  min-width: 280px;
+  max-width: 280px;
+  height: 320px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #121616 25%, #1a2020 50%, #121616 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (max-width: 640px) {
+  .skeleton-card {
+    min-width: 190px;
+    max-width: 190px;
+    height: 220px;
+  }
+}
